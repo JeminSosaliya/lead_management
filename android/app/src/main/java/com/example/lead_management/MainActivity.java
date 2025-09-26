@@ -1,4 +1,4 @@
-package com.example.lead_management;
+package com.app.lead.management;
 
 import io.flutter.embedding.android.FlutterActivity;
 
