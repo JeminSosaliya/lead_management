@@ -14,7 +14,6 @@ String channelName = "lead_management_app";
 String channelDes = "lead_management_app_channel_des";
 
 class NotificationUtils {
-  // final AuthRepo _authRepo;
 
   late AndroidNotificationChannel channel;
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =

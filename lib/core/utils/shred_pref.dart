@@ -7,6 +7,9 @@ class SharedPreference {
   SharedPreferences? _preferences;
 
   static const String isLogIn = "isLogIn";
+  static const String uid = "uid";
+  static const String role = "role";
+  static const String email = "email";
 
   static const String deviceType = "deviceType";
   static const String appStoreVersion = "App-Store-Version";

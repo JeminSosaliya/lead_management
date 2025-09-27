@@ -20,7 +20,6 @@ class CustomTextFormField extends StatelessWidget {
   final double? titleFontSize;
   final FontWeight? titleFontWeight;
   final int maxLines;
-  final Color color;
   final bool showBorder;
   final Color? fillColor;
   final bool extraSpace;
@@ -48,7 +47,6 @@ class CustomTextFormField extends StatelessWidget {
     this.fillColor,
     this.maxLines = 1,
     this.extraSpace = true,
-    this.color = Colors.transparent,
     this.hintTextColor,
     this.customPadding,
     this.textCapitalization = TextCapitalization.none,

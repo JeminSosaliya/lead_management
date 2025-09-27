@@ -44,6 +44,7 @@ dependencies:
   easy_localization: ^3.0.8
   flutter_local_notifications: ^19.4.2
   firebase_messaging: ^16.0.2
+  url_launcher: ^6.3.2
 
 
 
