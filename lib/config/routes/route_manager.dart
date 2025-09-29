@@ -14,11 +14,20 @@ class AppRoutes {
   static const String employeeHomeScreen = '/employeeHomeScreen';
   static const String addLeadScreen = '/addLeadScreen';
 
+  // static const String addEmployee = "/add-employee";
+  // static const String addAdmin = "/add-admin";
+  // static const String profile = "/profile";
+  // static const String members = "/members";
+
   static List<GetPage> pages = [
     GetPage(name: splash, page: () => SplashScreen()),
     GetPage(name: login, page: () => LoginScreen()),
     GetPage(name: ownerHomeScreen, page: () => OwnerHomeScreen()),
     GetPage(name: employeeHomeScreen, page: () => EmployeeHomeScreen()),
     GetPage(name: addLeadScreen, page: () => AddLeadScreen()),
+    // GetPage(name: profile, page: () => const ProfileScreen()),
+    // GetPage(name: members, page: () => const MemberListScreen()),
+    // GetPage(name: addAdmin, page: () => const AddAdminScreen()),
+    // GetPage(name: addEmployee, page: () => const AddEmployeeScreen()),
   ];
 }

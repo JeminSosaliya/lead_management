@@ -27,6 +27,7 @@ class CustomTextFormField extends StatelessWidget {
   final double? customPadding;
   final TextCapitalization textCapitalization;
   final List<TextInputFormatter>? inputFormatters;
+  final String? Function(String?)? validator;
 
   const CustomTextFormField({
     super.key,
@@ -51,6 +52,7 @@ class CustomTextFormField extends StatelessWidget {
     this.customPadding,
     this.textCapitalization = TextCapitalization.none,
     this.inputFormatters,
+    this.validator,
   });
 
   @override
@@ -77,6 +79,7 @@ class CustomTextFormField extends StatelessWidget {
             readOnly: readOnly,
             textCapitalization: textCapitalization,
             inputFormatters: inputFormatters,
+            validator: validator,
             style: GoogleFonts.roboto(
               color: colorBlack,
               fontWeight: FontWeight.w500,

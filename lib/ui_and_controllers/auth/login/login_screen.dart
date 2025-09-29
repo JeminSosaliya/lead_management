@@ -42,7 +42,7 @@ class LoginScreen extends StatelessWidget {
                   CustomTextFormField(
                     hintText: 'Password',
                     controller: controller.passwordController,
-                    obscureText: true,
+                    // obscureText: true,
                     prefixIcon: Icon(
                       Icons.lock,
                       color: Colors.grey,
