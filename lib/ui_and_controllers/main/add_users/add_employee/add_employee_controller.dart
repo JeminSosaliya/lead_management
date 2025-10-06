@@ -12,11 +12,14 @@ class AddEmployeeController extends GetxController {
   final _numberController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController(); // Add confirm password controller
   final _addressController = TextEditingController();
   final _designationController = TextEditingController();
+  final _referenceController = TextEditingController(); // Add reference controller
   
   final _isLoading = false.obs;
   final _obscurePassword = true.obs;
+  final _obscureConfirmPassword = true.obs; // Add confirm password visibility
 
   // Firebase instances
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -28,13 +31,20 @@ class AddEmployeeController extends GetxController {
   TextEditingController get numberController => _numberController;
   TextEditingController get emailController => _emailController;
   TextEditingController get passwordController => _passwordController;
+  TextEditingController get confirmPasswordController => _confirmPasswordController; // Add confirm password getter
   TextEditingController get addressController => _addressController;
   TextEditingController get designationController => _designationController;
+  TextEditingController get referenceController => _referenceController; // Add reference getter
   bool get isLoading => _isLoading.value;
   bool get obscurePassword => _obscurePassword.value;
+  bool get obscureConfirmPassword => _obscureConfirmPassword.value; // Add confirm password visibility getter
 
   void togglePasswordVisibility() {
     _obscurePassword.value = !_obscurePassword.value;
+  }
+
+  void toggleConfirmPasswordVisibility() { // Add confirm password toggle
+    _obscureConfirmPassword.value = !_obscureConfirmPassword.value;
   }
 
   Future<void> addUser() async {
@@ -60,6 +70,8 @@ class AddEmployeeController extends GetxController {
         'phone': _numberController.text.trim(),
         'address': _addressController.text.trim(),
         'designation': _designationController.text.trim(),
+        'reference': _referenceController.text.trim(),
+        'password': _passwordController.text.trim(), // Add password storage
         'type': 'employee',
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
@@ -120,8 +132,10 @@ class AddEmployeeController extends GetxController {
     _numberController.clear();
     _emailController.clear();
     _passwordController.clear();
+    _confirmPasswordController.clear(); // Add confirm password clear
     _addressController.clear();
     _designationController.clear();
+    _referenceController.clear(); // Add reference clear
   }
 
   @override
@@ -130,8 +144,10 @@ class AddEmployeeController extends GetxController {
     _numberController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose(); // Add confirm password dispose
     _addressController.dispose();
     _designationController.dispose();
+    _referenceController.dispose(); // Add reference dispose
     super.onClose();
   }
 }

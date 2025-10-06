@@ -195,6 +195,19 @@ class MemberDetailScreen extends StatelessWidget {
                     label: "Member Since",
                     value: _formatDate(member!['createdAt']),
                   ),
+
+                  _buildInfoRow(
+                    icon: Icons.lock,
+                    label: "Password",
+                    value: member!['password'] ?? 'No password',
+                  ),
+
+                  if (member!['reference'] != null)
+                    _buildInfoRow(
+                      icon: Icons.person_pin,
+                      label: "Reference",
+                      value: member!['reference'],
+                    ),
                 ],
               ),
             ),
@@ -264,7 +277,7 @@ class MemberDetailScreen extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: height * 0.015),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(icon, size: width * 0.05, color: colorMainTheme),
           SizedBox(width: width * 0.03),

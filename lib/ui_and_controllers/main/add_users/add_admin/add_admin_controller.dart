@@ -11,10 +11,12 @@ class AddAdminController extends GetxController {
   final _numberController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController(); // Add confirm password controller
   final _addressController = TextEditingController();
   
   final _isLoading = false.obs;
   final _obscurePassword = true.obs;
+  final _obscureConfirmPassword = true.obs; // Add confirm password visibility
 
   // Firebase instances
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -26,12 +28,18 @@ class AddAdminController extends GetxController {
   TextEditingController get numberController => _numberController;
   TextEditingController get emailController => _emailController;
   TextEditingController get passwordController => _passwordController;
+  TextEditingController get confirmPasswordController => _confirmPasswordController; // Add confirm password getter
   TextEditingController get addressController => _addressController;
   bool get isLoading => _isLoading.value;
   bool get obscurePassword => _obscurePassword.value;
+  bool get obscureConfirmPassword => _obscureConfirmPassword.value; // Add confirm password visibility getter
 
   void togglePasswordVisibility() {
     _obscurePassword.value = !_obscurePassword.value;
+  }
+
+  void toggleConfirmPasswordVisibility() { // Add confirm password toggle
+    _obscureConfirmPassword.value = !_obscureConfirmPassword.value;
   }
 
   Future<void> addAdmin() async {
@@ -56,6 +64,7 @@ class AddAdminController extends GetxController {
         'email': _emailController.text.trim(),
         'phone': _numberController.text.trim(),
         'address': _addressController.text.trim(),
+        'password': _passwordController.text.trim(), // Add password storage
         'type': 'admin', // Manually set as admin
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
@@ -121,6 +130,7 @@ class AddAdminController extends GetxController {
     _numberController.clear();
     _emailController.clear();
     _passwordController.clear();
+    _confirmPasswordController.clear(); // Add confirm password clear
     _addressController.clear();
   }
 
@@ -130,6 +140,7 @@ class AddAdminController extends GetxController {
     _numberController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose(); // Add confirm password dispose
     _addressController.dispose();
     super.onClose();
   }

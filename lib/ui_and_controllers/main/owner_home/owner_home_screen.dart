@@ -82,43 +82,6 @@ class OwnerHomeScreen extends StatelessWidget {
                   physics: NeverScrollableScrollPhysics(),
                   padding: EdgeInsets.zero,
                   children: [
-                    ListTile(
-                      leading: Icon(Icons.home, color: colorMainTheme),
-                      title: WantText(
-                        text: "Home",
-                        textColor: colorBlack,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                    if (ListConst.currentUserProfileData.type == 'admin')
-                      ListTile(
-                        leading: Icon(Icons.person_add, color: colorMainTheme),
-                        title: WantText(
-                          text: "Add Employee",
-                          textColor: colorBlack,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Get.toNamed(AppRoutes.addEmployee);
-                        },
-                      ),
-                    if (ListConst.currentUserProfileData.type == 'admin')
-                      ListTile(
-                        leading: Icon(Icons.engineering, color: colorMainTheme),
-                        title: WantText(
-                          text: "Add Technician",
-                          textColor: colorBlack,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Get.toNamed(AppRoutes.addTechnician);
-                        },
-                      ),
                     Obx(() {
                       if (_permissionController.isLoading) {
                         return ListTile(
@@ -160,6 +123,33 @@ class OwnerHomeScreen extends StatelessWidget {
                       }
                       return SizedBox.shrink();
                     }),
+                    if (ListConst.currentUserProfileData.type == 'admin')
+                      ListTile(
+                        leading: Icon(Icons.person_add, color: colorMainTheme),
+                        title: WantText(
+                          text: "Add Employee",
+                          textColor: colorBlack,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Get.toNamed(AppRoutes.addEmployee);
+                        },
+                      ),
+                    if (ListConst.currentUserProfileData.type == 'admin')
+                      ListTile(
+                        leading: Icon(Icons.engineering, color: colorMainTheme),
+                        title: WantText(
+                          text: "Add Technician",
+                          textColor: colorBlack,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Get.toNamed(AppRoutes.addTechnician);
+                        },
+                      ),
+
                     Obx(() {
                       if (_profileController.isLoading) {
                         return ListTile(
@@ -213,7 +203,17 @@ class OwnerHomeScreen extends StatelessWidget {
               ),
               Padding(
                 padding:  EdgeInsets.symmetric(horizontal: width*0.041,vertical: height*0.025),
-                child: CustomButton(Width: width, onTap: _logout,label: "Logout", backgroundColor: colorRedCalendar,borderColor: colorRedCalendar,),
+                child: CustomButton(Width: width, onTap: () {
+                  context.showAppDialog(
+                    title: 'Are you sure you want to logout?',
+                    buttonOneTitle: 'Cancel',
+                    buttonTwoTitle: 'Logout',
+                    onTapOneButton: () => Get.back(),
+                    onTapTwoButton: () async {
+                      Get.back();
+                      await _logout();
+                    },);
+                },label: "Logout", backgroundColor: colorRedCalendar,borderColor: colorRedCalendar,),
               ),
             ],
           ),

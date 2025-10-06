@@ -1,8 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:intl/intl.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
+
+import '../constant/app_const.dart';
 
 
 extension StringExtension on String {
@@ -32,7 +37,7 @@ extension ContextExtension on BuildContext {
     return FocusScope.of(this).requestFocus(FocusNode());
   }
 
-  ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showAppSnackBar({
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>   showAppSnackBar({
     required String message,
     Color? backgroundColor,
     Color? textColor,
@@ -68,31 +73,112 @@ extension ContextExtension on BuildContext {
 
 
   Future showAppDialog({
-    Widget? titleWidget,
-    required Widget contentWidget,
-    List<Widget>? actionWidget,
-    bool barrierDismissible = true,
+    // Widget? titleWidget,
+    // required Widget contentWidget,
+    // List<Widget>? actionWidget,
+    // bool barrierDismissible = true,
+    required String title,
+    IconData? icon,
+    required String buttonOneTitle,
+    required String buttonTwoTitle,
+    required dynamic Function()? onTapOneButton,
+    required dynamic Function()? onTapTwoButton,
   }) {
-    return showDialog(
-      context: this,
-      barrierDismissible: barrierDismissible,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          contentPadding: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-          titlePadding: EdgeInsets.zero,
-          actionsPadding: EdgeInsets.zero,
-          surfaceTintColor: Colors.white,
-          backgroundColor: Colors.white,
-          title: titleWidget ?? Container(),
-          content: contentWidget,
-          actions: actionWidget ?? [],
-        );
-      },
-    );
+
+    return
+      Get.generalDialog(
+        barrierDismissible: false,
+        transitionDuration: const Duration(milliseconds: 250),
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return Center(
+            child: ScaleTransition(
+              scale: CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutBack,
+              ),
+              child: Dialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                backgroundColor: colorWhite,
+                child: Padding(
+                  padding: EdgeInsets.all(width * 0.05),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(icon, color: colorRedCalendar, size: width * 0.12),
+                      SizedBox(height: height * 0.02),
+                      WantText(
+                        text: title,
+                        fontSize: width * 0.045,
+                        fontWeight: FontWeight.w600,
+                        maxLines: 2,
+                        textColor: colorBlack,
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: height * 0.03),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          // Cancel Button
+                          Expanded(
+                            child: CustomButton(
+                              Width: width,
+                              label: buttonOneTitle,
+                              onTap: onTapOneButton,
+                              backgroundColor: colorWhite,
+                              borderColor: colorGrey,
+                              textColor: colorGrey,
+                            ),
+                          ),
+                          SizedBox(width: width * 0.04),
+                          // Confirm Logout Button
+                          Expanded(
+                            child: CustomButton(
+                              Width: width,
+                              label: buttonTwoTitle,
+                              onTap: onTapTwoButton,
+                              backgroundColor: colorRedCalendar,
+                              borderColor: colorRedCalendar,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+        transitionBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+      );
+
+    // return showDialog(
+    //   context: this,
+    //   barrierDismissible: barrierDismissible,
+    //   builder: (BuildContext context) {
+    //     return AlertDialog(
+    //       contentPadding: EdgeInsets.zero,
+    //       shape: RoundedRectangleBorder(
+    //         borderRadius: BorderRadius.circular(20),
+    //       ),
+    //       insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+    //       titlePadding: EdgeInsets.zero,
+    //       actionsPadding: EdgeInsets.zero,
+    //       surfaceTintColor: Colors.white,
+    //       backgroundColor: Colors.white,
+    //       title: titleWidget ?? Container(),
+    //       content: contentWidget,
+    //       actions: actionWidget ?? [],
+    //     );
+    //   },
+    // );
   }
 
   Future showAppBottomSheet({required Widget contentWidget}) {
