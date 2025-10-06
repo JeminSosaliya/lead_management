@@ -276,10 +276,7 @@ class AddEmployeeScreen extends StatelessWidget {
                 ),
                 textCapitalization: TextCapitalization.words,
               ),
-
               SizedBox(height: height * 0.04),
-
-              // Add User Button
               Obx(() => CustomButton(
                 Width: width,
                 onTap: controller.isLoading ? null : controller.addUser,
