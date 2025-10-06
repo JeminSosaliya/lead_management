@@ -149,7 +149,6 @@ class AddLeadScreen extends StatelessWidget {
                       },
                     ),
                     SizedBox(height: height * 0.023),
-
                     SearchableCSCDropdown(
                       title: 'Source',
                       items: controller.sources,
