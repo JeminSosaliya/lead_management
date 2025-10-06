@@ -43,7 +43,7 @@ extension ContextExtension on BuildContext {
         margin: const EdgeInsets.only(
           left: 16,
           right: 16,
-          bottom: 80,
+          bottom: 16,
         ),
         padding: const EdgeInsets.symmetric(
           horizontal: 20,

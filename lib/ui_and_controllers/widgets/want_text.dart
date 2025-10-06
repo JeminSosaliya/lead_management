@@ -3,9 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 class WantText extends StatelessWidget {
   final String text;
-  final double fontSize;
-  final FontWeight fontWeight;
-  final Color textColor;
+  final double? fontSize;
+  final FontWeight? fontWeight;
+  final Color? textColor;
   final TextAlign? textAlign;
   final TextOverflow? textOverflow;
   final String fontFamily;
@@ -14,9 +14,9 @@ class WantText extends StatelessWidget {
   const WantText({
     super.key,
     required this.text,
-    required this.fontSize,
-    required this.fontWeight,
-    required this.textColor,
+    this.fontSize,
+    this.fontWeight,
+    this.textColor,
     this.textAlign,
     this.textOverflow,
     this.fontFamily = "Roboto",

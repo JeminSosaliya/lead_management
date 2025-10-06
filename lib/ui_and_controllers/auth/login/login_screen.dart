@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
-import 'package:lead_management/ui_and_controllers/auth/login/login_screen_controller.dart';
+import 'package:lead_management/core/utils/extension.dart';
+import 'package:lead_management/ui_and_controllers/auth/login/login_controller.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_textformfield.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
@@ -12,70 +13,130 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Get.put(LoginController());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      height = MediaQuery.of(context).size.height;
+      width = MediaQuery.of(context).size.width;
+    });
+
+    LoginController controller;
+    try {
+      controller = Get.find<LoginController>();
+    } catch (e) {
+      controller = Get.put(LoginController());
+    }
 
     return Scaffold(
-      body: GetBuilder<LoginController>(
-        builder: (controller) {
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CustomTextFormField(
-                    hintText: 'Email',
-                    controller: controller.emailController,
-                    prefixIcon: Icon(
-                      Icons.email,
-                      color: Colors.grey,
-                      size: width * 0.041,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                        RegExp(r'[a-zA-Z0-9@._\-+]'),
+      backgroundColor: colorWhite,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: width * 0.05),
+          child: Form(
+            key: controller.formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(height: height * 0.08),
+                Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        width: width * 0.25,
+                        height: width * 0.25,
+                        decoration: BoxDecoration(
+                          color: colorMainTheme,
+                          borderRadius: BorderRadius.circular(width * 0.125),
+                        ),
+                        child: Icon(
+                          Icons.person,
+                          size: width * 0.12,
+                          color: colorWhite,
+                        ),
+                      ),
+                      SizedBox(height: height * 0.02),
+                      WantText(
+                        text: "Welcome Back",
+                        fontSize: width * 0.06,
+                        fontWeight: FontWeight.bold,
+                        textColor: colorBlack,
+                      ),
+                      SizedBox(height: height * 0.01),
+                      WantText(
+                        text: "Sign in to your account",
+                        fontSize: width * 0.04,
+                        textColor: colorGreyText,
                       ),
                     ],
-                    keyboardType: TextInputType.emailAddress,
                   ),
-                  const SizedBox(height: 16),
-                  CustomTextFormField(
-                    hintText: 'Password',
+                ),
+                SizedBox(height: height * 0.06),
+                CustomTextFormField(
+                  controller: controller.emailController,
+                  labelText: "Email Address",
+                  hintText: "Enter your email",
+                  keyboardType: TextInputType.emailAddress,
+                  prefixIcon: Icon(
+                    Icons.email_outlined,
+                    color: colorGreyText,
+                    size: width * 0.05,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Please enter your email";
+                    }
+                    if (!value.isEmailValid) {
+                      return "Please enter a valid email";
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: height * 0.02),
+                Obx(
+                  () => CustomTextFormField(
                     controller: controller.passwordController,
-                    // obscureText: true,
+                    labelText: "Password",
+                    hintText: "Enter your password",
+                    obscureText: controller.obscurePassword,
                     prefixIcon: Icon(
-                      Icons.lock,
-                      color: Colors.grey,
-                      size: width * 0.041,
+                      Icons.lock_outline,
+                      color: colorGreyText,
+                      size: width * 0.05,
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: controller.isLoading
-                        ? null
-                        : () => controller.login(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colorMainTheme,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 32, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        controller.obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: colorGreyText,
+                        size: width * 0.05,
                       ),
+                      onPressed: controller.togglePasswordVisibility,
                     ),
-                    child: controller.isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const WantText(
-                      text: 'Login',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      textColor: Colors.white,
-                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Please enter your password";
+                      }
+                      if (value.length < 6) {
+                        return "Password must be at least 6 characters";
+                      }
+                      return null;
+                    },
                   ),
-                ],
-              ),
+                ),
+                SizedBox(height: height * 0.03),
+                Obx(
+                  () => CustomButton(
+                    onTap: controller.isLoading ? null : controller.login,
+                    label: controller.isLoading ? "Signing In..." : "Sign In",
+                    backgroundColor: controller.isLoading
+                        ? colorGreyText
+                        : colorMainTheme,
+                    Width: width,
+                  ),
+                ),
+              ],
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }

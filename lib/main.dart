@@ -3,9 +3,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:lead_management/config/routes/route_manager.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/utils/firebase_options.dart';
+import 'package:lead_management/routes/route_manager.dart';
 
 import 'core/utils/shred_pref.dart';
 

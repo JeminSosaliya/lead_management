@@ -8,7 +8,7 @@ class SharedPreference {
 
   static const String isLogIn = "isLogIn";
   static const String uid = "uid";
-  static const String role = "role";
+  // static const String role = "role";
   static const String email = "email";
 
   static const String deviceType = "deviceType";

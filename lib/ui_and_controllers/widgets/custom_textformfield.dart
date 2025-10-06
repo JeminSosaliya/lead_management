@@ -81,8 +81,9 @@ class CustomTextFormField extends StatelessWidget {
             inputFormatters: inputFormatters,
             validator: validator,
             style: GoogleFonts.roboto(
+              fontSize: width * 0.038,
               color: colorBlack,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w400,
             ),
             onTap: onTap,
             decoration: InputDecoration(
@@ -99,7 +100,7 @@ class CustomTextFormField extends StatelessWidget {
               hintStyle: GoogleFonts.roboto(
                 color: hintTextColor ?? colorGreyText,
                 fontSize: width * 0.035,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w400,
                 height: 1.75,
               ),
               suffixIcon: suffixIcon,

@@ -1,554 +1,281 @@
-// import 'package:flutter/material.dart';
-// import 'package:get/get.dart';
-// import 'package:lead_management/core/constant/app_color.dart';
-// import 'package:lead_management/core/utils/extension.dart';
-// import 'package:lead_management/core/utils/shred_pref.dart';
-// import 'package:lead_management/ui_and_controllers/main/add_laed/add_lead_controller.dart';
-//
-// class AddLeadScreen extends StatelessWidget {
-//   AddLeadScreen({super.key});
-//
-//   final AddLeadController controller = Get.put(AddLeadController());
-//   final _formKey = GlobalKey<FormState>();
-//
-//   final TextEditingController _nameController = TextEditingController();
-//   final TextEditingController _phoneController = TextEditingController();
-//   final TextEditingController _emailController = TextEditingController();
-//   final TextEditingController _companyController = TextEditingController();
-//   final TextEditingController _descriptionController = TextEditingController();
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     String currentUserRole = preferences.getString(SharedPreference.role) ?? '';
-//     bool isOwner = currentUserRole == 'admin';
-//
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(isOwner ? 'Add New Lead' : 'Add My Lead'),
-//         leading: IconButton(
-//           icon: const Icon(Icons.arrow_back),
-//           onPressed: () => Get.back(),
-//         ),
-//       ),
-//       body: GetBuilder<AddLeadController>(
-//         builder: (controller) {
-//           if (controller.isLoading) {
-//             return const Center(child: CircularProgressIndicator());
-//           }
-//
-//           return Padding(
-//             padding: const EdgeInsets.all(16.0),
-//             child: Form(
-//               key: _formKey,
-//               child: ListView(
-//                 children: [
-//                   TextFormField(
-//                     controller: _nameController,
-//                     decoration: const InputDecoration(
-//                       labelText: 'Client Name*',
-//                     ),
-//                     validator: (value) {
-//                       if (value == null || value.isEmpty)
-//                         return 'Please enter client name';
-//                       return null;
-//                     },
-//                   ),
-//                   const SizedBox(height: 16),
-//
-//                   TextFormField(
-//                     controller: _phoneController,
-//                     decoration: const InputDecoration(
-//                       labelText: 'Phone Number*',
-//                     ),
-//                     keyboardType: TextInputType.phone,
-//                     validator: (value) {
-//                       if (value == null || value.isEmpty)
-//                         return 'Please enter phone number';
-//                       return null;
-//                     },
-//                   ),
-//                   const SizedBox(height: 16),
-//
-//                   TextFormField(
-//                     controller: _emailController,
-//                     decoration: const InputDecoration(labelText: 'Email'),
-//                     keyboardType: TextInputType.emailAddress,
-//                   ),
-//                   const SizedBox(height: 16),
-//
-//                   TextFormField(
-//                     controller: _companyController,
-//                     decoration: const InputDecoration(
-//                       labelText: 'Company Name',
-//                     ),
-//                   ),
-//                   const SizedBox(height: 16),
-//
-//                   DropdownButtonFormField<String>(
-//                     decoration: const InputDecoration(labelText: 'Source'),
-//                     value: controller.selectedSource,
-//                     items: controller.sources.map((source) {
-//                       return DropdownMenuItem<String>(
-//                         value: source,
-//                         child: Text(source),
-//                       );
-//                     }).toList(),
-//                     onChanged: controller.setSelectedSource,
-//                   ),
-//                   const SizedBox(height: 16),
-//
-//                   if (isOwner) ...[
-//                     DropdownButtonFormField<String>(
-//                       decoration: const InputDecoration(
-//                         labelText: 'Assign To Employee*',
-//                       ),
-//                       value: controller.selectedEmployee,
-//                       validator: (value) {
-//                         if (value == null) {
-//                           return 'Please select an employee';
-//                         }
-//                         return null;
-//                       },
-//                       items: controller.employees.map<DropdownMenuItem<String>>(
-//                         (employee) {
-//                           return DropdownMenuItem<String>(
-//                             value: employee.uid,
-//                             child: Text(employee.name),
-//                           );
-//                         },
-//                       ).toList(),
-//                       onChanged: controller.setSelectedEmployee,
-//                     ),
-//                     const SizedBox(height: 16),
-//                   ],
-//
-//                   TextFormField(
-//                     controller: _descriptionController,
-//                     decoration: const InputDecoration(
-//                       labelText: 'Description/Notes',
-//                     ),
-//                     maxLines: 3,
-//                   ),
-//                   const SizedBox(height: 24),
-//
-//                   ElevatedButton(
-//                     onPressed: controller.isSubmitting
-//                         ? null
-//                         : () => _submitForm(),
-//                     child: controller.isSubmitting
-//                         ? const CircularProgressIndicator(color: Colors.white)
-//                         : Text(isOwner ? 'Add Lead' : 'Add My Lead'),
-//                   ),
-//
-//                   if (!isOwner) ...[
-//                     const SizedBox(height: 16),
-//                     const Text(
-//                       'Note: This lead will be automatically assigned to you',
-//                       style: TextStyle(
-//                         color: Colors.grey,
-//                         fontStyle: FontStyle.italic,
-//                       ),
-//                       textAlign: TextAlign.center,
-//                     ),
-//                   ],
-//                 ],
-//               ),
-//             ),
-//           );
-//         },
-//       ),
-//     );
-//   }
-//
-//   Future<void> _submitForm() async {
-//     if (_formKey.currentState!.validate()) {
-//       bool success = await controller.addLead(
-//         clientName: _nameController.text.trim(),
-//         clientPhone: _phoneController.text.trim(),
-//         clientEmail: _emailController.text.trim().isEmpty
-//             ? null
-//             : _emailController.text.trim(),
-//         companyName: _companyController.text.trim().isEmpty
-//             ? null
-//             : _companyController.text.trim(),
-//         description: _descriptionController.text.trim().isEmpty
-//             ? null
-//             : _descriptionController.text.trim(),
-//       );
-//
-//       if (success) {
-//         Get.back();
-//         Get.context?.showAppSnackBar(
-//           message: "Lead added successfully",
-//           backgroundColor: colorGreen,
-//           textColor: colorWhite,
-//         );
-//       }
-//     }
-//   }
-// }
 
-
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:lead_management/core/constant/app_color.dart';
-import 'package:lead_management/core/utils/extension.dart';
-import 'package:lead_management/core/utils/shred_pref.dart';
+import 'package:lead_management/core/constant/app_const.dart';
+import 'package:lead_management/core/constant/list_const.dart';
 import 'package:lead_management/ui_and_controllers/main/add_laed/add_lead_controller.dart';
-//
-// class AddLeadScreen extends StatelessWidget {
-//   AddLeadScreen({super.key});
-//
-//   final AddLeadController controller = Get.put(AddLeadController());
-//   final _formKey = GlobalKey<FormState>();
-//
-//   final TextEditingController _nameController = TextEditingController();
-//   final TextEditingController _phoneController = TextEditingController();
-//   final TextEditingController _emailController = TextEditingController();
-//   final TextEditingController _companyController = TextEditingController();
-//   final TextEditingController _descriptionController = TextEditingController();
-//   final TextEditingController _followUpController = TextEditingController();
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     String currentUserRole = preferences.getString(SharedPreference.role) ?? '';
-//     bool isOwner = currentUserRole == 'admin';
-//
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(isOwner ? 'Add New Lead' : 'Add My Lead'),
-//         leading: IconButton(
-//           icon: const Icon(Icons.arrow_back),
-//           onPressed: () => Get.back(),
-//         ),
-//       ),
-//       body: GetBuilder<AddLeadController>(
-//         builder: (controller) {
-//           if (controller.isLoading) {
-//             return const Center(child: CircularProgressIndicator());
-//           }
-//
-//           return Padding(
-//             padding: const EdgeInsets.all(16.0),
-//             child: Form(
-//               key: _formKey,
-//               child: ListView(
-//                 children: [
-//                   TextFormField(
-//                     controller: _nameController,
-//                     decoration: const InputDecoration(
-//                       labelText: 'Client Name*',
-//                     ),
-//                     validator: (value) {
-//                       if (value == null || value.isEmpty)
-//                         return 'Please enter client name';
-//                       return null;
-//                     },
-//                   ),
-//                   const SizedBox(height: 16),
-//
-//                   TextFormField(
-//                     controller: _phoneController,
-//                     decoration: const InputDecoration(
-//                       labelText: 'Phone Number*',
-//                     ),
-//                     keyboardType: TextInputType.phone,
-//                     validator: (value) {
-//                       if (value == null || value.isEmpty)
-//                         return 'Please enter phone number';
-//                       return null;
-//                     },
-//                   ),
-//                   const SizedBox(height: 16),
-//
-//                   TextFormField(
-//                     controller: _emailController,
-//                     decoration: const InputDecoration(labelText: 'Email'),
-//                     keyboardType: TextInputType.emailAddress,
-//                   ),
-//                   const SizedBox(height: 16),
-//
-//                   TextFormField(
-//                     controller: _companyController,
-//                     decoration: const InputDecoration(
-//                       labelText: 'Company Name',
-//                     ),
-//                   ),
-//                   const SizedBox(height: 16),
-//
-//                   DropdownButtonFormField<String>(
-//                     decoration: const InputDecoration(labelText: 'Source'),
-//                     value: controller.selectedSource,
-//                     items: controller.sources.map((source) {
-//                       return DropdownMenuItem<String>(
-//                         value: source,
-//                         child: Text(source),
-//                       );
-//                     }).toList(),
-//                     onChanged: controller.setSelectedSource,
-//                   ),
-//                   const SizedBox(height: 16),
-//
-//                   if (isOwner) ...[
-//                     DropdownButtonFormField<String>(
-//                       decoration: const InputDecoration(
-//                         labelText: 'Assign To Employee*',
-//                       ),
-//                       value: controller.selectedEmployee,
-//                       validator: (value) {
-//                         if (value == null) {
-//                           return 'Please select an employee';
-//                         }
-//                         return null;
-//                       },
-//                       items: controller.employees.map<DropdownMenuItem<String>>(
-//                             (employee) {
-//                           return DropdownMenuItem<String>(
-//                             value: employee.uid,
-//                             child: Text(employee.name),
-//                           );
-//                         },
-//                       ).toList(),
-//                       onChanged: controller.setSelectedEmployee,
-//                     ),
-//                     const SizedBox(height: 16),
-//                   ],
-//
-//                   TextFormField(
-//                     controller: _descriptionController,
-//                     decoration: const InputDecoration(
-//                       labelText: 'Description/Notes',
-//                     ),
-//                     maxLines: 3,
-//                   ),
-//                   const SizedBox(height: 16),
-//
-//                   TextFormField(
-//                     controller: _followUpController,
-//                     decoration: const InputDecoration(labelText: 'Initial Follow-up Date & Time'),
-//                     readOnly: true,
-//                     onTap: () async {
-//                       DateTime? date = await showDatePicker(
-//                         context: context,
-//                         initialDate: DateTime.now(),
-//                         firstDate: DateTime.now(),
-//                         lastDate: DateTime(2100),
-//                       );
-//                       if (date != null) {
-//                         TimeOfDay? time = await showTimePicker(
-//                           context: context,
-//                           initialTime: TimeOfDay.now(),
-//                         );
-//                         if (time != null) {
-//                           DateTime dateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-//                           _followUpController.text = dateTime.toString();
-//                           controller.nextFollowUp = dateTime;
-//                         }
-//                       }
-//                     },
-//                   ),
-//                   const SizedBox(height: 24),
-//
-//                   ElevatedButton(
-//                     onPressed: controller.isSubmitting
-//                         ? null
-//                         : () => _submitForm(),
-//                     child: controller.isSubmitting
-//                         ? const CircularProgressIndicator(color: Colors.white)
-//                         : Text(isOwner ? 'Add Lead' : 'Add My Lead'),
-//                   ),
-//
-//                   if (!isOwner) ...[
-//                     const SizedBox(height: 16),
-//                     const Text(
-//                       'Note: This lead will be automatically assigned to you',
-//                       style: TextStyle(
-//                         color: Colors.grey,
-//                         fontStyle: FontStyle.italic,
-//                       ),
-//                       textAlign: TextAlign.center,
-//                     ),
-//                   ],
-//                 ],
-//               ),
-//             ),
-//           );
-//         },
-//       ),
-//     );
-//   }
-//
-//   Future<void> _submitForm() async {
-//     if (_formKey.currentState!.validate()) {
-//       bool success = await controller.addLead(
-//         clientName: _nameController.text.trim(),
-//         clientPhone: _phoneController.text.trim(),
-//         clientEmail: _emailController.text.trim().isEmpty
-//             ? null
-//             : _emailController.text.trim(),
-//         companyName: _companyController.text.trim().isEmpty
-//             ? null
-//             : _companyController.text.trim(),
-//         description: _descriptionController.text.trim().isEmpty
-//             ? null
-//             : _descriptionController.text.trim(),
-//         nextFollowUp: controller.nextFollowUp,
-//       );
-//
-//       if (success) {
-//         Get.back();
-//         Get.context?.showAppSnackBar(
-//           message: "Lead added successfully",
-//           backgroundColor: colorGreen,
-//           textColor: colorWhite,
-//         );
-//       }
-//     }
-//   }
-// }
+import 'package:lead_management/ui_and_controllers/main/member_list_screen/member_controller.dart';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:lead_management/core/constant/app_color.dart';
-import 'package:lead_management/core/utils/extension.dart';
-import 'package:lead_management/core/utils/shred_pref.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_textformfield.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
+import 'package:lead_management/ui_and_controllers/widgets/dropdown.dart';
 
 class AddLeadScreen extends StatelessWidget {
-  AddLeadScreen({super.key});
+  const AddLeadScreen({super.key});
 
-  final AddLeadController controller = Get.put(AddLeadController());
-  final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _companyController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _followUpController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width; // 390px reference
-    double height = MediaQuery.of(context).size.height; // 844px reference
-    String currentUserRole = preferences.getString(SharedPreference.role) ?? '';
+    final memberController = Get.put(MemberController());
+    Get.put(AddLeadController());
+    String currentUserRole = ListConst.currentUserProfileData.type ?? 'employee';
     bool isOwner = currentUserRole == 'admin';
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: colorWhite,
       appBar: AppBar(
         title: WantText(
           text: isOwner ? 'Add New Lead' : 'Add My Lead',
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          textColor: Colors.white,
+          fontSize: width*0.061,
+          fontWeight: FontWeight.w600,
+          textColor: colorWhite,
         ),
         backgroundColor: colorMainTheme,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon:  Icon(Icons.arrow_back, color: colorWhite),
           onPressed: () => Get.back(),
         ),
       ),
       body: GetBuilder<AddLeadController>(
-        builder: (controller) {
+        builder: (AddLeadController controller) {
           if (controller.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(color: colorMainTheme),
+            );
           }
 
           return SingleChildScrollView(
             child: Padding(
               padding: EdgeInsets.all(width * 0.041),
               child: Form(
-                key: _formKey,
+                key: controller.formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     CustomTextFormField(
+                      labelText: "Client Name",
                       hintText: 'Client Name*',
-                      controller: _nameController,
-                      prefixIcon: Icon(Icons.person, color: Colors.grey),
+                      controller: controller.nameController,
+                      prefixIcon: Icon(Icons.person, color: colorGrey),
+
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'Please enter client name';
+                        if (value == null || value.isEmpty) return 'Please enter the client name';
                         return null;
                       },
                     ),
-                    SizedBox(height: height * 0.019), // ~16px
+                    SizedBox(height: height * 0.023),
 
                     CustomTextFormField(
+                      labelText: "Phone Number",
                       hintText: 'Phone Number*',
-                      controller: _phoneController,
-                      prefixIcon: Icon(Icons.phone, color: Colors.grey),
+                      controller: controller.phoneController,
+                      prefixIcon: Icon(Icons.phone, color: colorGrey),
                       keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(10),
+                      ],
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'Please enter phone number';
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter the phone number';
+                        }
+                        if (value.length != 10) {
+                          return 'Phone number must be exactly 10 digits';
+                        }
+                        if (!RegExp(r'^\d{10}$').hasMatch(value)) {
+                          return 'Invalid phone number format';
+                        }
+                        return null;
+                      },
+
+                    ),
+                    SizedBox(height: height * 0.023),
+
+                    CustomTextFormField(
+                      labelText: "Email",
+                      hintText: 'Email',
+                      controller: controller.emailController,
+                      prefixIcon: Icon(Icons.email, color: colorGrey),
+                      keyboardType: TextInputType.emailAddress,
+                     validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter the email';
+                      }
+                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                        return 'Please enter a valid email address';
+                      }
+                      return null;
+                    },
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+                        LengthLimitingTextInputFormatter(100),
+                      ],
+                    ),
+                    SizedBox(height: height * 0.023),
+
+                    CustomTextFormField(
+                      labelText: "Company Name",
+                      hintText: 'Company Name',
+                      controller: controller.companyController,
+                      prefixIcon: Icon(Icons.business, color: colorGrey),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) return 'Please enter the company name';
                         return null;
                       },
                     ),
-                    SizedBox(height: height * 0.019),
+                    SizedBox(height: height * 0.023),
+                    CustomTextFormField(
+                      labelText: "Address (Optional)",
+                      hintText: 'Please enter the address',
+                      controller: controller.addressController,
+                      maxLines: 2,
+                      prefixIcon: Icon(Icons.home, color: colorGrey),
+                    ),
+                    SizedBox(height: height * 0.023),
 
                     CustomTextFormField(
-                      hintText: 'Email',
-                      controller: _emailController,
-                      prefixIcon: Icon(Icons.email, color: Colors.grey),
-                      keyboardType: TextInputType.emailAddress,
+                      labelText: "Description/Notes",
+                      hintText: 'Description/Notes',
+                      controller: controller.descriptionController,
+                      maxLines: 3,
+                      prefixIcon: Icon(Icons.note, color: colorGrey),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) return 'Please enter the note';
+                        return null;
+                      },
                     ),
-                    SizedBox(height: height * 0.019),
+                    SizedBox(height: height * 0.023),
 
-                    CustomTextFormField(
-                      hintText: 'Company Name',
-                      controller: _companyController,
-                      prefixIcon: Icon(Icons.business, color: Colors.grey),
+                    SearchableCSCDropdown(
+                      title: 'Source',
+                      items: controller.sources,
+                      hintText: controller.selectedSource ?? 'Select Source',
+                      iconData1: Icons.arrow_drop_down,
+                      iconData2: Icons.arrow_drop_up,
+                      onChanged: (value) {
+                        controller.setSelectedSource(value);
+                      },
+                      showError: controller.showSourceError,
                     ),
-                    SizedBox(height: height * 0.019),
-
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        label: WantText(text: 'Source', fontSize: 14, fontWeight: FontWeight.w500, textColor: Colors.grey),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    if (controller.selectedSource == null && controller.showSourceError)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4, left: 4),
+                        child: Text(
+                          'Please select a source',
+                          style: TextStyle(
+                            color: colorRedError,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
-                      value: controller.selectedSource,
-                      items: controller.sources.map((source) {
-                        return DropdownMenuItem<String>(value: source, child: Text(source));
-                      }).toList(),
-                      onChanged: controller.setSelectedSource,
-                    ),
-                    SizedBox(height: height * 0.019),
+                    SizedBox(height: height * 0.023),
 
                     if (isOwner) ...[
-                      DropdownButtonFormField<String>(
-                        decoration: InputDecoration(
-                          label: WantText(text: 'Assign To Employee*', fontSize: 14, fontWeight: FontWeight.w500, textColor: Colors.grey),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        value: controller.selectedEmployee,
-                        validator: (value) {
-                          if (value == null) return 'Please select an employee';
-                          return null;
+                      SearchableCSCDropdown(
+                        title: 'Assign To Employee',
+                        items: memberController.employees
+                            .where((e) => e["isActive"] == true)
+                            .map((e) => e["name"].toString())
+                            .toList(),
+                        hintText: controller.selectedEmployeeName ?? 'Select Employee',
+                        iconData1: Icons.arrow_drop_down,
+                        iconData2: Icons.arrow_drop_up,
+                        onChanged: (value) {
+                          final employee = memberController.employees
+                              .where((e) => e["isActive"] == true)
+                              .firstWhere(
+                                (e) => e["name"].toString() == value,
+                            orElse: () => {"uid": "", "name": ""},
+                          );
+                          if (employee["uid"] != "") {
+                            controller.setSelectedEmployee(
+                              employee["uid"],
+                              employeeName: value,
+                            );
+                          }
                         },
-                        items: controller.employees.map<DropdownMenuItem<String>>((employee) {
-                          return DropdownMenuItem<String>(value: employee.uid, child: Text(employee.name));
-                        }).toList(),
-                        onChanged: controller.setSelectedEmployee,
+                        showError: controller.showEmployeeError,
+
                       ),
-                      SizedBox(height: height * 0.019),
+
+                      if (controller.selectedEmployee == null && controller.showEmployeeError)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4, left: 4),
+                          child: Text(
+                            'Please select an employee',
+                            style: TextStyle(
+                              color: colorRedError,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      SizedBox(height: height * 0.023),
                     ],
 
-                    CustomTextFormField(
-                      hintText: 'Description/Notes',
-                      controller: _descriptionController,
-                      maxLines: 3,
-                      prefixIcon: Icon(Icons.note, color: Colors.grey),
+                    SearchableCSCDropdown(
+                      title: 'Select Technician (Optional)',
+                      items: controller.technicianTypes,
+                      hintText: controller.selectedTechnician ?? 'Select Technician',
+                      iconData1: Icons.arrow_drop_down,
+                      iconData2: Icons.arrow_drop_up,
+                      onChanged: (value) {
+                        controller.setSelectedTechnician(value);
+                      },
                     ),
-                    SizedBox(height: height * 0.019),
+                    SizedBox(height: height * 0.023),
+
+                    WantText(
+                      text: 'Location (Optional)',
+                      fontSize: width * 0.041,
+                      fontWeight: FontWeight.w500,
+                      textColor: colorBlack,
+                    ),
+                    SizedBox(height: height * 0.016),
+                    GestureDetector(
+                      onTap: () {
+                        controller.pickLocation();
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          vertical: width * 0.035,
+                          horizontal: height * 0.01,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colorWhite,
+                          border: Border.all(color: colorGreyTextFieldBorder),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.location_pin, color: colorGrey),
+                            SizedBox(width: width * 0.03),
+                            Expanded(
+                              child: Text(
+                                controller.locationAddress ?? 'Tap to select location from map',
+                                style: TextStyle(
+                                  color: controller.locationAddress == null
+                                      ? colorGreyText
+                                      : colorBlack,
+                                  fontSize: width * 0.035,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ),
+                            Icon(Icons.arrow_forward_ios, color: colorGreyText, size: 16),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: height * 0.023),
 
                     CustomTextFormField(
+                      labelText: "Initial Follow-up Date & Time",
                       hintText: 'Initial Follow-up Date & Time',
-                      controller: _followUpController,
+                      controller: controller.followUpController,
                       readOnly: true,
                       onTap: () async {
                         DateTime? date = await showDatePicker(
@@ -564,35 +291,22 @@ class AddLeadScreen extends StatelessWidget {
                           );
                           if (time != null) {
                             DateTime dateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-                            _followUpController.text = dateTime.toString();
+                            controller.followUpController.text = dateTime.toString();
                             controller.nextFollowUp = dateTime;
                           }
                         }
                       },
-                      prefixIcon: Icon(Icons.calendar_today, color: Colors.grey),
+                      prefixIcon: Icon(Icons.calendar_today, color: colorGrey),
                     ),
-                    SizedBox(height: height * 0.028), // ~24px
+                    SizedBox(height: height * 0.023),
 
                     CustomButton(
                       Width: width,
-                      onTap: controller.isSubmitting ? null : () => _submitForm(),
+                      onTap: controller.isSubmitting ? null : () => controller.submitForm(),
                       label: isOwner ? 'Add Lead' : 'Add My Lead',
-                      backgroundColor: colorMainTheme,
-                      textColor: Colors.white,
-                      fontSize: 16,
                       boarderRadius: 8,
                     ),
 
-                    // if (!isOwner) ...[
-                    //   SizedBox(height: height * 0.019),
-                    //   WantText(
-                    //     text: 'Note: This lead will be automatically assigned to you',
-                    //     fontSize: 12,
-                    //     fontWeight: FontWeight.normal,
-                    //     textColor: Colors.grey,
-                    //     textAlign: TextAlign.center,
-                    //   ),
-                    // ],
                   ],
                 ),
               ),
@@ -603,25 +317,5 @@ class AddLeadScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      bool success = await controller.addLead(
-        clientName: _nameController.text.trim(),
-        clientPhone: _phoneController.text.trim(),
-        clientEmail: _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
-        companyName: _companyController.text.trim().isEmpty ? null : _companyController.text.trim(),
-        description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
-        nextFollowUp: controller.nextFollowUp,
-      );
 
-      if (success) {
-        Get.back();
-        Get.context?.showAppSnackBar(
-          message: "Lead added successfully",
-          backgroundColor: colorGreen,
-          textColor: colorWhite,
-        );
-      }
-    }
-  }
 }

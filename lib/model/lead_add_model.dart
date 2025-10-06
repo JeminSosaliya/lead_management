@@ -1,91 +1,3 @@
-// import 'package:cloud_firestore/cloud_firestore.dart';
-//
-// class Lead {
-//   String? leadId;
-//   String clientName;
-//   String clientPhone;
-//   String? clientEmail;
-//   String? companyName;
-//   String? source;
-//   String? description;
-//   String stage;
-//   String callStatus;
-//   String assignedTo; // Employee UID
-//   String assignedToEmail; // Employee Email
-//   String assignedToRole; // 'employee'
-//
-//   String addedBy; // Owner/Employee UID
-//   String addedByEmail; // Owner/Employee Email
-//   String addedByRole;
-//   Timestamp createdAt;
-//   Timestamp updatedAt;
-//
-//   Lead({
-//     this.leadId,
-//     required this.clientName,
-//     required this.clientPhone,
-//     this.clientEmail,
-//     this.companyName,
-//     this.source,
-//     this.description,
-//     this.stage = 'new',
-//     this.callStatus = 'notContacted',
-//     required this.assignedTo,
-//     required this.assignedToEmail,
-//     required this.assignedToRole,
-//     required this.addedBy,
-//     required this.addedByEmail,
-//     required this.addedByRole,
-//     required this.createdAt,
-//     required this.updatedAt,
-//   });
-//
-//   Map<String, dynamic> toMap() {
-//     return {
-//       'leadId': leadId,
-//       'clientName': clientName,
-//       'clientPhone': clientPhone,
-//       'clientEmail': clientEmail,
-//       'companyName': companyName,
-//       'source': source,
-//       'description': description,
-//       'stage': stage,
-//       'callStatus': callStatus,
-//       'assignedTo': assignedTo,
-//       'assignedToEmail': assignedToEmail,
-//       'assignedToRole': assignedToRole,
-//       'addedBy': addedBy,
-//       'addedByEmail': addedByEmail,
-//       'addedByRole': addedByRole,
-//       'createdAt': createdAt,
-//       'updatedAt': updatedAt,
-//     };
-//   }
-//
-//   factory Lead.fromMap(Map<String, dynamic> map) {
-//     return Lead(
-//       leadId: map['leadId'],
-//       clientName: map['clientName'],
-//       clientPhone: map['clientPhone'],
-//       clientEmail: map['clientEmail'],
-//       companyName: map['companyName'],
-//       source: map['source'],
-//       description: map['description'],
-//       stage: map['stage'],
-//       callStatus: map['callStatus'],
-//       assignedTo: map['assignedTo'],
-//       assignedToEmail: map['assignedToEmail'],
-//       assignedToRole: map['assignedToRole'],
-//       addedBy: map['addedBy'],
-//       addedByEmail: map['addedByEmail'],
-//       addedByRole: map['addedByRole'],
-//       createdAt: map['createdAt'],
-//       updatedAt: map['updatedAt'],
-//     );
-//   }
-// }
-//
-//
 
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -99,11 +11,17 @@ class Lead {
   final String? source;
   final String? description;
   final String assignedTo;
-  final String assignedToEmail;
+  final String assignedToName;
+  final String addedByName;
   final String assignedToRole;
   final String addedBy;
   final String addedByEmail;
   final String addedByRole;
+  final String? technician;
+  final double? latitude;
+  final double? longitude;
+  final String? locationAddress;
+  final String? address; // Add this line
   final Timestamp createdAt;
   Timestamp updatedAt;
   String stage;
@@ -120,11 +38,17 @@ class Lead {
     this.source,
     this.description,
     required this.assignedTo,
-    required this.assignedToEmail,
+    required this.assignedToName,
+    required this.addedByName,
     required this.assignedToRole,
     required this.addedBy,
     required this.addedByEmail,
     required this.addedByRole,
+    this.technician,
+    this.latitude,
+    this.longitude,
+    this.locationAddress,
+    this.address, // Add this line
     required this.createdAt,
     required this.updatedAt,
     this.stage = 'new',
@@ -143,11 +67,17 @@ class Lead {
       source: map['source'] as String?,
       description: map['description'] as String?,
       assignedTo: map['assignedTo'] as String,
-      assignedToEmail: map['assignedToEmail'] as String,
+      assignedToName: map['assignedToName'] as String,
+      addedByName: map['addedByName'] as String,
       assignedToRole: map['assignedToRole'] as String,
       addedBy: map['addedBy'] as String,
       addedByEmail: map['addedByEmail'] as String,
       addedByRole: map['addedByRole'] as String,
+      technician: map['technician'] as String?,
+      latitude: map['latitude'] as double?,
+      longitude: map['longitude'] as double?,
+      locationAddress: map['locationAddress'] as String?,
+      address: map['address'] as String?, // Add this line
       createdAt: map['createdAt'] as Timestamp,
       updatedAt: map['updatedAt'] as Timestamp,
       stage: map['stage'] as String? ?? 'new',
@@ -167,11 +97,17 @@ class Lead {
       'source': source,
       'description': description,
       'assignedTo': assignedTo,
-      'assignedToEmail': assignedToEmail,
+      'assignedToName': assignedToName,
+      'addedByName': addedByName,
       'assignedToRole': assignedToRole,
       'addedBy': addedBy,
       'addedByEmail': addedByEmail,
       'addedByRole': addedByRole,
+      'technician': technician,
+      'latitude': latitude,
+      'longitude': longitude,
+      'locationAddress': locationAddress,
+      'address': address, // Add this line
       'createdAt': createdAt,
       'updatedAt': updatedAt,
       'stage': stage,
