@@ -335,7 +335,7 @@ class OwnerHomeScreen extends StatelessWidget {
           onTap: () => Get.to(
             () => LeadDetailsScreen(
               leadId: lead.leadId,
-              initialData: lead.toMap(),
+              initialData: lead,
             ),
           ),
           child: Container(

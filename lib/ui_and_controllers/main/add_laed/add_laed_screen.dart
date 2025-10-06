@@ -12,6 +12,8 @@ import 'package:lead_management/ui_and_controllers/widgets/custom_textformfield.
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 import 'package:lead_management/ui_and_controllers/widgets/dropdown.dart';
+import 'package:intl/intl.dart';
+
 
 class AddLeadScreen extends StatelessWidget {
   const AddLeadScreen({super.key});
@@ -58,7 +60,7 @@ class AddLeadScreen extends StatelessWidget {
                   children: [
                     CustomTextFormField(
                       labelText: "Client Name",
-                      hintText: 'Client Name*',
+                      hintText: 'Enter client Name*',
                       controller: controller.nameController,
                       prefixIcon: Icon(Icons.person, color: colorGrey),
 
@@ -81,7 +83,7 @@ class AddLeadScreen extends StatelessWidget {
                       ],
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter the phone number';
+                          return 'Enter phone number';
                         }
                         if (value.length != 10) {
                           return 'Phone number must be exactly 10 digits';
@@ -97,19 +99,41 @@ class AddLeadScreen extends StatelessWidget {
 
                     CustomTextFormField(
                       labelText: "Email",
-                      hintText: 'Email',
+                      hintText: 'Enter email',
                       controller: controller.emailController,
                       prefixIcon: Icon(Icons.email, color: colorGrey),
                       keyboardType: TextInputType.emailAddress,
-                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter the email';
-                      }
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                        return 'Please enter a valid email address';
-                      }
-                      return null;
-                    },
+                      validator: (value) {
+                        if (value != null && value.isNotEmpty) {
+                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                            return 'Please enter a valid email address';
+                          }
+                        }
+                        return null;
+                      },
+                      //      validator: (value) {
+                      //   if (value != null && value.isNotEmpty) {
+                      //     // Basic email format check
+                      //     if (!RegExp(r'^[\w\.-]+@([\w-]+\.)+[a-zA-Z]{2,}$').hasMatch(value)) {
+                      //       return 'Please enter a valid email address';
+                      //     }
+                      //
+                      //     // Optional: Only allow specific known domains
+                      //     final allowedDomains = [
+                      //       'gmail.com',
+                      //       'yahoo.com',
+                      //       'outlook.com',
+                      //       'hotmail.com',
+                      //       'icloud.com',
+                      //     ];
+                      //
+                      //     final domain = value.split('@').last.toLowerCase();
+                      //     if (!allowedDomains.contains(domain)) {
+                      //       return 'Please enter a valid domain (e.g. gmail.com)';
+                      //     }
+                      //   }
+                      //   return null;
+                      // },
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
                         LengthLimitingTextInputFormatter(100),
@@ -139,7 +163,7 @@ class AddLeadScreen extends StatelessWidget {
 
                     CustomTextFormField(
                       labelText: "Description/Notes",
-                      hintText: 'Description/Notes',
+                      hintText: 'Enter description/Notes',
                       controller: controller.descriptionController,
                       maxLines: 3,
                       prefixIcon: Icon(Icons.note, color: colorGrey),
@@ -147,6 +171,28 @@ class AddLeadScreen extends StatelessWidget {
                         if (value == null || value.isEmpty) return 'Please enter the note';
                         return null;
                       },
+                    ),
+                    SizedBox(height: height * 0.023),
+                    CustomTextFormField(
+                      labelText: "Referral Name",
+                      hintText: 'Enter referral Name',
+                      controller: controller.referralNameController,
+                      prefixIcon: Icon(Icons.person, color: colorGrey),
+
+                    ),
+                    SizedBox(height: height * 0.023),
+                    CustomTextFormField(
+                      labelText: "Referral Number",
+                      hintText: 'Enter referral number',
+                      controller: controller.referralNumberController,
+                      prefixIcon: Icon(Icons.call, color: colorGrey),
+                      keyboardType: TextInputType.phone,
+
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(10),
+                      ],
+
                     ),
                     SizedBox(height: height * 0.023),
                     SearchableCSCDropdown(
@@ -283,20 +329,34 @@ class AddLeadScreen extends StatelessWidget {
                           firstDate: DateTime.now(),
                           lastDate: DateTime(2100),
                         );
+
                         if (date != null) {
                           TimeOfDay? time = await showTimePicker(
                             context: context,
                             initialTime: TimeOfDay.now(),
                           );
+
                           if (time != null) {
-                            DateTime dateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-                            controller.followUpController.text = dateTime.toString();
+                            // Combine date and time
+                            DateTime dateTime = DateTime(
+                              date.year,
+                              date.month,
+                              date.day,
+                              time.hour,
+                              time.minute,
+                            );
+
+                            final formattedDateTime = DateFormat('dd MMM yyyy, hh:mm a').format(dateTime);
+
+                            controller.followUpController.text = formattedDateTime;
+
                             controller.nextFollowUp = dateTime;
                           }
                         }
                       },
                       prefixIcon: Icon(Icons.calendar_today, color: colorGrey),
                     ),
+
                     SizedBox(height: height * 0.023),
 
                     CustomButton(
