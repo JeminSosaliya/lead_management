@@ -29,7 +29,7 @@ class WantText extends StatelessWidget {
       text,
       textAlign: textAlign ?? TextAlign.start,
       overflow: textOverflow ?? TextOverflow.ellipsis,
-      maxLines: maxLines,
+      maxLines: maxLines ?? 5,
       style: _getFontFamilyStyle(),
     );
   }

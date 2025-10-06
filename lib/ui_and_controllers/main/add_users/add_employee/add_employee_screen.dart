@@ -184,6 +184,37 @@ class AddEmployeeScreen extends StatelessWidget {
 
               SizedBox(height: height * 0.02),
 
+              Obx(() => CustomTextFormField(
+                controller: controller.confirmPasswordController,
+                labelText: "Confirm Password",
+                hintText: "Confirm employee's password",
+                obscureText: controller.obscureConfirmPassword,
+                prefixIcon: Icon(
+                  Icons.lock_outline,
+                  color: colorGreyText,
+                  size: width * 0.05,
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    controller.obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                    color: colorGreyText,
+                    size: width * 0.05,
+                  ),
+                  onPressed: controller.toggleConfirmPasswordVisibility,
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Please confirm the password";
+                  }
+                  if (value != controller.passwordController.text) {
+                    return "Passwords do not match";
+                  }
+                  return null;
+                },
+              )),
+
+              SizedBox(height: height * 0.02),
+
               CustomTextFormField(
                 controller: controller.addressController,
                 labelText: "Address",
@@ -231,9 +262,21 @@ class AddEmployeeScreen extends StatelessWidget {
                 },
               ),
 
-              SizedBox(height: height * 0.04),
+              SizedBox(height: height * 0.02),
 
-              // Add User Button
+              CustomTextFormField(
+                controller: controller.referenceController,
+                labelText: "Reference Person",
+                hintText: "Enter reference person's name",
+                keyboardType: TextInputType.text,
+                prefixIcon: Icon(
+                  Icons.person_pin,
+                  color: colorGreyText,
+                  size: width * 0.05,
+                ),
+                textCapitalization: TextCapitalization.words,
+              ),
+              SizedBox(height: height * 0.04),
               Obx(() => CustomButton(
                 Width: width,
                 onTap: controller.isLoading ? null : controller.addUser,

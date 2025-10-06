@@ -63,7 +63,7 @@ class AddAdminScreen extends StatelessWidget {
                     ),
                     SizedBox(height: height * 0.01),
                     WantText(
-                      text: "Fill in the details to create a new add_admin account",
+                      text: "Fill in the details to create a new admin account",
                       fontSize: width * 0.04,
                       textColor: colorGreyText,
                       textAlign: TextAlign.center,
@@ -161,7 +161,7 @@ class AddAdminScreen extends StatelessWidget {
               Obx(() => CustomTextFormField(
                 controller: controller.passwordController,
                 labelText: "Password",
-                hintText: "Enter add_admin's password",
+                hintText: "Enter admin's password",
                 obscureText: controller.obscurePassword,
                 prefixIcon: Icon(
                   Icons.lock,
@@ -182,6 +182,37 @@ class AddAdminScreen extends StatelessWidget {
                   }
                   if (value.length < 6) {
                     return "Password must be at least 6 characters";
+                  }
+                  return null;
+                },
+              )),
+
+              SizedBox(height: height * 0.02),
+
+              Obx(() => CustomTextFormField(
+                controller: controller.confirmPasswordController,
+                labelText: "Confirm Password",
+                hintText: "Confirm admin's password",
+                obscureText: controller.obscureConfirmPassword,
+                prefixIcon: Icon(
+                  Icons.lock_outline,
+                  color: colorGreyText,
+                  size: width * 0.05,
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    controller.obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                    color: colorGreyText,
+                    size: width * 0.05,
+                  ),
+                  onPressed: controller.toggleConfirmPasswordVisibility,
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Please confirm the password";
+                  }
+                  if (value != controller.passwordController.text) {
+                    return "Passwords do not match";
                   }
                   return null;
                 },
