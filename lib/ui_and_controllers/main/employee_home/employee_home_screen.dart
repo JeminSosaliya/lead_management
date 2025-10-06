@@ -109,7 +109,8 @@ class EmployeeHomeScreen extends StatelessWidget {
                       buttonTwoTitle: 'Logout',
                       onTapOneButton: () {
                         log('Cancel logout');
-                        Get.back();} ,
+                        Get.back();
+                      },
                       onTapTwoButton: () async {
                         log("logout");
                         Get.back();
@@ -313,7 +314,7 @@ class EmployeeHomeScreen extends StatelessWidget {
                     SizedBox(height: 8),
                     WantText(
                       text:
-                          'Add a new lead or wait for owner to assign you one',
+                      'Add a new lead or wait for owner to assign you one',
                       fontSize: width * 0.035,
                       fontWeight: FontWeight.w400,
                       textColor: colorGrey,
@@ -380,10 +381,11 @@ class EmployeeHomeScreen extends StatelessWidget {
             return GestureDetector(
               onTap: () {
                 Get.to(
-                  () => LeadDetailsScreen(
-                    leadId: lead.leadId,
-                    initialData: lead.toMap(),
-                  ),
+                      () =>
+                      LeadDetailsScreen(
+                        leadId: lead.leadId,
+                        initialData: lead,
+                      ),
                 );
               },
               child: Container(

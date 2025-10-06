@@ -33,7 +33,8 @@ class AddLeadController extends GetxController {
   double? selectedLongitude;
   String? locationAddress;
 
-  TextEditingController addressController = TextEditingController(); // Add this line
+  TextEditingController addressController =
+      TextEditingController();
 
   @override
   void onInit() {
@@ -49,6 +50,8 @@ class AddLeadController extends GetxController {
   TextEditingController companyController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
   TextEditingController followUpController = TextEditingController();
+  TextEditingController referralNameController = TextEditingController();
+  TextEditingController referralNumberController = TextEditingController();
 
   final List<String> sources = [
     'Website',
@@ -111,7 +114,8 @@ class AddLeadController extends GetxController {
 
     if (permission == LocationPermission.deniedForever) {
       Get.context?.showAppSnackBar(
-        message: "Location permission is permanently denied. Please enable it in settings",
+        message:
+            "Location permission is permanently denied. Please enable it in settings",
         backgroundColor: colorRedCalendar,
         textColor: colorWhite,
       );
@@ -129,15 +133,18 @@ class AddLeadController extends GetxController {
       return;
     }
 
-    final result = await Get.to(() => LocationPickerScreen(
-      initialLatitude: selectedLatitude,
-      initialLongitude: selectedLongitude,
-    ));
+    final result = await Get.to(
+      () => LocationPickerScreen(
+        initialLatitude: selectedLatitude,
+        initialLongitude: selectedLongitude,
+      ),
+    );
 
     if (result != null && result is Map<String, dynamic>) {
       selectedLatitude = result['latitude'];
       selectedLongitude = result['longitude'];
-      locationAddress = 'Lat: ${selectedLatitude!.toStringAsFixed(6)}, Lng: ${selectedLongitude!.toStringAsFixed(6)}';
+      locationAddress =
+          'Lat: ${selectedLatitude!.toStringAsFixed(6)}, Lng: ${selectedLongitude!.toStringAsFixed(6)}';
       update();
     }
   }
@@ -147,6 +154,8 @@ class AddLeadController extends GetxController {
     required String clientPhone,
     String? clientEmail,
     String? companyName,
+    String? referralNumber,
+    String? referralName,
     String? description,
     DateTime? nextFollowUp,
   }) async {
@@ -156,17 +165,13 @@ class AddLeadController extends GetxController {
     try {
       String leadId = fireStore.collection('leads').doc().id;
       String currentUserId = ListConst.currentUserProfileData.uid.toString();
-      String currentUserRole =
-          ListConst.currentUserProfileData.type ?? '';
-      String currentUserEmail =
-          ListConst.currentUserProfileData.email ?? '';
-      String currentUserName =
-          ListConst.currentUserProfileData.name ?? '';
+      String currentUserRole = ListConst.currentUserProfileData.type ?? '';
+      String currentUserEmail = ListConst.currentUserProfileData.email ?? '';
+      String currentUserName = ListConst.currentUserProfileData.name ?? '';
 
       print("👤 Current User ID: $currentUserId");
       print("🎭 Current User Role: $currentUserRole");
       String assignedToEmployee;
-      String assignedToEmail;
       String addedByName;
       String assignedToRole;
       String assignedToName;
@@ -185,7 +190,6 @@ class AddLeadController extends GetxController {
         assignedToName = selectedEmployeeName ?? '';
         assignedToRole = 'employee';
         addedByName = currentUserName;
-
       } else {
         assignedToEmployee = currentUserId;
         assignedToName = currentUserName;
@@ -199,6 +203,8 @@ class AddLeadController extends GetxController {
         clientPhone: clientPhone,
         clientEmail: clientEmail,
         companyName: companyName,
+        referralName: referralName,
+        referralNumber: referralNumber,
         source: selectedSource,
         description: description,
         assignedTo: assignedToEmployee,
@@ -212,18 +218,17 @@ class AddLeadController extends GetxController {
         latitude: selectedLatitude,
         longitude: selectedLongitude,
         locationAddress: locationAddress,
-        address: addressController.text.trim().isEmpty ? null : addressController.text.trim(),
+        address: addressController.text.trim().isEmpty
+            ? null
+            : addressController.text.trim(),
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
-        nextFollowUp: nextFollowUp != null
+        initialFollowUp: nextFollowUp != null
             ? Timestamp.fromDate(nextFollowUp)
             : null,
       );
 
-      await fireStore
-          .collection('leads')
-          .doc(leadId)
-          .set(newLead.toMap());
+      await fireStore.collection('leads').doc(leadId).set(newLead.toMap());
 
       isSubmitting = false;
       update();
@@ -237,8 +242,11 @@ class AddLeadController extends GetxController {
     }
   }
 
+
   Future<void> submitForm() async {
-    String currentUserRole = ListConst.currentUserProfileData.type ?? 'employee';
+    String currentUserRole =
+        ListConst.currentUserProfileData.type ?? 'employee';
+
     showSourceError = selectedSource == null;
     if (currentUserRole == 'admin') {
       showEmployeeError = selectedEmployee == null;
@@ -246,46 +254,161 @@ class AddLeadController extends GetxController {
       showEmployeeError = false;
     }
     update();
+
     log('Form valid: ${formKey.currentState!.validate()}, Show Employee Error: $showEmployeeError, Show Source Error: $showSourceError');
-    if (formKey.currentState!.validate() && !showEmployeeError && !showSourceError) {
-      bool success = await addLead(
-        clientName: nameController.text.trim(),
-        clientPhone: phoneController.text.trim(),
-        clientEmail: emailController.text.trim().isEmpty
-            ? null
-            : emailController.text.trim(),
-        companyName: companyController.text.trim().isEmpty
-            ? null
-            : companyController.text.trim(),
-        description: descriptionController.text.trim().isEmpty
-            ? null
-            : descriptionController.text.trim(),
-        nextFollowUp: nextFollowUp,
+
+    formKey.currentState!.validate();
+
+    String? errorMessage;
+
+    if (nameController.text.trim().isEmpty) {
+      errorMessage = 'Client name is required';
+    } else if (phoneController.text.trim().isEmpty) {
+      errorMessage = 'Client number is required';
+    } else if (phoneController.text.length != 10 ||
+        !RegExp(r'^\d{10}$').hasMatch(phoneController.text)) {
+      errorMessage = 'Client number must be exactly 10 digits';
+    } else if (emailController.text.isNotEmpty &&
+        !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+            .hasMatch(emailController.text)) {
+      errorMessage = 'Invalid email format';
+    } else if (companyController.text.trim().isEmpty) {
+      errorMessage = 'Company name is required';
+    } else if (descriptionController.text.trim().isEmpty) {
+      errorMessage = 'Description/Notes is required';
+    }
+    else if (referralNumberController.text.isNotEmpty &&
+        (referralNumberController.text.length != 10 ||
+            !RegExp(r'^\d{10}$').hasMatch(referralNumberController.text))) {
+      errorMessage = 'Referral number must be exactly 10 digits';
+    } else if (showSourceError) {
+      errorMessage = 'Please select a source';
+    } else if (showEmployeeError) {
+      errorMessage = 'Please select an employee';
+    }
+
+    if (errorMessage != null) {
+      Get.context?.showAppSnackBar(
+        message: errorMessage,
+        backgroundColor: colorRedCalendar,
+        textColor: colorWhite,
+      );
+      return;
+    }
+
+    bool success = await addLead(
+      clientName: nameController.text.trim(),
+      clientPhone: phoneController.text.trim(),
+      clientEmail: emailController.text.trim().isEmpty
+          ? null
+          : emailController.text.trim(),
+      companyName: companyController.text.trim().isEmpty
+          ? null
+          : companyController.text.trim(),
+      description: descriptionController.text.trim().isEmpty
+          ? null
+          : descriptionController.text.trim(),
+      referralName: referralNameController.text.trim().isEmpty
+          ? null
+          : referralNameController.text.trim(),
+      referralNumber: referralNumberController.text.trim().isEmpty
+          ? null
+          : referralNumberController.text.trim(),
+      nextFollowUp: nextFollowUp,
+    );
+
+    if (success) {
+      Get.back();
+      Get.context?.showAppSnackBar(
+        message: "Lead added successfully",
+        backgroundColor: colorGreen,
+        textColor: colorWhite,
       );
 
-      if (success) {
-        Get.back();
-        Get.context?.showAppSnackBar(
-          message: "Lead added successfully",
-          backgroundColor: colorGreen,
-          textColor: colorWhite,
-        );
-
-        String role = ListConst.currentUserProfileData.type ?? '';
-        if (role == 'employee') {
-          try {
-            Get.find<EmployeeHomeController>().loadMyLeads();
-          } catch (e) {
-            print('EmployeeHomeController not found: $e');
-          }
-        } else if (role == 'admin') {
-          try {
-            Get.find<OwnerHomeController>().loadLeads();
-          } catch (e) {
-            print('OwnerHomeController not found: $e');
-          }
+      String role = ListConst.currentUserProfileData.type ?? '';
+      if (role == 'employee') {
+        try {
+          Get.find<EmployeeHomeController>().loadMyLeads();
+        } catch (e) {
+          print('EmployeeHomeController not found: $e');
+        }
+      } else if (role == 'admin') {
+        try {
+          Get.find<OwnerHomeController>().loadLeads();
+        } catch (e) {
+          print('OwnerHomeController not found: $e');
         }
       }
+    } else {
+      Get.context?.showAppSnackBar(
+        message: "Failed to add lead. Please try again.",
+        backgroundColor: colorRedCalendar,
+        textColor: colorWhite,
+      );
     }
   }
 }
+
+
+// Future<void> submitForm() async {
+//   String currentUserRole =
+//       ListConst.currentUserProfileData.type ?? 'employee';
+//   showSourceError = selectedSource == null;
+//   if (currentUserRole == 'admin') {
+//     showEmployeeError = selectedEmployee == null;
+//   } else {
+//     showEmployeeError = false;
+//   }
+//   update();
+//   log(
+//     'Form valid: ${formKey.currentState!.validate()}, Show Employee Error: $showEmployeeError, Show Source Error: $showSourceError',
+//   );
+//   if (formKey.currentState!.validate() &&
+//       !showEmployeeError &&
+//       !showSourceError) {
+//     bool success = await addLead(
+//       clientName: nameController.text.trim(),
+//       clientPhone: phoneController.text.trim(),
+//       clientEmail: emailController.text.trim().isEmpty
+//           ? null
+//           : emailController.text.trim(),
+//       companyName: companyController.text.trim().isEmpty
+//           ? null
+//           : companyController.text.trim(),
+//       description: descriptionController.text.trim().isEmpty
+//           ? null
+//           : descriptionController.text.trim(),
+//       referralName: referralNameController.text.trim().isEmpty
+//           ? null
+//           : descriptionController.text.trim(),
+//       referralNumber: referralNumberController.text.trim().isEmpty
+//           ? null
+//           : descriptionController.text.trim(),
+//       nextFollowUp: nextFollowUp,
+//     );
+//
+//     if (success) {
+//       Get.back();
+//       Get.context?.showAppSnackBar(
+//         message: "Lead added successfully",
+//         backgroundColor: colorGreen,
+//         textColor: colorWhite,
+//       );
+//
+//       String role = ListConst.currentUserProfileData.type ?? '';
+//       if (role == 'employee') {
+//         try {
+//           Get.find<EmployeeHomeController>().loadMyLeads();
+//         } catch (e) {
+//           print('EmployeeHomeController not found: $e');
+//         }
+//       } else if (role == 'admin') {
+//         try {
+//           Get.find<OwnerHomeController>().loadLeads();
+//         } catch (e) {
+//           print('OwnerHomeController not found: $e');
+//         }
+//       }
+//     }
+//   }
+// }

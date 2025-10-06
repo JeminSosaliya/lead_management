@@ -21,12 +21,15 @@ class Lead {
   final double? latitude;
   final double? longitude;
   final String? locationAddress;
-  final String? address; // Add this line
+  final String? address;
+  final String? referralName;
+  final String? referralNumber;
   final Timestamp createdAt;
   Timestamp updatedAt;
   String stage;
   String callStatus;
   String? callNote;
+  Timestamp? initialFollowUp;
   Timestamp? nextFollowUp;
 
   Lead({
@@ -48,12 +51,15 @@ class Lead {
     this.latitude,
     this.longitude,
     this.locationAddress,
-    this.address, // Add this line
+    this.address,
+    this.referralName,
+    this.referralNumber,
     required this.createdAt,
     required this.updatedAt,
     this.stage = 'new',
     this.callStatus = 'notContacted',
     this.callNote,
+    this.initialFollowUp,
     this.nextFollowUp,
   });
 
@@ -77,12 +83,15 @@ class Lead {
       latitude: map['latitude'] as double?,
       longitude: map['longitude'] as double?,
       locationAddress: map['locationAddress'] as String?,
-      address: map['address'] as String?, // Add this line
+      address: map['address'] as String?,
+      referralName: map['referralName'] as String?,
+      referralNumber: map['referralNumber'] as String?,
       createdAt: map['createdAt'] as Timestamp,
       updatedAt: map['updatedAt'] as Timestamp,
       stage: map['stage'] as String? ?? 'new',
       callStatus: map['callStatus'] as String? ?? 'notContacted',
       callNote: map['callNote'] as String?,
+      initialFollowUp: map['initialFollowUp'] as Timestamp?,
       nextFollowUp: map['nextFollowUp'] as Timestamp?,
     );
   }
@@ -107,12 +116,15 @@ class Lead {
       'latitude': latitude,
       'longitude': longitude,
       'locationAddress': locationAddress,
-      'address': address, // Add this line
+      'address': address,
+      'referralName': referralName,
+      'referralNumber': referralNumber,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
       'stage': stage,
       'callStatus': callStatus,
       'callNote': callNote,
+      'initialFollowUp': initialFollowUp,
       'nextFollowUp': nextFollowUp,
     };
   }
