@@ -1,22 +1,19 @@
-
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:http/http.dart';
+import 'package:intl/intl.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/list_const.dart';
+import 'package:lead_management/core/utils/extension.dart';
+import 'package:lead_management/model/lead_add_model.dart';
 import 'package:lead_management/ui_and_controllers/main/employee_home/employee_home_controller.dart';
 import 'package:lead_management/ui_and_controllers/main/owner_home/owner_home_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LeadDetailsController extends GetxController {
   final String leadId;
-
-  LeadDetailsController({required this.leadId});
-
-  late Map<String, dynamic> leadData = {};
+  Lead? lead;
   bool isLoading = true;
   bool isUpdating = false;
   bool showUpdateForm = false;
@@ -37,6 +34,8 @@ class LeadDetailsController extends GetxController {
     'Switch off',
   ];
 
+  LeadDetailsController({required this.leadId});
+
   @override
   void onInit() {
     super.onInit();
@@ -49,8 +48,8 @@ class LeadDetailsController extends GetxController {
     update();
   }
 
-  void initializeData(Map<String, dynamic> initialData) {
-    leadData = initialData;
+  void initializeData(Lead initialData) {
+    lead = initialData;
     isLoading = false;
     update();
   }
@@ -61,32 +60,53 @@ class LeadDetailsController extends GetxController {
     try {
       final doc = await fireStore.collection('leads').doc(leadId).get();
       if (doc.exists) {
-        leadData = doc.data() ?? {};
+        lead = Lead.fromMap(doc.data()!);
+      } else {  Get.context?.showAppSnackBar(
+        message: 'Lead not found',
+        backgroundColor: colorRedCalendar,
+        textColor: colorWhite,
+      );
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to fetch lead: $e', backgroundColor: colorRedCalendar, snackPosition: SnackPosition.TOP);
+      log("Error fetching lead: $e");
     }
     isLoading = false;
     update();
   }
 
   void callLead() async {
-    if (leadData['stage'] == 'completed') {
-      Get.snackbar('Info', 'Cannot call completed leads', backgroundColor: colorRedCalendar, snackPosition: SnackPosition.TOP);
+    if (lead == null) return;
+
+    if (lead!.stage == 'completed') {
+      Get.context?.showAppSnackBar(
+        message: 'Cannot call completed leads',
+        backgroundColor: colorRedCalendar,
+        textColor: colorWhite,
+      );
       return;
     }
-    String? phone = leadData['clientPhone'];
-    if (phone == null) {
-      Get.snackbar('Error', 'Phone number not available', backgroundColor: colorRedCalendar, snackPosition: SnackPosition.TOP);
+
+    String? phone = lead!.clientPhone;
+    if (phone.isEmpty) {
+      Get.context?.showAppSnackBar(
+        message: 'Phone number not available',
+        backgroundColor: colorRedCalendar,
+        textColor: colorWhite,
+      );
       return;
     }
+
     final Uri url = Uri(scheme: 'tel', path: phone);
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
       showUpdateForm = true;
       update();
     } else {
-      Get.snackbar('Error', 'Could not launch call', backgroundColor: colorRedCalendar, snackPosition: SnackPosition.TOP);
+      Get.context?.showAppSnackBar(
+        message: 'Could not launch call',
+        backgroundColor: colorRedCalendar,
+        textColor: colorWhite,
+      );
     }
   }
 
@@ -99,11 +119,17 @@ class LeadDetailsController extends GetxController {
     try {
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        Get.snackbar('Error', 'Could not open WhatsApp', backgroundColor: colorRedCalendar, snackPosition: SnackPosition.TOP);
+      } else {Get.context?.showAppSnackBar(
+        message: 'Could not open WhatsApp',
+        backgroundColor: colorRedCalendar,
+        textColor: colorWhite,
+      );
       }
-    } catch (e) {
-      Get.snackbar('Error', 'Could not open WhatsApp: $e', backgroundColor: colorRedCalendar, snackPosition: SnackPosition.TOP);
+    } catch (e) { Get.context?.showAppSnackBar(
+      message: 'Could not open WhatsApp: $e',
+      backgroundColor: colorRedCalendar,
+      textColor: colorWhite,
+    );
     }
   }
 
@@ -127,15 +153,20 @@ class LeadDetailsController extends GetxController {
           time.hour,
           time.minute,
         );
-        followUpController.text = nextFollowUpDateTime.toString();
+        final formattedDateTime = DateFormat('dd MMM yyyy, hh:mm a').format(nextFollowUpDateTime!);
+        followUpController.text = formattedDateTime;
         update();
       }
     }
   }
 
   Future<void> updateLead() async {
-    if (leadData['stage'] == 'completed') {
-      Get.snackbar('Info', 'Cannot update completed leads', backgroundColor: colorRedCalendar, snackPosition: SnackPosition.TOP);
+    if (lead == null || lead!.stage == 'completed') {
+      Get.context?.showAppSnackBar(
+        message: 'Cannot update completed leads',
+        backgroundColor: colorRedCalendar,
+        textColor: colorWhite,
+      );
       return;
     }
 
@@ -163,13 +194,17 @@ class LeadDetailsController extends GetxController {
 
       try {
         await fireStore.collection('leads').doc(leadId).update(updates);
-        Get.snackbar('Success', 'Lead updated successfully', backgroundColor: colorGreen, snackPosition: SnackPosition.TOP);
+        Get.context?.showAppSnackBar(
+          message: 'Lead updated successfully',
+          backgroundColor: colorGreen,
+          textColor: colorWhite,
+        );
         showUpdateForm = false;
         noteController.clear();
         followUpController.clear();
         nextFollowUpDateTime = null;
         selectedResponse = '';
-        update();
+        await fetchLead();
         Get.back();
         String role = ListConst.currentUserProfileData.type ?? '';
         if (role == 'employee') {
@@ -190,6 +225,20 @@ class LeadDetailsController extends GetxController {
       } finally {
         isUpdating = false;
         update();
+      }
+    } else {
+      String? errorMessage;
+      if (noteController.text.trim().isEmpty) {
+        errorMessage = 'Please enter call note';
+      } else if (showResponseError) {
+        errorMessage = 'Please select a response';
+      }
+      if (errorMessage != null) {
+        Get.context?.showAppSnackBar(
+          message: errorMessage,
+          backgroundColor: colorRedCalendar,
+          textColor: colorWhite,
+        );
       }
     }
   }

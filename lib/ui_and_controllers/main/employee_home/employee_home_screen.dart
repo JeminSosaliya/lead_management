@@ -238,7 +238,7 @@ import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
               return GestureDetector(
                 onTap: (){
 
-                  Get.to(()=> LeadDetailsScreen(leadId: lead.leadId,initialData: lead.toMap(),));
+                  Get.to(()=> LeadDetailsScreen(leadId: lead.leadId,initialData: lead,));
 
 
                 },

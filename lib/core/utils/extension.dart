@@ -46,7 +46,7 @@ extension ContextExtension on BuildContext {
           bottom: 16,
         ),
         padding: const EdgeInsets.symmetric(
-          horizontal: 20,
+          horizontal: 14,
           vertical: 14,
         ),
         backgroundColor: backgroundColor ?? colorMainTheme,
@@ -57,8 +57,9 @@ extension ContextExtension on BuildContext {
         ),
         content:WantText(
         text: message,
-        fontSize: 16,
+        fontSize: 14,
         textColor: textColor ?? colorBlack,
+        textOverflow: TextOverflow.visible,
         textAlign: TextAlign.start,
         fontWeight: FontWeight.w400,
       ),
