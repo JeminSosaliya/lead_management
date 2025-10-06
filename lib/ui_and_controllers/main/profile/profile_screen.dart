@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lead_management/core/constant/app_color.dart';
@@ -12,7 +14,6 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(ProfileController());
-
     return Scaffold(
       backgroundColor: colorWhite,
       appBar: AppBar(
@@ -176,19 +177,19 @@ class ProfileScreen extends StatelessWidget {
                       value: ListConst.currentUserProfileData.address
                           .toString(),
                     ),
-
+                    if(ListConst.currentUserProfileData.type == 'employee')
                     _buildInfoRow(
                       icon: Icons.work,
                       label: "Designation",
                       value: ListConst.currentUserProfileData.designation
                           .toString(),
                     ),
-
                     _buildInfoRow(
                       icon: Icons.calendar_today,
                       label: "Member Since",
-                      value: ListConst.currentUserProfileData.createdAt
-                          .toString(),
+                      value: ListConst.currentUserProfileData.createdAt != null
+                          ? DateFormat('dd/MM/yyyy').format(ListConst.currentUserProfileData.createdAt!)
+                          : 'N/A',
                     ),
                   ],
                 ),
@@ -252,7 +253,7 @@ class ProfileScreen extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: height * 0.015),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(icon, size: width * 0.05, color: colorMainTheme),
           SizedBox(width: width * 0.03),
