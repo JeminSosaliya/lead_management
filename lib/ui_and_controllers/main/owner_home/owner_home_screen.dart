@@ -7,6 +7,7 @@ import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/constant/list_const.dart';
 import 'package:lead_management/core/utils/extension.dart';
+import 'package:lead_management/core/utils/user_status_service.dart';
 import 'package:lead_management/model/lead_add_model.dart';
 import 'package:lead_management/routes/route_manager.dart';
 import 'package:lead_management/ui_and_controllers/main/lead_details_screen/lead_details_screen.dart';
@@ -20,6 +21,13 @@ class OwnerHomeScreen extends StatelessWidget {
 
   Future<void> _logout() async {
     try {
+      try {
+        final userStatusService = Get.find<UserStatusService>();
+        await userStatusService.stopListening();
+      } catch (e) {
+        // Service not found, continue with logout
+      }
+
       await FirebaseAuth.instance.signOut();
       Get.offAllNamed(AppRoutes.login);
       Get.context?.showAppSnackBar(
@@ -33,7 +41,6 @@ class OwnerHomeScreen extends StatelessWidget {
       );
     }
   }
-
   @override
   Widget build(BuildContext context) {
     Get.put(OwnerHomeController());

@@ -7,6 +7,7 @@ import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/constant/list_const.dart';
 import 'package:lead_management/core/utils/extension.dart';
+import 'package:lead_management/core/utils/user_status_service.dart';
 import 'package:lead_management/model/lead_add_model.dart';
 import 'package:lead_management/routes/route_manager.dart';
 import 'package:lead_management/ui_and_controllers/main/employee_home/employee_home_controller.dart';
@@ -16,10 +17,16 @@ import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
 class EmployeeHomeScreen extends StatelessWidget {
   const EmployeeHomeScreen({super.key});
-
   Future<void> _logout() async {
     try {
       log("Logging out user: ${FirebaseAuth.instance.currentUser?.email}");
+      try {
+        final userStatusService = Get.find<UserStatusService>();
+        await userStatusService.stopListening();
+      } catch (e) {
+        // Service not found, continue with logout
+      }
+
       await FirebaseAuth.instance.signOut();
       log("Logging out user:: ${FirebaseAuth.instance.currentUser?.email}");
       Get.offAllNamed(AppRoutes.login);
@@ -118,137 +125,6 @@ class EmployeeHomeScreen extends StatelessWidget {
                       },
                     );
                   },
-                  /*        onTap: () {
-                    context.showAppDialog(
-                      barrierDismissible: false,
-                      contentWidget: Padding(
-                        padding: EdgeInsets.all(width * 0.05),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.logout, color: colorRedCalendar, size: width * 0.12),
-                            SizedBox(height: height * 0.02),
-                            WantText(
-                              text: "Are you sure you want to logout?",
-                              fontSize: width * 0.045,
-                              fontWeight: FontWeight.w600,
-                              maxLines: 2,
-                              textColor: colorBlack,
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                      actionWidget: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Expanded(
-                              child: CustomButton(
-                                Width: width,
-                                label: "Cancel",
-                                onTap: () => Navigator.pop(context),
-                                backgroundColor: colorWhite,
-                                borderColor: colorGrey,
-                                textColor: colorGrey,
-                              ),
-                            ),
-                            SizedBox(width: width * 0.04),
-                            Expanded(
-                              child: CustomButton(
-                                Width: width,
-                                label: "Logout",
-                                onTap: () async {
-                                  Navigator.pop(context); // Close dialog
-                                  await _logout();
-                                },
-                                backgroundColor: colorRedCalendar,
-                                borderColor: colorRedCalendar,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: height * 0.03),
-                      ],
-                    );
-                  },*/
-                  // onTap: () {
-                  //   Get.generalDialog(
-                  //     barrierDismissible: false,
-                  //     transitionDuration: const Duration(milliseconds: 250),
-                  //     pageBuilder: (context, animation, secondaryAnimation) {
-                  //       return Center(
-                  //         child: ScaleTransition(
-                  //           scale: CurvedAnimation(
-                  //             parent: animation,
-                  //             curve: Curves.easeOutBack,
-                  //           ),
-                  //           child: Dialog(
-                  //             shape: RoundedRectangleBorder(
-                  //               borderRadius: BorderRadius.circular(16),
-                  //             ),
-                  //             backgroundColor: colorWhite,
-                  //             child: Padding(
-                  //               padding: EdgeInsets.all(width * 0.05),
-                  //               child: Column(
-                  //                 mainAxisSize: MainAxisSize.min,
-                  //                 children: [
-                  //                   Icon(Icons.logout, color: colorRedCalendar, size: width * 0.12),
-                  //                   SizedBox(height: height * 0.02),
-                  //                   WantText(
-                  //                     text: "Are you sure you want to logout?",
-                  //                     fontSize: width * 0.045,
-                  //                     fontWeight: FontWeight.w600,
-                  //                     maxLines: 2,
-                  //                     textColor: colorBlack,
-                  //                     textAlign: TextAlign.center,
-                  //                   ),
-                  //                   SizedBox(height: height * 0.03),
-                  //                   Row(
-                  //                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  //                     children: [
-                  //                       // Cancel Button
-                  //                       Expanded(
-                  //                         child: CustomButton(
-                  //                           Width: width,
-                  //                           label: "Cancel",
-                  //                           onTap: () => Get.back(),
-                  //                           backgroundColor: colorWhite,
-                  //                           borderColor: colorGrey,
-                  //                           textColor: colorGrey,
-                  //                         ),
-                  //                       ),
-                  //                       SizedBox(width: width * 0.04),
-                  //                       // Confirm Logout Button
-                  //                       Expanded(
-                  //                         child: CustomButton(
-                  //                           Width: width,
-                  //                           label: "Logout",
-                  //                           onTap: () async {
-                  //                             Get.back(); // Close popup
-                  //                             await _logout(); // Call your logout logic
-                  //                           },
-                  //                           backgroundColor: colorRedCalendar,
-                  //                           borderColor: colorRedCalendar,
-                  //                         ),
-                  //                       ),
-                  //                     ],
-                  //                   ),
-                  //                 ],
-                  //               ),
-                  //             ),
-                  //           ),
-                  //         ),
-                  //       );
-                  //     },
-                  //     transitionBuilder: (context, animation, secondaryAnimation, child) {
-                  //       return FadeTransition(
-                  //         opacity: animation,
-                  //         child: child,
-                  //       );
-                  //     },
-                  //   );
-                  // },
                   label: "Logout",
                   backgroundColor: colorRedCalendar,
                   borderColor: colorRedCalendar,

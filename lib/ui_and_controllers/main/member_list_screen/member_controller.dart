@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import 'package:lead_management/core/constant/app_color.dart';
 
 class MemberController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -18,7 +17,6 @@ class MemberController extends GetxController {
 
   bool get isLoading => _isLoading.value;
 
-  // Get current list based on selected type
   List<Map<String, dynamic>> get currentList {
     return _selectedType.value == 'employee' ? _employees.value : _admins.value;
   }
@@ -26,7 +24,6 @@ class MemberController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Automatically load members when controller is initialized
     loadMembers();
   }
 
@@ -80,29 +77,22 @@ class MemberController extends GetxController {
     }
   }
 
-  Future<void> toggleUserStatus(String userId, bool currentStatus) async {
+  Future<Map<String, dynamic>> toggleUserStatus(
+    String userId,
+    bool currentStatus,
+  ) async {
     try {
       await _firestore.collection('users').doc(userId).update({
         'isActive': !currentStatus,
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      // Update local lists
       await loadMembers();
 
-      Get.snackbar(
-        'Success',
-        'User status updated successfully',
-        backgroundColor: colorGreen,
-        colorText: colorWhite,
-      );
+      return {'success': true, 'message': 'User status updated successfully'};
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to update user status: $e',
-        backgroundColor: colorRedCalendar,
-        colorText: colorWhite,
-      );
+      print('Error toggling user status: $e');
+      return {'success': false, 'message': 'Failed to update user status: $e'};
     }
   }
 }

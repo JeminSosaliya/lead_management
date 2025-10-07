@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
+import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/ui_and_controllers/main/member_list_screen/member_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
@@ -150,7 +151,7 @@ class MemberDetailScreen extends StatelessWidget {
                   BoxShadow(
                     color: colorBoxShadow,
                     blurRadius: 7,
-                    offset:  Offset(4, 3),
+                    offset: Offset(4, 3),
                   ),
                 ],
               ),
@@ -224,7 +225,7 @@ class MemberDetailScreen extends StatelessWidget {
                   BoxShadow(
                     color: colorBoxShadow,
                     blurRadius: 7,
-                    offset:  Offset(4, 3),
+                    offset: Offset(4, 3),
                   ),
                 ],
               ),
@@ -241,25 +242,25 @@ class MemberDetailScreen extends StatelessWidget {
 
                   WantText(
                     text:
-                    "Current Status: ${member!['isActive'] == true ? 'Active' : 'Inactive'}",
+                        "Current Status: ${member!['isActive'] == true ? 'Active' : 'Inactive'}",
                     fontSize: width * 0.04,
                     textColor: colorBlack,
                   ),
                   SizedBox(height: height * 0.02),
 
-                  if(member!['type'] != 'admin')
-                  CustomButton(
-                    Width: width,
-                    onTap: () {
-                      _showStatusDialog(context, controller);
-                    },
-                    label: member!['isActive'] == true
-                        ? "Deactivate User"
-                        : "Activate User",
-                    backgroundColor: member!['isActive'] == true
-                        ? colorRedCalendar
-                        : colorGreen,
-                  ),
+                  if (member!['type'] != 'admin')
+                    CustomButton(
+                      Width: width,
+                      onTap: () {
+                        _showStatusDialog(context, controller);
+                      },
+                      label: member!['isActive'] == true
+                          ? "Deactivate User"
+                          : "Activate User",
+                      backgroundColor: member!['isActive'] == true
+                          ? colorRedCalendar
+                          : colorGreen,
+                    ),
                 ],
               ),
             ),
@@ -319,50 +320,74 @@ class MemberDetailScreen extends StatelessWidget {
     }
   }
 
+  // Add this method after _showStatusDialog
   void _showStatusDialog(BuildContext context, MemberController controller) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: WantText(
-            text: "Change Status",
-            fontSize: width * 0.05,
-            fontWeight: FontWeight.bold,
-            textColor: colorBlack,
-          ),
-          content: WantText(
-            text:
-            "Are you sure you want to ${member!['isActive'] == true ? 'deactivate' : 'activate'} this user?",
-            fontSize: width * 0.04,
-            textColor: colorBlack,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: WantText(
-                text: "Cancel",
-                fontSize: width * 0.04,
-                textColor: colorGreyText,
+    final isActive = member!['isActive'] == true;
+    final action = isActive ? 'deactivate' : 'activate';
+
+    String title = "Are you sure you want to $action this user?";
+    if (isActive) {
+      title +=
+          "\n\nThis will automatically log out the user from all active devices.";
+    }
+
+    context.showAppDialog(
+      title: title,
+      icon: isActive ? Icons.warning_amber_rounded : Icons.check_circle_outline,
+      buttonOneTitle: "Cancel",
+      buttonTwoTitle: "Confirm",
+      onTapOneButton: () {
+        Get.back();
+      },
+      onTapTwoButton: () async {
+        Get.back();
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (loadingContext) {
+            return WillPopScope(
+              onWillPop: () async => false,
+              child: Center(
+                child: Container(
+                  padding: EdgeInsets.all(width * 0.05),
+                  decoration: BoxDecoration(
+                    color: colorWhite,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(color: colorMainTheme),
+                      SizedBox(height: height * 0.02),
+                      WantText(
+                        text: "Updating user status...",
+                        fontSize: width * 0.04,
+                        textColor: colorBlack,
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                controller.toggleUserStatus(
-                  member!['id'],
-                  member!['isActive'] == true,
-                );
-                Get.back();
-              },
-              child: WantText(
-                text: "Confirm",
-                fontSize: width * 0.04,
-                textColor: colorMainTheme,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+            );
+          },
         );
+
+        final result = await controller.toggleUserStatus(
+          member!['id'],
+          member!['isActive'] == true,
+        );
+
+        Get.back();
+
+        Get.context?.showAppSnackBar(
+          message: result['message'],
+          backgroundColor: result['success'] ? colorGreen : colorRedCalendar,
+          textColor: colorWhite,
+        );
+        if (result['success']) {
+          await Future.delayed(const Duration(milliseconds: 500));
+          Get.back();
+        }
       },
     );
   }
