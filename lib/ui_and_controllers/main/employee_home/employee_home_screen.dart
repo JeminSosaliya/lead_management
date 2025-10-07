@@ -45,7 +45,6 @@ class EmployeeHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Get.put(EmployeeHomeController());
-
     return DefaultTabController(
       length: 6,
       child: Scaffold(
