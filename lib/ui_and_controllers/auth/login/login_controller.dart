@@ -4,9 +4,9 @@ import 'package:get/get.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/list_const.dart';
 import 'package:lead_management/core/utils/extension.dart';
+import 'package:lead_management/core/utils/user_status_service.dart';
 import 'package:lead_management/routes/route_manager.dart';
 import 'package:lead_management/ui_and_controllers/main/profile/profile_controller.dart';
-
 
 class LoginController extends GetxController {
   final _formKey = GlobalKey<FormState>();
@@ -48,6 +48,7 @@ class LoginController extends GetxController {
       print("User UID: ${userCredential.user?.uid}");
 
       await _profileController.fetchEmployeeData();
+
       if (ListConst.currentUserProfileData.isActive == false) {
         await FirebaseAuth.instance.signOut();
 
@@ -57,18 +58,24 @@ class LoginController extends GetxController {
         );
         return;
       }
+
+      // ✅ START LISTENING TO USER STATUS CHANGES
+      final userStatusService = Get.put(UserStatusService());
+      await userStatusService.startListening();
+
       Get.context!.showAppSnackBar(
         message: "Login successful!",
         backgroundColor: colorGreen,
       );
-      Get.offAllNamed(ListConst.currentUserProfileData.type == 'admin'
-          ? AppRoutes.ownerHomeScreen
-          : AppRoutes.employeeHomeScreen);
+
+      Get.offAllNamed(
+        ListConst.currentUserProfileData.type == 'admin'
+            ? AppRoutes.ownerHomeScreen
+            : AppRoutes.employeeHomeScreen,
+      );
     } on FirebaseAuthException catch (e) {
       print("Firebase Auth Error: ${e.code} - ${e.message}");
-
       String errorMessage = "Login failed. Please try again.";
-
       switch (e.code) {
         case 'user-not-found':
           errorMessage = "No user found with this email.";
@@ -93,6 +100,7 @@ class LoginController extends GetxController {
 
       Get.context!.showAppSnackBar(
         message: errorMessage,
+
         backgroundColor: colorRedCalendar,
       );
     } catch (e) {
