@@ -66,21 +66,21 @@ class EmployeeHomeController extends GetxController {
     DateTime todayStart = DateTime(today.year, today.month, today.day);
     DateTime todayEnd = todayStart.add(const Duration(days: 1));
 
+    bool hasFollowUpToday = false;
     if (lead.initialFollowUp != null) {
       DateTime initial = lead.initialFollowUp!.toDate();
       if (initial.isAfter(todayStart) && initial.isBefore(todayEnd)) {
-        return true;
+        hasFollowUpToday = true;
       }
     }
-
     if (lead.nextFollowUp != null) {
       DateTime next = lead.nextFollowUp!.toDate();
       if (next.isAfter(todayStart) && next.isBefore(todayEnd)) {
-        return true;
+        hasFollowUpToday = true;
       }
     }
 
-    return false;
+    return hasFollowUpToday;
   }
 
   void changeTab(String tab) {

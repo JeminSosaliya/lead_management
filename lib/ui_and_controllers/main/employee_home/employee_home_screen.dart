@@ -40,7 +40,7 @@ class EmployeeHomeScreen extends StatelessWidget {
     Get.put(EmployeeHomeController());
 
     return DefaultTabController(
-      length: 5,
+      length: 6,
       child: Scaffold(
         backgroundColor: colorWhite,
         drawer: Drawer(
@@ -272,6 +272,7 @@ class EmployeeHomeScreen extends StatelessWidget {
             indicatorColor: colorWhite,
             tabs: [
               Tab(text: 'All'),
+              Tab(text: 'Today'),
               Tab(text: 'New'),
               Tab(text: 'In Progress'),
               Tab(text: 'Completed'),
@@ -315,7 +316,7 @@ class EmployeeHomeScreen extends StatelessWidget {
                     SizedBox(height: 8),
                     WantText(
                       text:
-                      'Add a new lead or wait for owner to assign you one',
+                          'Add a new lead or wait for owner to assign you one',
                       fontSize: width * 0.035,
                       fontWeight: FontWeight.w400,
                       textColor: colorGrey,
@@ -329,6 +330,7 @@ class EmployeeHomeScreen extends StatelessWidget {
             return TabBarView(
               children: [
                 _buildLeadList('all'),
+                _buildLeadList('today'),
                 _buildLeadList('new'),
 
                 _buildLeadList('inProgress'),
@@ -350,9 +352,18 @@ class EmployeeHomeScreen extends StatelessWidget {
   Widget _buildLeadList(String stage) {
     return GetBuilder<EmployeeHomeController>(
       builder: (EmployeeHomeController controller) {
-        List<Lead> leads = stage == 'all'
-            ? controller.myLeads
-            : controller.myLeads.where((lead) => lead.stage == stage).toList();
+        List<Lead> leads;
+        if (stage == 'today') {
+          leads = controller.myLeads
+              .where((lead) => controller.hasFollowUpToday(lead))
+              .toList();
+        } else if (stage == 'all') {
+          leads = controller.myLeads;
+        } else {
+          leads = controller.myLeads
+              .where((lead) => lead.stage == stage)
+              .toList();
+        }
 
         if (leads.isEmpty) {
           return Center(
@@ -364,7 +375,9 @@ class EmployeeHomeScreen extends StatelessWidget {
                   Icon(Icons.filter_list, size: width * 0.1, color: colorGrey),
                   SizedBox(height: height * 0.019),
                   WantText(
-                    text: 'No $stage leads',
+                    text: stage == 'today'
+                        ? 'No leads created today'
+                        : 'No $stage leads',
                     fontSize: width * 0.041,
                     fontWeight: FontWeight.w500,
                     textColor: colorGrey,
@@ -383,11 +396,8 @@ class EmployeeHomeScreen extends StatelessWidget {
             return GestureDetector(
               onTap: () {
                 Get.to(
-                      () =>
-                      LeadDetailsScreen(
-                        leadId: lead.leadId,
-                        initialData: lead,
-                      ),
+                  () =>
+                      LeadDetailsScreen(leadId: lead.leadId, initialData: lead),
                 );
               },
               child: Container(
@@ -422,7 +432,6 @@ class EmployeeHomeScreen extends StatelessWidget {
                       ),
                     ),
                     SizedBox(width: width * 0.04),
-
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -434,7 +443,20 @@ class EmployeeHomeScreen extends StatelessWidget {
                             textColor: colorBlack,
                           ),
                           SizedBox(height: height * 0.005),
-
+                          WantText(
+                            text: 'Assigned To: ${lead.assignedToName}',
+                            fontSize: width * 0.038,
+                            fontWeight: FontWeight.w600,
+                            textColor: colorDarkGreyText,
+                          ),
+                          SizedBox(height: height * 0.005),
+                          WantText(
+                            text: 'Added By: ${lead.addedByName}',
+                            fontSize: width * 0.038,
+                            fontWeight: FontWeight.w600,
+                            textColor: colorDarkGreyText,
+                          ),
+                          SizedBox(height: height * 0.005),
                           WantText(
                             text: '📞 ${lead.clientPhone}',
                             fontSize: width * 0.035,
@@ -442,7 +464,6 @@ class EmployeeHomeScreen extends StatelessWidget {
                             textColor: colorDarkGreyText,
                           ),
                           SizedBox(height: height * 0.012),
-
                           Row(
                             children: [
                               Container(
@@ -529,4 +550,3 @@ class EmployeeHomeScreen extends StatelessWidget {
     }
   }
 }
-
