@@ -149,7 +149,14 @@ class AddTechnicianScreen extends StatelessWidget {
                               fontWeight: FontWeight.w500,
                               textColor: colorBlack,
                             ),
-                            trailing: Icon(Icons.engineering, color: colorMainTheme),
+                            trailing: GestureDetector(
+                              onTap: () => controller.showDeleteDialog(technicianType),
+                              child: Icon(
+                                Icons.delete,
+                                color: colorRedCalendar,
+                                size: width * 0.05,
+                              ),
+                            ),
                           ),
                         );
                       },
