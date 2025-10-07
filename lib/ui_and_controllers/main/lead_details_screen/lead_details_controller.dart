@@ -18,11 +18,14 @@ class LeadDetailsController extends GetxController {
   bool isUpdating = false;
   bool showUpdateForm = false;
   bool showResponseError = false;
+  bool showStageError = false;
   final formKey = GlobalKey<FormState>();
   final noteController = TextEditingController();
   final followUpController = TextEditingController();
   DateTime? nextFollowUpDateTime;
   String selectedResponse = '';
+  String selectedStage = '';
+  String selectedStageDisplay = '';
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
   final List<String> responseOptions = [
     'Interested',
@@ -32,6 +35,11 @@ class LeadDetailsController extends GetxController {
     'Number busy',
     'Out of range',
     'Switch off',
+  ];
+  final List<String> stageOptions = [
+    'In Progress',
+    'Completed',
+    'Cancelled',
   ];
 
   LeadDetailsController({required this.leadId});
@@ -45,6 +53,19 @@ class LeadDetailsController extends GetxController {
   void setSelectedResponse(String value) {
     selectedResponse = value;
     showResponseError = false;
+    update();
+  }
+
+  void setSelectedStage(String value) {
+    selectedStageDisplay = value;
+    if (value == 'In Progress') {
+      selectedStage = 'inProgress';
+    } else if (value == 'Completed') {
+      selectedStage = 'completed';
+    } else if (value == 'Cancelled') {
+      selectedStage = 'cancelled';
+    }
+    showStageError = false;
     update();
   }
 
@@ -77,7 +98,7 @@ class LeadDetailsController extends GetxController {
   void callLead() async {
     if (lead == null) return;
 
-    if (lead!.stage == 'completed') {
+    if (lead!.stage == 'completed' || lead!.stage == 'cancelled') {
       Get.context?.showAppSnackBar(
         message: 'Cannot call completed leads',
         backgroundColor: colorRedCalendar,
@@ -161,7 +182,7 @@ class LeadDetailsController extends GetxController {
   }
 
   Future<void> updateLead() async {
-    if (lead == null || lead!.stage == 'completed') {
+    if (lead == null || lead!.stage == 'completed' || lead!.stage == 'cancelled') {
       Get.context?.showAppSnackBar(
         message: 'Cannot update completed leads',
         backgroundColor: colorRedCalendar,
@@ -171,16 +192,15 @@ class LeadDetailsController extends GetxController {
     }
 
     showResponseError = selectedResponse.isEmpty;
+    showStageError = selectedStage.isEmpty;
     update();
 
-    if (formKey.currentState!.validate() && !showResponseError) {
+    if (formKey.currentState!.validate() && !showResponseError && !showStageError) {
       isUpdating = true;
       update();
 
       String newCallStatus = selectedResponse.toLowerCase().replaceAll(' ', '');
-      String newStage = ['willvisitoffice', 'numberbusy', 'outofrange', 'switchoff'].contains(newCallStatus)
-          ? 'inProgress'
-          : 'completed';
+      String newStage = selectedStage;
 
       Map<String, dynamic> updates = {
         'stage': newStage,
@@ -204,6 +224,8 @@ class LeadDetailsController extends GetxController {
         followUpController.clear();
         nextFollowUpDateTime = null;
         selectedResponse = '';
+        selectedStage = '';
+        selectedStageDisplay = '';
         await fetchLead();
         Get.back();
         String role = ListConst.currentUserProfileData.type ?? '';

@@ -43,7 +43,7 @@ class OwnerHomeScreen extends StatelessWidget {
 
     final ProfileController _profileController = Get.put(ProfileController());
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         backgroundColor: colorWhite,
         drawer: Drawer(
@@ -267,6 +267,7 @@ class OwnerHomeScreen extends StatelessWidget {
               Tab(text: 'New'),
               Tab(text: 'In Progress'),
               Tab(text: 'Completed'),
+              Tab(text: 'Cancelled'),
             ],
           ),
         ),
@@ -284,6 +285,7 @@ class OwnerHomeScreen extends StatelessWidget {
                 _buildLeadList('new', controller),
                 _buildLeadList('inProgress', controller),
                 _buildLeadList('completed', controller),
+                _buildLeadList('cancelled', controller),
               ],
             );
           },
@@ -451,6 +453,8 @@ class OwnerHomeScreen extends StatelessWidget {
         return colorOrange;
       case 'completed':
         return colorGreenOne;
+      case 'cancelled':
+        return colorBlue;
       default:
         return colorGrey;
     }

@@ -751,7 +751,7 @@ class LeadDetailsScreen extends StatelessWidget {
                           items: controller.responseOptions,
                           hintText: controller.selectedResponse.isNotEmpty
                               ? controller.selectedResponse
-                              : 'Select Response*',
+                              : 'Select Response',
                           iconData1: Icons.arrow_drop_down,
                           iconData2: Icons.arrow_drop_up,
                           onChanged: (value) {
@@ -765,6 +765,32 @@ class LeadDetailsScreen extends StatelessWidget {
                             padding: const EdgeInsets.only(top: 4, left: 4),
                             child: Text(
                               'Please select a response',
+                              style: TextStyle(
+                                color: colorRedError,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        SizedBox(height: height * 0.02),
+
+                        SearchableCSCDropdown(
+                          title: 'Select stage',
+                          items: controller.stageOptions,
+                          hintText: controller.selectedStageDisplay.isNotEmpty
+                              ? controller.selectedStageDisplay
+                              : 'Select Stage*',
+                          iconData1: Icons.arrow_drop_down,
+                          iconData2: Icons.arrow_drop_up,
+                          onChanged: (value) {
+                            controller.setSelectedStage(value);
+                          },
+                          showError: controller.showStageError,
+                        ),
+                        if (controller.showStageError)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4, left: 4),
+                            child: Text(
+                              'Please select a stage',
                               style: TextStyle(
                                 color: colorRedError,
                                 fontSize: 12,
