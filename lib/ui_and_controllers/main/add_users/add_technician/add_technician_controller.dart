@@ -97,6 +97,48 @@ class AddTechnicianController extends GetxController {
     }
   }
 
+  Future<void> deleteTechnicianType(String technicianType) async {
+    try {
+      // Remove from local list
+      List<String> updatedList = _technicianTypes.where((type) => type != technicianType).toList();
+      
+      // Update Firebase
+      await _firestore
+          .collection('technicians')
+          .doc('technician_list')
+          .set({
+        'technicianList': updatedList,
+      }, SetOptions(merge: true));
+
+      // Update local state
+      _technicianTypes.value = updatedList;
+
+      Get.context?.showAppSnackBar(
+        message: "Technician type deleted successfully",
+        backgroundColor: colorGreen,
+      );
+    } catch (e) {
+      Get.context?.showAppSnackBar(
+        message: "Error deleting technician type: $e",
+        backgroundColor: colorRedCalendar,
+      );
+    }
+  }
+
+  void showDeleteDialog(String technicianType) {
+    Get.context?.showAppDialog(
+      title: "Delete Technician Type",
+      icon: Icons.delete,
+      buttonOneTitle: "Cancel",
+      buttonTwoTitle: "Delete",
+      onTapOneButton: () => Get.back(),
+      onTapTwoButton: () {
+        Get.back();
+        deleteTechnicianType(technicianType);
+      },
+    );
+  }
+
   @override
   void onClose() {
     _technicianController.dispose();
