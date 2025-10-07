@@ -40,7 +40,7 @@ class EmployeeHomeScreen extends StatelessWidget {
     Get.put(EmployeeHomeController());
 
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         backgroundColor: colorWhite,
         drawer: Drawer(
@@ -275,6 +275,7 @@ class EmployeeHomeScreen extends StatelessWidget {
               Tab(text: 'New'),
               Tab(text: 'In Progress'),
               Tab(text: 'Completed'),
+              Tab(text: 'Cancelled'),
             ],
           ),
         ),
@@ -332,6 +333,7 @@ class EmployeeHomeScreen extends StatelessWidget {
 
                 _buildLeadList('inProgress'),
                 _buildLeadList('completed'),
+                _buildLeadList('cancelled'),
               ],
             );
           },
@@ -499,6 +501,8 @@ class EmployeeHomeScreen extends StatelessWidget {
         return colorOrange;
       case 'completed':
         return colorGreenOne;
+      case 'cancelled':
+        return colorBlue;
       default:
         return colorGrey;
     }
