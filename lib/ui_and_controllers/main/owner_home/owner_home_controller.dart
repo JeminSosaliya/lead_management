@@ -1,4 +1,3 @@
-
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -12,7 +11,7 @@ class OwnerHomeController extends GetxController {
   String currentTab = 'all';
   bool isSearching = false;
   String searchQuery = '';
-   TextEditingController searchController = TextEditingController();
+  TextEditingController searchController = TextEditingController();
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
 
   @override
@@ -31,12 +30,12 @@ class OwnerHomeController extends GetxController {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen((QuerySnapshot snapshot) {
-      allLeads = snapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        return Lead.fromMap(data);
-      }).toList();
-      update();
-    });
+          allLeads = snapshot.docs.map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            return Lead.fromMap(data);
+          }).toList();
+          update();
+        });
   }
 
   Future<void> loadLeads() async {
@@ -62,6 +61,28 @@ class OwnerHomeController extends GetxController {
     update();
   }
 
+  bool hasFollowUpToday(Lead lead) {
+    DateTime today = DateTime.now();
+    DateTime todayStart = DateTime(today.year, today.month, today.day);
+    DateTime todayEnd = todayStart.add(const Duration(days: 1));
+
+    bool hasFollowUpToday = false;
+    if (lead.initialFollowUp != null) {
+      DateTime initial = lead.initialFollowUp!.toDate();
+      if (initial.isAfter(todayStart) && initial.isBefore(todayEnd)) {
+        hasFollowUpToday = true;
+      }
+    }
+    if (lead.nextFollowUp != null) {
+      DateTime next = lead.nextFollowUp!.toDate();
+      if (next.isAfter(todayStart) && next.isBefore(todayEnd)) {
+        hasFollowUpToday = true;
+      }
+    }
+
+    return hasFollowUpToday;
+  }
+
   void changeTab(String tab) {
     currentTab = tab;
     update();
@@ -85,9 +106,14 @@ class OwnerHomeController extends GetxController {
   }
 
   List<Lead> getFilteredLeads(String stage) {
-    List<Lead> leads = stage == 'all'
-        ? allLeads
-        : allLeads.where((lead) => lead.stage == stage).toList();
+    List<Lead> leads;
+    if (stage == 'today') {
+      leads = allLeads.where((lead) => hasFollowUpToday(lead)).toList();
+    } else if (stage == 'all') {
+      leads = allLeads;
+    } else {
+      leads = allLeads.where((lead) => lead.stage == stage).toList();
+    }
 
     if (isSearching && searchQuery.isNotEmpty) {
       leads = _filterLeadsBySearch(leads, searchQuery);
@@ -119,6 +145,7 @@ class OwnerHomeController extends GetxController {
       return false;
     }).toList();
   }
+
   @override
   void onClose() {
     searchController.dispose();

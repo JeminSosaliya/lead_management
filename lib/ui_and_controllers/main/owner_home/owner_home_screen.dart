@@ -50,7 +50,7 @@ class OwnerHomeScreen extends StatelessWidget {
 
     final ProfileController _profileController = Get.put(ProfileController());
     return DefaultTabController(
-      length: 5,
+      length: 6,
       child: Scaffold(
         backgroundColor: colorWhite,
         drawer: Drawer(
@@ -71,13 +71,13 @@ class OwnerHomeScreen extends StatelessWidget {
                   children: [
                     WantText(
                       text: "Welcome ${ListConst.currentUserProfileData.name}",
-                      fontSize: width*0.046,
+                      fontSize: width * 0.046,
                       fontWeight: FontWeight.bold,
                       textColor: colorWhite,
                     ),
                     WantText(
                       text: ListConst.currentUserProfileData.email.toString(),
-                      fontSize: width*0.035,
+                      fontSize: width * 0.035,
                       textColor: colorWhite.withValues(alpha: 0.8),
                     ),
                   ],
@@ -209,18 +209,28 @@ class OwnerHomeScreen extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding:  EdgeInsets.symmetric(horizontal: width*0.041,vertical: height*0.025),
-                child: CustomButton(Width: width, onTap: () {
-                  context.showAppDialog(
-                    title: 'Are you sure you want to logout?',
-                    buttonOneTitle: 'Cancel',
-                    buttonTwoTitle: 'Logout',
-                    onTapOneButton: () => Get.back(),
-                    onTapTwoButton: () async {
-                      Get.back();
-                      await _logout();
-                    },);
-                },label: "Logout", backgroundColor: colorRedCalendar,borderColor: colorRedCalendar,),
+                padding: EdgeInsets.symmetric(
+                  horizontal: width * 0.041,
+                  vertical: height * 0.025,
+                ),
+                child: CustomButton(
+                  Width: width,
+                  onTap: () {
+                    context.showAppDialog(
+                      title: 'Are you sure you want to logout?',
+                      buttonOneTitle: 'Cancel',
+                      buttonTwoTitle: 'Logout',
+                      onTapOneButton: () => Get.back(),
+                      onTapTwoButton: () async {
+                        Get.back();
+                        await _logout();
+                      },
+                    );
+                  },
+                  label: "Logout",
+                  backgroundColor: colorRedCalendar,
+                  borderColor: colorRedCalendar,
+                ),
               ),
             ],
           ),
@@ -271,6 +281,7 @@ class OwnerHomeScreen extends StatelessWidget {
             indicatorColor: colorWhite,
             tabs: [
               Tab(text: 'All'),
+              Tab(text: 'Today'),
               Tab(text: 'New'),
               Tab(text: 'In Progress'),
               Tab(text: 'Completed'),
@@ -289,6 +300,7 @@ class OwnerHomeScreen extends StatelessWidget {
             return TabBarView(
               children: [
                 _buildLeadList('all', controller),
+                _buildLeadList('today', controller),
                 _buildLeadList('new', controller),
                 _buildLeadList('inProgress', controller),
                 _buildLeadList('completed', controller),
@@ -325,6 +337,8 @@ class OwnerHomeScreen extends StatelessWidget {
             WantText(
               text: controller.isSearching && controller.searchQuery.isNotEmpty
                   ? 'No leads found for "${controller.searchQuery}"'
+                  : stage == 'today'
+                  ? 'No leads created today'
                   : 'No leads found',
               fontSize: width * 0.041,
               fontWeight: FontWeight.w500,
@@ -342,10 +356,7 @@ class OwnerHomeScreen extends StatelessWidget {
         Lead lead = leads[index];
         return GestureDetector(
           onTap: () => Get.to(
-            () => LeadDetailsScreen(
-              leadId: lead.leadId,
-              initialData: lead,
-            ),
+            () => LeadDetailsScreen(leadId: lead.leadId, initialData: lead),
           ),
           child: Container(
             padding: EdgeInsets.all(width * 0.041),
@@ -392,6 +403,13 @@ class OwnerHomeScreen extends StatelessWidget {
                       SizedBox(height: height * 0.005),
                       WantText(
                         text: 'Assigned To: ${lead.assignedToName}',
+                        fontSize: width * 0.038,
+                        fontWeight: FontWeight.w600,
+                        textColor: colorDarkGreyText,
+                      ),
+                      SizedBox(height: height * 0.005),
+                      WantText(
+                        text: 'Added By: ${lead.addedByName}',
                         fontSize: width * 0.038,
                         fontWeight: FontWeight.w600,
                         textColor: colorDarkGreyText,
