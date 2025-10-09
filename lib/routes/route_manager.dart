@@ -6,11 +6,9 @@ import 'package:lead_management/ui_and_controllers/main/add_users/add_employee/a
 import 'package:lead_management/ui_and_controllers/main/add_users/add_technician/add_technician_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/analytics/analytics_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/analytics/lead_list_screen.dart';
-import 'package:lead_management/ui_and_controllers/main/employee_home/employee_home_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/home/home_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/member_details_screen/member_detail_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/member_list_screen/member_list_screen.dart';
-import 'package:lead_management/ui_and_controllers/main/owner_home/owner_home_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/profile/profile_screen.dart';
 import 'package:lead_management/ui_and_controllers/splash/splash_screen.dart';
 
