@@ -1,7 +1,8 @@
+
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/Get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lead_management/model/lead_add_model.dart';
 
@@ -14,20 +15,91 @@ class OwnerHomeController extends GetxController {
   TextEditingController searchController = TextEditingController();
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
 
+  List<Map<String, dynamic>> employees = [];
+  List<String> technicianTypes = [];
+  String? selectedEmployeeId;
+  String? selectedEmployeeName;
+  String? selectedTechnician;
+  bool filtersApplied = false;
+
   @override
   void onInit() {
     super.onInit();
+    fetchEmployees();
+    fetchTechnicianTypes();
     setupRealTimeListener();
     searchController.addListener(() {
       onSearchChanged(searchController.text);
     });
   }
 
+  Future<void> fetchEmployees() async {
+    try {
+      QuerySnapshot snapshot = await fireStore
+          .collection('users')
+          .where('type', isEqualTo: 'employee')
+          .get();
+
+      employees = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return {
+          'uid': doc.id,
+          'name': data['name'] ?? 'Unknown',
+          'isActive': data['isActive'] ?? true,
+        };
+      }).toList();
+      update();
+    } catch (e) {
+      print("Error fetching employees: $e");
+    }
+  }
+
+  Future<void> fetchTechnicianTypes() async {
+    try {
+      DocumentSnapshot doc = await fireStore
+          .collection('technicians')
+          .doc('technician_list')
+          .get();
+
+      if (doc.exists) {
+        List<dynamic> types = doc.get('technicianList') ?? [];
+        technicianTypes = types.map((e) => e.toString()).toList();
+        update();
+      }
+    } catch (e) {
+      print("Error fetching technician types: $e");
+    }
+  }
+
+  void setSelectedEmployee(String? uid, String? name) {
+    selectedEmployeeId = uid;
+    selectedEmployeeName = name;
+    update();
+  }
+
+  void setSelectedTechnician(String? value) {
+    selectedTechnician = value;
+    update();
+  }
+
+  void applyFilters() {
+    filtersApplied = selectedEmployeeId != null || selectedTechnician != null;
+    update();
+  }
+
+  void clearFilters() {
+    selectedEmployeeId = null;
+    selectedEmployeeName = null;
+    selectedTechnician = null;
+    filtersApplied = false;
+    update();
+  }
+
   void setupRealTimeListener() {
     log('Setting up real-time listener for all leads');
     fireStore
         .collection('leads')
-        .orderBy('createdAt', descending: true)
+        .orderBy('updatedAt', descending: true)
         .snapshots()
         .listen((QuerySnapshot snapshot) {
           allLeads = snapshot.docs.map((doc) {
@@ -46,7 +118,7 @@ class OwnerHomeController extends GetxController {
     try {
       QuerySnapshot querySnapshot = await fireStore
           .collection('leads')
-          .orderBy('createdAt', descending: true)
+          .orderBy('updatedAt', descending: true)
           .get();
 
       allLeads = querySnapshot.docs.map((doc) {
@@ -113,6 +185,17 @@ class OwnerHomeController extends GetxController {
       leads = allLeads;
     } else {
       leads = allLeads.where((lead) => lead.stage == stage).toList();
+    }
+
+    if (selectedEmployeeId != null) {
+      leads = leads
+          .where((lead) => lead.assignedTo == selectedEmployeeId)
+          .toList();
+    }
+    if (selectedTechnician != null) {
+      leads = leads
+          .where((lead) => lead.technician == selectedTechnician)
+          .toList();
     }
 
     if (isSearching && searchQuery.isNotEmpty) {

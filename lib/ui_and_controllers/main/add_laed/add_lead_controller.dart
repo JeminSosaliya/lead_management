@@ -9,6 +9,7 @@ import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/model/lead_add_model.dart';
 import 'package:lead_management/model/profile_model.dart';
 import 'package:lead_management/ui_and_controllers/main/employee_home/employee_home_controller.dart';
+import 'package:lead_management/ui_and_controllers/main/home/home_controller.dart';
 import 'package:lead_management/ui_and_controllers/main/owner_home/owner_home_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/location_picker_screen.dart';
 import 'package:lead_management/ui_and_controllers/widgets/dropdown.dart';
@@ -19,7 +20,7 @@ class AddLeadController extends GetxController {
   bool isSubmitting = false;
 
   String? selectedEmployee;
-  String? selectedEmployeeName;
+  String?  selectedEmployeeName;
   String? selectedTechnician;
   String? selectedSource;
   DateTime? nextFollowUp;
@@ -326,17 +327,11 @@ class AddLeadController extends GetxController {
       );
 
       String role = ListConst.currentUserProfileData.type ?? '';
-      if (role == 'employee') {
+      if (role == 'employee' || role == 'admin') {
         try {
-          Get.find<EmployeeHomeController>().loadMyLeads();
+          Get.find<HomeController>().loadLeads();
         } catch (e) {
-          print('EmployeeHomeController not found: $e');
-        }
-      } else if (role == 'admin') {
-        try {
-          Get.find<OwnerHomeController>().loadLeads();
-        } catch (e) {
-          print('OwnerHomeController not found: $e');
+          print('HomeController not found: $e');
         }
       }
     } else {
@@ -350,65 +345,3 @@ class AddLeadController extends GetxController {
 }
 
 
-// Future<void> submitForm() async {
-//   String currentUserRole =
-//       ListConst.currentUserProfileData.type ?? 'employee';
-//   showSourceError = selectedSource == null;
-//   if (currentUserRole == 'admin') {
-//     showEmployeeError = selectedEmployee == null;
-//   } else {
-//     showEmployeeError = false;
-//   }
-//   update();
-//   log(
-//     'Form valid: ${formKey.currentState!.validate()}, Show Employee Error: $showEmployeeError, Show Source Error: $showSourceError',
-//   );
-//   if (formKey.currentState!.validate() &&
-//       !showEmployeeError &&
-//       !showSourceError) {
-//     bool success = await addLead(
-//       clientName: nameController.text.trim(),
-//       clientPhone: phoneController.text.trim(),
-//       clientEmail: emailController.text.trim().isEmpty
-//           ? null
-//           : emailController.text.trim(),
-//       companyName: companyController.text.trim().isEmpty
-//           ? null
-//           : companyController.text.trim(),
-//       description: descriptionController.text.trim().isEmpty
-//           ? null
-//           : descriptionController.text.trim(),
-//       referralName: referralNameController.text.trim().isEmpty
-//           ? null
-//           : descriptionController.text.trim(),
-//       referralNumber: referralNumberController.text.trim().isEmpty
-//           ? null
-//           : descriptionController.text.trim(),
-//       nextFollowUp: nextFollowUp,
-//     );
-//
-//     if (success) {
-//       Get.back();
-//       Get.context?.showAppSnackBar(
-//         message: "Lead added successfully",
-//         backgroundColor: colorGreen,
-//         textColor: colorWhite,
-//       );
-//
-//       String role = ListConst.currentUserProfileData.type ?? '';
-//       if (role == 'employee') {
-//         try {
-//           Get.find<EmployeeHomeController>().loadMyLeads();
-//         } catch (e) {
-//           print('EmployeeHomeController not found: $e');
-//         }
-//       } else if (role == 'admin') {
-//         try {
-//           Get.find<OwnerHomeController>().loadLeads();
-//         } catch (e) {
-//           print('OwnerHomeController not found: $e');
-//         }
-//       }
-//     }
-//   }
-// }

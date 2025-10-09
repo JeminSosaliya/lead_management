@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -41,21 +40,21 @@ class OwnerHomeScreen extends StatelessWidget {
       );
     }
   }
+
   @override
   Widget build(BuildContext context) {
     Get.put(OwnerHomeController());
     final PermissionController _permissionController = Get.put(
       PermissionController(),
     );
-
     final ProfileController _profileController = Get.put(ProfileController());
+
     return DefaultTabController(
       length: 6,
       child: Scaffold(
         backgroundColor: colorWhite,
         drawer: Drawer(
           backgroundColor: colorWhite,
-
           child: Column(
             children: [
               Container(
@@ -86,7 +85,7 @@ class OwnerHomeScreen extends StatelessWidget {
               Expanded(
                 child: ListView(
                   scrollDirection: Axis.vertical,
-                  physics: NeverScrollableScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   padding: EdgeInsets.zero,
                   children: [
                     Obx(() {
@@ -112,7 +111,7 @@ class OwnerHomeScreen extends StatelessWidget {
                       if (ListConst.currentUserProfileData.type == 'admin') {
                         if (_permissionController.canCreateAdmin) {
                           return ListTile(
-                            leading: Icon(
+                            leading: const Icon(
                               Icons.admin_panel_settings,
                               color: colorMainTheme,
                             ),
@@ -128,11 +127,14 @@ class OwnerHomeScreen extends StatelessWidget {
                           );
                         }
                       }
-                      return SizedBox.shrink();
+                      return const SizedBox.shrink();
                     }),
                     if (ListConst.currentUserProfileData.type == 'admin')
                       ListTile(
-                        leading: Icon(Icons.person_add, color: colorMainTheme),
+                        leading: const Icon(
+                          Icons.person_add,
+                          color: colorMainTheme,
+                        ),
                         title: WantText(
                           text: "Add Employee",
                           textColor: colorBlack,
@@ -145,7 +147,10 @@ class OwnerHomeScreen extends StatelessWidget {
                       ),
                     if (ListConst.currentUserProfileData.type == 'admin')
                       ListTile(
-                        leading: Icon(Icons.engineering, color: colorMainTheme),
+                        leading: const Icon(
+                          Icons.engineering,
+                          color: colorMainTheme,
+                        ),
                         title: WantText(
                           text: "Add Technician",
                           textColor: colorBlack,
@@ -156,7 +161,6 @@ class OwnerHomeScreen extends StatelessWidget {
                           Get.toNamed(AppRoutes.addTechnician);
                         },
                       ),
-
                     Obx(() {
                       if (_profileController.isLoading) {
                         return ListTile(
@@ -179,7 +183,10 @@ class OwnerHomeScreen extends StatelessWidget {
                       }
                       if (ListConst.currentUserProfileData.type == 'admin') {
                         return ListTile(
-                          leading: Icon(Icons.people, color: colorMainTheme),
+                          leading: const Icon(
+                            Icons.people,
+                            color: colorMainTheme,
+                          ),
                           title: WantText(
                             text: "Members",
                             textColor: colorBlack,
@@ -191,10 +198,10 @@ class OwnerHomeScreen extends StatelessWidget {
                           },
                         );
                       }
-                      return SizedBox.shrink();
+                      return const SizedBox.shrink();
                     }),
                     ListTile(
-                      leading: Icon(Icons.person, color: colorMainTheme),
+                      leading: const Icon(Icons.person, color: colorMainTheme),
                       title: WantText(
                         text: "Profile",
                         textColor: colorBlack,
@@ -269,9 +276,23 @@ class OwnerHomeScreen extends StatelessWidget {
             GetBuilder<OwnerHomeController>(
               builder: (controller) => controller.isSearching
                   ? SizedBox.shrink()
-                  : IconButton(
-                      icon: Icon(Icons.search, color: colorWhite),
-                      onPressed: controller.startSearch,
+                  : Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.search, color: colorWhite),
+                          onPressed: controller.startSearch,
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.filter_list,
+                            color: controller.filtersApplied
+                                ? colorAmber
+                                : colorWhite,
+                          ),
+                          onPressed: () =>
+                              _showFilterBottomSheet(context, controller),
+                        ),
+                      ],
                     ),
             ),
           ],
@@ -315,6 +336,211 @@ class OwnerHomeScreen extends StatelessWidget {
           child: Icon(Icons.add, color: colorWhite),
         ),
       ),
+    );
+  }
+
+  void _showFilterBottomSheet(
+    BuildContext context,
+    OwnerHomeController controller,
+  ) {
+    String? tempEmployeeId = controller.selectedEmployeeId;
+    String? tempEmployeeName = controller.selectedEmployeeName;
+    String? tempTechnician = controller.selectedTechnician;
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      backgroundColor: colorWhite,
+      builder: (BuildContext bottomSheetContext) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: width * 0.041,
+                vertical: height * 0.025,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      WantText(
+                        text: 'Filters',
+                        fontSize: width * 0.046,
+                        fontWeight: FontWeight.bold,
+                        textColor: colorBlack,
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close, color: colorBlack),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: height * 0.02),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      WantText(
+                        text: 'Employee',
+                        fontSize: width * 0.041,
+                        fontWeight: FontWeight.w500,
+                        textColor: colorBlack,
+                      ),
+                      SizedBox(height: height * 0.01),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: colorGreyTextFieldBorder),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: DropdownButton<String>(
+                          value: tempEmployeeName,
+                          hint: WantText(
+                            text: 'Select Employee',
+                            fontSize: width * 0.035,
+                            textColor: colorGreyText,
+                          ),
+                          isExpanded: true,
+                          underline: const SizedBox(),
+                          items: controller.employees
+                              .where((e) => e['isActive'] == true)
+                              .map(
+                                (e) => DropdownMenuItem<String>(
+                                  value: e['name'].toString(),
+                                  child: WantText(
+                                    text: e['name'].toString(),
+                                    fontSize: width * 0.035,
+                                    textColor: colorBlack,
+                                  ),
+                                  onTap: () {
+                                    tempEmployeeId = e['uid'];
+                                    tempEmployeeName = e['name'].toString();
+                                  },
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              if (value == null) {
+                                tempEmployeeId = null;
+                                tempEmployeeName = null;
+                              } else {
+                                final employee = controller.employees
+                                    .where((e) => e['isActive'] == true)
+                                    .firstWhere(
+                                      (e) => e['name'].toString() == value,
+                                      orElse: () => {'uid': '', 'name': ''},
+                                    );
+                                if (employee['uid'] != '') {
+                                  tempEmployeeId = employee['uid'];
+                                  tempEmployeeName = value;
+                                }
+                              }
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: height * 0.023),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      WantText(
+                        text: 'Technician',
+                        fontSize: width * 0.041,
+                        fontWeight: FontWeight.w500,
+                        textColor: colorBlack,
+                      ),
+                      SizedBox(height: height * 0.01),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: colorGreyTextFieldBorder),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: DropdownButton<String>(
+                          value: tempTechnician,
+                          hint: WantText(
+                            text: 'Select Technician',
+                            fontSize: width * 0.035,
+                            textColor: colorGreyText,
+                          ),
+                          isExpanded: true,
+                          underline: const SizedBox(),
+                          items: controller.technicianTypes
+                              .map(
+                                (e) => DropdownMenuItem<String>(
+                                  value: e,
+                                  child: WantText(
+                                    text: e,
+                                    fontSize: width * 0.035,
+                                    textColor: colorBlack,
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              tempTechnician = value;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: height * 0.03),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: CustomButton(
+                          Width: width,
+                          onTap: () {
+                            controller.clearFilters();
+                            Navigator.of(context).pop();
+                          },
+                          label: "Clear",
+                          fontSize: width * 0.035,
+                          backgroundColor: colorWhite,
+                          borderColor: colorRedCalendar,
+                          textColor: colorRedCalendar,
+                        ),
+                      ),
+                      SizedBox(width: width * 0.041),
+                      Expanded(
+                        child: CustomButton(
+                          Width: width,
+                          onTap: () {
+                            controller.setSelectedEmployee(
+                              tempEmployeeId,
+                              tempEmployeeName,
+                            );
+                            controller.setSelectedTechnician(tempTechnician);
+                            controller.applyFilters();
+                            Navigator.of(context).pop();
+                          },
+                          label: "Apply",
+                          fontSize: width * 0.035,
+
+                          backgroundColor: colorMainTheme,
+                          borderColor: colorMainTheme,
+                          textColor: colorWhite,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: height * 0.02),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
