@@ -15,22 +15,22 @@ import 'package:lead_management/ui_and_controllers/widgets/dropdown.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
 class LeadDetailsScreen extends StatelessWidget {
-  final String leadId;
-  final Lead? initialData;
 
   const LeadDetailsScreen({
     super.key,
-    required this.leadId,
-    this.initialData,
   });
 
   @override
   Widget build(BuildContext context) {
+    final leadId = Get.arguments[0];
+    final initialData = Get.arguments[1];
     final controller = Get.put(LeadDetailsController(leadId: leadId));
 
     if (initialData != null) {
       controller.initializeData(initialData!);
     }
+
+
 
     return Scaffold(
       backgroundColor: colorWhite,
