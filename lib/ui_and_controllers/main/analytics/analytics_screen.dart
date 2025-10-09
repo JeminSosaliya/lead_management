@@ -604,7 +604,7 @@ class AnalyticsScreen extends StatelessWidget {
               ),
             ),
             WantText(
-              text: '$count ko',
+              text: '$count',
               fontSize: width * 0.06,
               fontWeight: FontWeight.bold,
               textColor: color,
