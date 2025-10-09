@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -9,6 +10,7 @@ import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/model/lead_add_model.dart';
 import 'package:lead_management/ui_and_controllers/main/employee_home/employee_home_controller.dart';
 import 'package:lead_management/ui_and_controllers/main/owner_home/owner_home_controller.dart';
+import 'package:lead_management/ui_and_controllers/widgets/location_picker_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LeadDetailsController extends GetxController {
@@ -19,7 +21,11 @@ class LeadDetailsController extends GetxController {
   bool showUpdateForm = false;
   bool showResponseError = false;
   bool showStageError = false;
+  bool isEditMode = false;
+  bool showEmployeeError = false;
+  bool showSourceError = false;
   final formKey = GlobalKey<FormState>();
+  final editFormKey = GlobalKey<FormState>();
   final noteController = TextEditingController();
   final followUpController = TextEditingController();
   DateTime? nextFollowUpDateTime;
@@ -42,12 +48,307 @@ class LeadDetailsController extends GetxController {
     'Cancelled',
   ];
 
+  List<Map<String, dynamic>> employees = [];
+  List<String> technicianTypes = [];
+  List<String> sources = [
+    'Website',
+    'Phone',
+    'Referral',
+    'Walk-in',
+    'Other',
+  ];
+  String? selectedEmployee;
+  String? selectedEmployeeName;
+  String? selectedTechnician;
+  String? selectedSource;
+  double? selectedLatitude;
+  double? selectedLongitude;
+  String? locationAddress;
+  DateTime? initialFollowUp;
+
+  TextEditingController nameController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController companyController = TextEditingController();
+  TextEditingController descriptionController = TextEditingController();
+  TextEditingController addressController = TextEditingController();
+  TextEditingController referralNameController = TextEditingController();
+  TextEditingController referralNumberController = TextEditingController();
+  TextEditingController initialFollowUpController = TextEditingController();
+
   LeadDetailsController({required this.leadId});
 
   @override
   void onInit() {
     super.onInit();
     fetchLead();
+    fetchEmployees();
+    fetchTechnicianTypes();
+  }
+
+  Future<void> fetchEmployees() async {
+    try {
+      String currentUserId = ListConst.currentUserProfileData.uid.toString();
+      String currentUserRole = ListConst.currentUserProfileData.type ?? '';
+
+      QuerySnapshot snap = await fireStore
+          .collection('users')
+          .where('type', isEqualTo: 'employee')
+          .where('isActive', isEqualTo: true)
+          .get();
+      employees = snap.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return {
+          'uid': doc.id,
+          'name': data['name'] ?? '',
+        };
+      }).toList();
+
+      if (currentUserRole == 'employee') {
+        employees = employees.where((e) => e['uid'] != currentUserId).toList();
+      }
+
+      update();
+    } catch (e) {
+      print("Error fetching employees: $e");
+    }
+  }
+  Future<void> fetchTechnicianTypes() async {
+    try {
+      DocumentSnapshot doc = await fireStore
+          .collection('technicians')
+          .doc('technician_list')
+          .get();
+
+      if (doc.exists) {
+        List<dynamic> types = doc.get('technicianList') ?? [];
+        technicianTypes = types.map((e) => e.toString()).toList();
+        update();
+      }
+    } catch (e) {
+      print("Error fetching technician types: $e");
+    }
+  }
+
+  void toggleEditMode() {
+    isEditMode = !isEditMode;
+    if (isEditMode) {
+      // Initialize controllers with current lead data
+      nameController.text = lead?.clientName ?? '';
+      phoneController.text = lead?.clientPhone ?? '';
+      emailController.text = lead?.clientEmail ?? '';
+      companyController.text = lead?.companyName ?? '';
+      descriptionController.text = lead?.description ?? '';
+      addressController.text = lead?.address ?? '';
+      referralNameController.text = lead?.referralName ?? '';
+      referralNumberController.text = lead?.referralNumber ?? '';
+      selectedSource = lead?.source;
+      selectedTechnician = lead?.technician;
+      selectedLatitude = lead?.latitude;
+      selectedLongitude = lead?.longitude;
+      locationAddress = lead?.locationAddress;
+      if (lead?.initialFollowUp != null) {
+        initialFollowUp = lead!.initialFollowUp!.toDate();
+        initialFollowUpController.text = DateFormat('dd MMM yyyy, hh:mm a').format(initialFollowUp!);
+      }
+      // Set selected employee
+      selectedEmployee = lead?.assignedTo;
+      selectedEmployeeName = lead?.assignedToName;
+    }
+    update();
+  }
+
+  void setSelectedEmployee(String? value) {
+    if (value != null) {
+      final employee = employees.firstWhere((e) => e['name'] == value);
+      selectedEmployee = employee['uid'];
+      selectedEmployeeName = value;
+      showEmployeeError = false;
+    }
+    update();
+  }
+
+  void setSelectedSource(String? value) {
+    selectedSource = value;
+    showSourceError = false;
+    update();
+  }
+
+  void setSelectedTechnician(String? value) {
+    selectedTechnician = value;
+    update();
+  }
+
+  Future<void> pickLocation() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        Get.context?.showAppSnackBar(
+          message: "Location permission is required",
+          backgroundColor: colorRedCalendar,
+          textColor: colorWhite,
+        );
+        return;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      Get.context?.showAppSnackBar(
+        message: "Location permission denied permanently. Enable in settings.",
+        backgroundColor: colorRedCalendar,
+        textColor: colorWhite,
+      );
+      return;
+    }
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      Get.context?.showAppSnackBar(
+        message: "Please turn on location services",
+        backgroundColor: colorRedCalendar,
+        textColor: colorWhite,
+      );
+      return;
+    }
+
+    final result = await Get.to(() => LocationPickerScreen(
+      initialLatitude: selectedLatitude,
+      initialLongitude: selectedLongitude,
+    ));
+
+    if (result != null && result is Map<String, dynamic>) {
+      selectedLatitude = result['latitude'];
+      selectedLongitude = result['longitude'];
+      locationAddress =
+      'Lat: ${selectedLatitude!.toStringAsFixed(6)}, Lng: ${selectedLongitude!.toStringAsFixed(6)}';
+      update();
+    }
+  }
+
+  Future<void> pickInitialFollowUp() async {
+    DateTime? date = await showDatePicker(
+      context: Get.context!,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
+    if (date != null) {
+      TimeOfDay? time = await showTimePicker(
+        context: Get.context!,
+        initialTime: TimeOfDay.now(),
+      );
+      if (time != null) {
+        initialFollowUp = DateTime(
+          date.year,
+          date.month,
+          date.day,
+          time.hour,
+          time.minute,
+        );
+        initialFollowUpController.text =
+            DateFormat('dd MMM yyyy, hh:mm a').format(initialFollowUp!);
+        update();
+      }
+    }
+  }
+
+  Future<void> updateLeadDetails() async {
+    String currentUserRole = ListConst.currentUserProfileData.type ?? '';
+    showSourceError = selectedSource == null;
+    showEmployeeError = selectedEmployee == null;
+    update();
+
+    if (editFormKey.currentState!.validate() && !showSourceError && !showEmployeeError) {
+      isUpdating = true;
+      update();
+
+      try {
+        Lead updatedLead = Lead(
+          leadId: leadId,
+          clientName: nameController.text.trim(),
+          clientPhone: phoneController.text.trim(),
+          clientEmail: emailController.text.trim().isEmpty ? null : emailController.text.trim(),
+          companyName: companyController.text.trim().isEmpty ? null : companyController.text.trim(),
+          referralName: referralNameController.text.trim().isEmpty ? null : referralNameController.text.trim(),
+          referralNumber: referralNumberController.text.trim().isEmpty ? null : referralNumberController.text.trim(),
+          source: selectedSource,
+          description: descriptionController.text.trim().isEmpty ? null : descriptionController.text.trim(),
+          assignedTo: selectedEmployee ?? lead!.assignedTo,
+          assignedToName: selectedEmployeeName ?? lead!.assignedToName,
+          addedByName: lead!.addedByName,
+          assignedToRole: 'employee',
+          addedBy: lead!.addedBy,
+          addedByEmail: lead!.addedByEmail,
+          addedByRole: lead!.addedByRole,
+          technician: selectedTechnician,
+          latitude: selectedLatitude,
+          longitude: selectedLongitude,
+          locationAddress: locationAddress,
+          address: addressController.text.trim().isEmpty ? null : addressController.text.trim(),
+          createdAt: lead!.createdAt,
+          updatedAt: Timestamp.now(),
+          initialFollowUp: initialFollowUp != null ? Timestamp.fromDate(initialFollowUp!) : lead!.initialFollowUp,
+          stage: lead!.stage,
+          callStatus: lead!.callStatus,
+        );
+
+        await fireStore.collection('leads').doc(leadId).update(updatedLead.toMap());
+
+        Get.context?.showAppSnackBar(
+          message: 'Lead details updated successfully',
+          backgroundColor: colorGreen,
+          textColor: colorWhite,
+        );
+
+        isEditMode = false;
+        await fetchLead();
+
+        String role = ListConst.currentUserProfileData.type ?? '';
+        if (role == 'employee') {
+          Get.find<EmployeeHomeController>().loadMyLeads();
+        } else if (role == 'admin') {
+          Get.find<OwnerHomeController>().loadLeads();
+        }
+      } catch (e) {
+        print("Error updating lead details: $e");
+        Get.context?.showAppSnackBar(
+          message: 'Failed to update lead details',
+          backgroundColor: colorRedCalendar,
+          textColor: colorWhite,
+        );
+      } finally {
+        isUpdating = false;
+        update();
+      }
+    } else {
+      String? errorMessage;
+      if (nameController.text.trim().isEmpty) {
+        errorMessage = 'Client name is required';
+      } else if (phoneController.text.trim().isEmpty) {
+        errorMessage = 'Client number is required';
+      } else if (phoneController.text.length != 10 || !RegExp(r'^\d{10}$').hasMatch(phoneController.text)) {
+        errorMessage = 'Client number must be exactly 10 digits';
+      } else if (emailController.text.isNotEmpty && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(emailController.text)) {
+        errorMessage = 'Invalid email format';
+      } else if (companyController.text.trim().isEmpty) {
+        errorMessage = 'Company name is required';
+      } else if (descriptionController.text.trim().isEmpty) {
+        errorMessage = 'Description/Notes is required';
+      } else if (referralNumberController.text.isNotEmpty && (referralNumberController.text.length != 10 || !RegExp(r'^\d{10}$').hasMatch(referralNumberController.text))) {
+        errorMessage = 'Referral number must be exactly 10 digits';
+      } else if (showSourceError) {
+        errorMessage = 'Please select a source';
+      } else if (showEmployeeError) {
+        errorMessage = 'Please select an employee';
+      }
+
+      if (errorMessage != null) {
+        Get.context?.showAppSnackBar(
+          message: errorMessage,
+          backgroundColor: colorRedCalendar,
+          textColor: colorWhite,
+        );
+      }
+    }
   }
 
   void setSelectedResponse(String value) {
@@ -269,6 +570,16 @@ class LeadDetailsController extends GetxController {
   void onClose() {
     noteController.dispose();
     followUpController.dispose();
+    nameController.dispose();
+    phoneController.dispose();
+    emailController.dispose();
+    companyController.dispose();
+    descriptionController.dispose();
+    addressController.dispose();
+    referralNameController.dispose();
+    referralNumberController.dispose();
+    initialFollowUpController.dispose();
     super.onClose();
   }
 }
+

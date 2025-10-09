@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -14,17 +13,15 @@ import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 import 'package:lead_management/ui_and_controllers/widgets/dropdown.dart';
 import 'package:intl/intl.dart';
 
-
 class AddLeadScreen extends StatelessWidget {
   const AddLeadScreen({super.key});
-
-
 
   @override
   Widget build(BuildContext context) {
     final memberController = Get.put(MemberController());
     Get.put(AddLeadController());
-    String currentUserRole = ListConst.currentUserProfileData.type ?? 'employee';
+    String currentUserRole =
+        ListConst.currentUserProfileData.type ?? 'employee';
     bool isOwner = currentUserRole == 'admin';
 
     return Scaffold(
@@ -32,13 +29,13 @@ class AddLeadScreen extends StatelessWidget {
       appBar: AppBar(
         title: WantText(
           text: isOwner ? 'Add New Lead' : 'Add My Lead',
-          fontSize: width*0.061,
+          fontSize: width * 0.061,
           fontWeight: FontWeight.w600,
           textColor: colorWhite,
         ),
         backgroundColor: colorMainTheme,
         leading: IconButton(
-          icon:  Icon(Icons.arrow_back, color: colorWhite),
+          icon: Icon(Icons.arrow_back, color: colorWhite),
           onPressed: () => Get.back(),
         ),
       ),
@@ -65,7 +62,8 @@ class AddLeadScreen extends StatelessWidget {
                       prefixIcon: Icon(Icons.person, color: colorGrey),
 
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'Please enter the client name';
+                        if (value == null || value.isEmpty)
+                          return 'Please enter the client name';
                         return null;
                       },
                     ),
@@ -93,7 +91,6 @@ class AddLeadScreen extends StatelessWidget {
                         }
                         return null;
                       },
-
                     ),
                     SizedBox(height: height * 0.023),
 
@@ -105,7 +102,9 @@ class AddLeadScreen extends StatelessWidget {
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
                         if (value != null && value.isNotEmpty) {
-                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                          if (!RegExp(
+                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                          ).hasMatch(value)) {
                             return 'Please enter a valid email address';
                           }
                         }
@@ -135,7 +134,9 @@ class AddLeadScreen extends StatelessWidget {
                       //   return null;
                       // },
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'[a-zA-Z0-9@._-]'),
+                        ),
                         LengthLimitingTextInputFormatter(100),
                       ],
                     ),
@@ -147,7 +148,8 @@ class AddLeadScreen extends StatelessWidget {
                       controller: controller.companyController,
                       prefixIcon: Icon(Icons.business, color: colorGrey),
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'Please enter the company name';
+                        if (value == null || value.isEmpty)
+                          return 'Please enter the company name';
                         return null;
                       },
                     ),
@@ -168,7 +170,8 @@ class AddLeadScreen extends StatelessWidget {
                       maxLines: 3,
                       prefixIcon: Icon(Icons.note, color: colorGrey),
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'Please enter the note';
+                        if (value == null || value.isEmpty)
+                          return 'Please enter the note';
                         return null;
                       },
                     ),
@@ -178,7 +181,6 @@ class AddLeadScreen extends StatelessWidget {
                       hintText: 'Enter referral Name',
                       controller: controller.referralNameController,
                       prefixIcon: Icon(Icons.person, color: colorGrey),
-
                     ),
                     SizedBox(height: height * 0.023),
                     CustomTextFormField(
@@ -192,7 +194,6 @@ class AddLeadScreen extends StatelessWidget {
                         FilteringTextInputFormatter.digitsOnly,
                         LengthLimitingTextInputFormatter(10),
                       ],
-
                     ),
                     SizedBox(height: height * 0.023),
                     SearchableCSCDropdown(
@@ -206,15 +207,13 @@ class AddLeadScreen extends StatelessWidget {
                       },
                       showError: controller.showSourceError,
                     ),
-                    if (controller.selectedSource == null && controller.showSourceError)
+                    if (controller.selectedSource == null &&
+                        controller.showSourceError)
                       Padding(
                         padding: const EdgeInsets.only(top: 4, left: 4),
                         child: Text(
                           'Please select a source',
-                          style: TextStyle(
-                            color: colorRedError,
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: colorRedError, fontSize: 12),
                         ),
                       ),
                     SizedBox(height: height * 0.023),
@@ -226,7 +225,9 @@ class AddLeadScreen extends StatelessWidget {
                             .where((e) => e["isActive"] == true)
                             .map((e) => e["name"].toString())
                             .toList(),
-                        hintText: controller.selectedEmployeeName ?? 'Select Employee',
+                        hintText:
+                            controller.selectedEmployeeName ??
+                            'Select Employee',
                         iconData1: Icons.arrow_drop_down,
                         iconData2: Icons.arrow_drop_up,
                         onChanged: (value) {
@@ -234,8 +235,8 @@ class AddLeadScreen extends StatelessWidget {
                               .where((e) => e["isActive"] == true)
                               .firstWhere(
                                 (e) => e["name"].toString() == value,
-                            orElse: () => {"uid": "", "name": ""},
-                          );
+                                orElse: () => {"uid": "", "name": ""},
+                              );
                           if (employee["uid"] != "") {
                             controller.setSelectedEmployee(
                               employee["uid"],
@@ -244,10 +245,10 @@ class AddLeadScreen extends StatelessWidget {
                           }
                         },
                         showError: controller.showEmployeeError,
-
                       ),
 
-                      if (controller.selectedEmployee == null && controller.showEmployeeError)
+                      if (controller.selectedEmployee == null &&
+                          controller.showEmployeeError)
                         Padding(
                           padding: const EdgeInsets.only(top: 4, left: 4),
                           child: Text(
@@ -264,7 +265,8 @@ class AddLeadScreen extends StatelessWidget {
                     SearchableCSCDropdown(
                       title: 'Select Technician (Optional)',
                       items: controller.technicianTypes,
-                      hintText: controller.selectedTechnician ?? 'Select Technician',
+                      hintText:
+                          controller.selectedTechnician ?? 'Select Technician',
                       iconData1: Icons.arrow_drop_down,
                       iconData2: Icons.arrow_drop_up,
                       onChanged: (value) {
@@ -300,7 +302,8 @@ class AddLeadScreen extends StatelessWidget {
                             SizedBox(width: width * 0.03),
                             Expanded(
                               child: Text(
-                                controller.locationAddress ?? 'Tap to select location from map',
+                                controller.locationAddress ??
+                                    'Tap to select location from map',
                                 style: TextStyle(
                                   color: controller.locationAddress == null
                                       ? colorGreyText
@@ -310,7 +313,11 @@ class AddLeadScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            Icon(Icons.arrow_forward_ios, color: colorGreyText, size: 16),
+                            Icon(
+                              Icons.arrow_forward_ios,
+                              color: colorGreyText,
+                              size: 16,
+                            ),
                           ],
                         ),
                       ),
@@ -346,9 +353,12 @@ class AddLeadScreen extends StatelessWidget {
                               time.minute,
                             );
 
-                            final formattedDateTime = DateFormat('dd MMM yyyy, hh:mm a').format(dateTime);
+                            final formattedDateTime = DateFormat(
+                              'dd MMM yyyy, hh:mm a',
+                            ).format(dateTime);
 
-                            controller.followUpController.text = formattedDateTime;
+                            controller.followUpController.text =
+                                formattedDateTime;
 
                             controller.nextFollowUp = dateTime;
                           }
@@ -361,11 +371,12 @@ class AddLeadScreen extends StatelessWidget {
 
                     CustomButton(
                       Width: width,
-                      onTap: controller.isSubmitting ? null : () => controller.submitForm(),
+                      onTap: controller.isSubmitting
+                          ? null
+                          : () => controller.submitForm(),
                       label: isOwner ? 'Add Lead' : 'Add My Lead',
                       boarderRadius: 8,
                     ),
-
                   ],
                 ),
               ),
@@ -375,6 +386,4 @@ class AddLeadScreen extends StatelessWidget {
       ),
     );
   }
-
-
 }

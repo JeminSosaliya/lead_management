@@ -4,11 +4,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lead_management/core/constant/app_color.dart';
+import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/constant/list_const.dart';
+import 'package:lead_management/core/utils/extension.dart';
+import 'package:lead_management/core/utils/user_status_service.dart';
 import 'package:lead_management/model/lead_add_model.dart';
+import 'package:lead_management/routes/route_manager.dart';
+import 'package:lead_management/ui_and_controllers/main/lead_details_screen/lead_details_screen.dart';
+import 'package:lead_management/ui_and_controllers/main/profile/profile_controller.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
+import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
-class EmployeeHomeController extends GetxController {
-  List<Lead> myLeads = [];
+class HomeController extends GetxController {
+  List<Lead> leads = [];
   bool isLoading = false;
   String currentTab = 'all';
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
@@ -23,23 +32,50 @@ class EmployeeHomeController extends GetxController {
   bool isTechnicianListLoading = false;
   String? technicianListError;
 
+  List<Map<String, dynamic>> employees = [];
+  String? selectedEmployeeId;
+  String? selectedEmployeeName;
+
+  bool get isAdmin => ListConst.currentUserProfileData.type == 'admin';
+
   @override
   void onInit() {
     super.onInit();
     fetchTechnicianTypes();
+    if (isAdmin) fetchEmployees();
     setupRealTimeListener();
     searchController.addListener(() {
       onSearchChanged(searchController.text);
     });
   }
 
+  Future<void> fetchEmployees() async {
+    try {
+      QuerySnapshot snapshot = await fireStore
+          .collection('users')
+          .where('type', isEqualTo: 'employee')
+          .get();
+
+      employees = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return {
+          'uid': doc.id,
+          'name': data['name'] ?? 'Unknown',
+          'isActive': data['isActive'] ?? true,
+        };
+      }).toList();
+      update();
+    } catch (e) {
+      log("Error fetching employees: $e");
+    }
+  }
 
   Future<void> fetchTechnicianTypes() async {
     try {
       isTechnicianListLoading = true;
       technicianListError = null;
       update();
-      log('Fetching technician types from Firestore for EmployeeHomeController');
+      log('Fetching technician types from Firestore');
       DocumentSnapshot doc = await fireStore
           .collection('technicians')
           .doc('technician_list')
@@ -70,13 +106,21 @@ class EmployeeHomeController extends GetxController {
     update();
   }
 
+  void setSelectedEmployee(String? uid, String? name) {
+    selectedEmployeeId = uid;
+    selectedEmployeeName = name;
+    update();
+  }
+
   void applyFilters() {
-    filtersApplied = selectedTechnician != null;
-    log('Filters applied: $filtersApplied, Selected technician: $selectedTechnician');
+    filtersApplied = (isAdmin && selectedEmployeeId != null) || selectedTechnician != null;
+    log('Filters applied: $filtersApplied, Selected employee: $selectedEmployeeId, Selected technician: $selectedTechnician');
     update();
   }
 
   void clearFilters() {
+    selectedEmployeeId = null;
+    selectedEmployeeName = null;
     selectedTechnician = null;
     filtersApplied = false;
     log('Filters cleared');
@@ -84,43 +128,41 @@ class EmployeeHomeController extends GetxController {
   }
 
   void setupRealTimeListener() {
-    log('Setting up real-time listener for leads assigned to current user');
+    log('Setting up real-time listener for leads');
     String currentUserId = ListConst.currentUserProfileData.uid.toString();
-    log("🔵 Setting up listener for user: $currentUserId");
-
-    fireStore
-        .collection('leads')
-        .where('assignedTo', isEqualTo: currentUserId)
-        // .orderBy('updatedAt', descending: true)
-        .snapshots()
-        .listen((QuerySnapshot snapshot) {
-          myLeads = snapshot.docs
-              .map((doc) => Lead.fromMap(doc.data() as Map<String, dynamic>))
-              .toList();
-          log('Leads updated: ${myLeads.length} leads fetched');
-          isLoading = false;
-          update();
-        });
+    Query query;
+    if (isAdmin) {
+      query = fireStore.collection('leads').orderBy('updatedAt', descending: true);
+    } else {
+      query = fireStore.collection('leads').where('assignedTo', isEqualTo: currentUserId);
+    }
+    query.snapshots().listen((QuerySnapshot snapshot) {
+      leads = snapshot.docs.map((doc) => Lead.fromMap(doc.data() as Map<String, dynamic>)).toList();
+      log('Leads updated: ${leads.length} leads fetched');
+      isLoading = false;
+      update();
+    });
   }
 
-  Future<void> loadMyLeads() async {
-    log('Loading leads assigned to current user');
+  Future<void> loadLeads() async {
+    log('Loading leads');
     isLoading = true;
     update();
 
     try {
       String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
-      QuerySnapshot querySnapshot = await fireStore
-          .collection('leads')
-          .where('assignedTo', isEqualTo: currentUserId)
-          // .orderBy('updatedAt', descending: true)
-          .get();
+      QuerySnapshot querySnapshot;
+      if (isAdmin) {
+        querySnapshot = await fireStore.collection('leads').orderBy('updatedAt', descending: true).get();
+      } else {
+        querySnapshot = await fireStore.collection('leads').where('assignedTo', isEqualTo: currentUserId).get();
+      }
 
-      myLeads = querySnapshot.docs.map((doc) {
+      leads = querySnapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         return Lead.fromMap(data);
       }).toList();
-      log('Leads loaded: ${myLeads.length} leads');
+      log('Leads loaded: ${leads.length} leads');
     } catch (e) {
       log("Error loading leads: $e");
     }
@@ -177,25 +219,28 @@ class EmployeeHomeController extends GetxController {
   }
 
   List<Lead> getFilteredLeads(String stage) {
-    List<Lead> leads;
+    List<Lead> filteredLeads;
     if (stage == 'today') {
-      leads = myLeads.where((lead) => hasFollowUpToday(lead)).toList();
+      filteredLeads = leads.where((lead) => hasFollowUpToday(lead)).toList();
     } else if (stage == 'all') {
-      leads = myLeads;
+      filteredLeads = leads;
     } else {
-      leads = myLeads.where((lead) => lead.stage == stage).toList();
+      filteredLeads = leads.where((lead) => lead.stage == stage).toList();
     }
 
+    if (isAdmin && selectedEmployeeId != null) {
+      filteredLeads = filteredLeads.where((lead) => lead.assignedTo == selectedEmployeeId).toList();
+    }
     if (selectedTechnician != null) {
-      leads = leads.where((lead) => lead.technician == selectedTechnician).toList();
+      filteredLeads = filteredLeads.where((lead) => lead.technician == selectedTechnician).toList();
     }
 
     if (isSearching && searchQuery.isNotEmpty) {
-      leads = _filterLeadsBySearch(leads, searchQuery);
+      filteredLeads = _filterLeadsBySearch(filteredLeads, searchQuery);
     }
 
-    log('Filtered leads for stage $stage: ${leads.length} leads');
-    return leads;
+    log('Filtered leads for stage $stage: ${filteredLeads.length} leads');
+    return filteredLeads;
   }
 
   List<Lead> _filterLeadsBySearch(List<Lead> leads, String query) {
@@ -203,30 +248,34 @@ class EmployeeHomeController extends GetxController {
       if (lead.clientName.toLowerCase().contains(query)) {
         return true;
       }
-      if (lead.addedByName.toLowerCase().contains(query)) {
-        return true;
-      }
       if (lead.clientPhone.contains(query)) {
         return true;
+      }
+      if (isAdmin) {
+        if (lead.assignedToName.toLowerCase().contains(query)) {
+          return true;
+        }
+      } else {
+        if (lead.addedByName.toLowerCase().contains(query)) {
+          return true;
+        }
       }
       return false;
     }).toList();
   }
 
   Future<bool> updateLeadStatus(
-    String leadId,
-    String stage,
-    String callStatus,
-  ) async {
+      String leadId,
+      String stage,
+      String callStatus,
+      ) async {
     try {
       await fireStore.collection('leads').doc(leadId).update({
         'stage': stage,
         'callStatus': callStatus,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      log(
-        'Lead status updated: $leadId, stage: $stage, callStatus: $callStatus',
-      );
+      log('Lead status updated: $leadId, stage: $stage, callStatus: $callStatus');
       return true;
     } catch (e) {
       log("Error updating lead: $e");
@@ -240,5 +289,4 @@ class EmployeeHomeController extends GetxController {
     super.onClose();
   }
 }
-
 

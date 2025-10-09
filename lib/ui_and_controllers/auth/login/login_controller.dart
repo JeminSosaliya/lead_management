@@ -67,12 +67,16 @@ class LoginController extends GetxController {
         message: "Login successful!",
         backgroundColor: colorGreen,
       );
-
       Get.offAllNamed(
         ListConst.currentUserProfileData.type == 'admin'
-            ? AppRoutes.ownerHomeScreen
-            : AppRoutes.employeeHomeScreen,
+            ? AppRoutes.home
+            : AppRoutes.home,
       );
+      // Get.offAllNamed(
+      //   ListConst.currentUserProfileData.type == 'admin'
+      //       ? AppRoutes.ownerHomeScreen
+      //       : AppRoutes.employeeHomeScreen,
+      // );
     } on FirebaseAuthException catch (e) {
       print("Firebase Auth Error: ${e.code} - ${e.message}");
       String errorMessage = "Login failed. Please try again.";
