@@ -4,6 +4,8 @@ import 'package:lead_management/ui_and_controllers/main/add_laed/add_laed_screen
 import 'package:lead_management/ui_and_controllers/main/add_users/add_admin/add_admin_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/add_users/add_employee/add_employee_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/add_users/add_technician/add_technician_screen.dart';
+import 'package:lead_management/ui_and_controllers/main/analytics/analytics_screen.dart';
+import 'package:lead_management/ui_and_controllers/main/analytics/lead_list_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/employee_home/employee_home_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/home/home_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/member_details_screen/member_detail_screen.dart';
@@ -27,6 +29,8 @@ class AppRoutes {
   static const String profile = "/profile";
   static const String members = "/members";
   static const String memberDetailScreen = "/memberDetailScreen";
+  static const String analytics = "/analytics";
+  static const String analyticsListScreen = "/analyticsListScreen";
 
 
   static List<GetPage> pages = [
@@ -42,7 +46,7 @@ class AppRoutes {
     GetPage(name: profile, page: () => const ProfileScreen()),
     GetPage(name: members, page: () => const MemberListScreen()),
     GetPage(name: memberDetailScreen, page: () => MemberDetailScreen()),
-
-
+    GetPage(name: analytics, page: () => const AnalyticsScreen()),
+    GetPage(name: analyticsListScreen, page: () => AnalyticsListScreen()),
   ];
 }

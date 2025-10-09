@@ -121,7 +121,7 @@ class OwnerHomeScreen extends StatelessWidget {
                               fontWeight: FontWeight.w500,
                             ),
                             onTap: () {
-                              Navigator.pop(context);
+                              Get.back();
                               Get.toNamed(AppRoutes.addAdmin);
                             },
                           );
@@ -141,7 +141,7 @@ class OwnerHomeScreen extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                         ),
                         onTap: () {
-                          Navigator.pop(context);
+                          Get.back();
                           Get.toNamed(AppRoutes.addEmployee);
                         },
                       ),
@@ -157,7 +157,7 @@ class OwnerHomeScreen extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                         ),
                         onTap: () {
-                          Navigator.pop(context);
+                          Get.back();
                           Get.toNamed(AppRoutes.addTechnician);
                         },
                       ),
@@ -193,7 +193,7 @@ class OwnerHomeScreen extends StatelessWidget {
                             fontWeight: FontWeight.w500,
                           ),
                           onTap: () {
-                            Navigator.pop(context);
+                            Get.back();
                             Get.toNamed(AppRoutes.members);
                           },
                         );
@@ -201,6 +201,19 @@ class OwnerHomeScreen extends StatelessWidget {
                       return const SizedBox.shrink();
                     }),
                     ListTile(
+                      leading: Icon(Icons.analytics, color: colorMainTheme),
+                      title: WantText(
+                        text: "Analytics",
+                        textColor: colorBlack,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      onTap: () {
+                        Get.back();
+                        Get.toNamed(AppRoutes.analytics);
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.person, color: colorMainTheme),
                       leading: const Icon(Icons.person, color: colorMainTheme),
                       title: WantText(
                         text: "Profile",
@@ -208,7 +221,7 @@ class OwnerHomeScreen extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                       ),
                       onTap: () {
-                        Navigator.pop(context);
+                        Get.back();
                         Get.toNamed(AppRoutes.profile);
                       },
                     ),
@@ -297,6 +310,8 @@ class OwnerHomeScreen extends StatelessWidget {
             ),
           ],
           bottom: TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
             labelColor: colorWhite,
             unselectedLabelColor: colorWhite70,
             indicatorColor: colorWhite,
