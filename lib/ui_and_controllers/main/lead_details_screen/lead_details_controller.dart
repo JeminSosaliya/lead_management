@@ -8,8 +8,7 @@ import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/list_const.dart';
 import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/model/lead_add_model.dart';
-import 'package:lead_management/ui_and_controllers/main/employee_home/employee_home_controller.dart';
-import 'package:lead_management/ui_and_controllers/main/owner_home/owner_home_controller.dart';
+import 'package:lead_management/ui_and_controllers/main/home/home_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/location_picker_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -303,10 +302,12 @@ class LeadDetailsController extends GetxController {
         await fetchLead();
 
         String role = ListConst.currentUserProfileData.type ?? '';
-        if (role == 'employee') {
-          Get.find<EmployeeHomeController>().loadMyLeads();
-        } else if (role == 'admin') {
-          Get.find<OwnerHomeController>().loadLeads();
+        if (role == 'employee' || role == 'admin') {
+          try {
+            Get.find<HomeController>().loadLeads();
+          } catch (e) {
+            print('HomeController not found: $e');
+          }
         }
       } catch (e) {
         print("Error updating lead details: $e");
@@ -530,17 +531,11 @@ class LeadDetailsController extends GetxController {
         await fetchLead();
         Get.back();
         String role = ListConst.currentUserProfileData.type ?? '';
-        if (role == 'employee') {
+        if (role == 'employee' || role == 'admin') {
           try {
-            Get.find<EmployeeHomeController>().loadMyLeads();
+            Get.find<HomeController>().loadLeads();
           } catch (e) {
-            print('EmployeeHomeController not found: $e');
-          }
-        } else if (role == 'admin') {
-          try {
-            Get.find<OwnerHomeController>().loadLeads();
-          } catch (e) {
-            print('OwnerHomeController not found: $e');
+            print('HomeController not found: $e');
           }
         }
       } catch (e) {
