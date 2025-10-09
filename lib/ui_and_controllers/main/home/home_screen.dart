@@ -177,6 +177,19 @@ class HomeScreen extends StatelessWidget {
                               },
                             );
                           }),
+                        if (controller.isAdmin)
+                        ListTile(
+                          leading: Icon(Icons.analytics, color: colorMainTheme),
+                          title: WantText(
+                            text: "Analytics",
+                            textColor: colorBlack,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          onTap: () {
+                            Get.back();
+                            Get.toNamed(AppRoutes.analytics);
+                          },
+                        ),
                         ListTile(
                           leading: const Icon(
                             Icons.person,
@@ -645,8 +658,9 @@ class HomeScreen extends StatelessWidget {
         Lead lead = leads[index];
         return GestureDetector(
           onTap: () {
-            Get.to(
-              () => LeadDetailsScreen(leadId: lead.leadId, initialData: lead),
+            Get.toNamed(AppRoutes.leadDetailsScreen,arguments: [
+              lead.leadId,
+              lead]
             );
           },
           child: Container(
