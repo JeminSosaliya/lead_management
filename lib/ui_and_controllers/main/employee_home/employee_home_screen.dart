@@ -93,7 +93,7 @@ class EmployeeHomeScreen extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                       ),
                       onTap: () {
-                        Navigator.pop(context);
+                        Get.back();
                         Get.toNamed(AppRoutes.profile);
                       },
                     ),
@@ -142,6 +142,8 @@ class EmployeeHomeScreen extends StatelessWidget {
           backgroundColor: colorMainTheme,
           iconTheme: IconThemeData(color: colorWhite),
           bottom: TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
             labelColor: colorWhite,
             unselectedLabelColor: colorWhite70,
             indicatorColor: colorWhite,
