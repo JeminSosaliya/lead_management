@@ -17,6 +17,7 @@ import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
 class EmployeeHomeScreen extends StatelessWidget {
   const EmployeeHomeScreen({super.key});
+
   Future<void> _logout() async {
     try {
       log("Logging out user: ${FirebaseAuth.instance.currentUser?.email}");
@@ -28,7 +29,7 @@ class EmployeeHomeScreen extends StatelessWidget {
       }
 
       await FirebaseAuth.instance.signOut();
-      log("Logging out user:: ${FirebaseAuth.instance.currentUser?.email}");
+      log("Logged out user: ${FirebaseAuth.instance.currentUser?.email}");
       Get.offAllNamed(AppRoutes.login);
       Get.context?.showAppSnackBar(
         message: "Logged out successfully",
@@ -78,15 +79,14 @@ class EmployeeHomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               Expanded(
                 child: ListView(
                   scrollDirection: Axis.vertical,
-                  physics: NeverScrollableScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   padding: EdgeInsets.zero,
                   children: [
                     ListTile(
-                      leading: Icon(Icons.person, color: colorMainTheme),
+                      leading: const Icon(Icons.person, color: colorMainTheme),
                       title: WantText(
                         text: "Profile",
                         textColor: colorBlack,
@@ -133,14 +133,59 @@ class EmployeeHomeScreen extends StatelessWidget {
           ),
         ),
         appBar: AppBar(
-          title: WantText(
-            text: 'My Leads',
-            fontSize: width * 0.061,
-            fontWeight: FontWeight.w600,
-            textColor: colorWhite,
+          title: GetBuilder<EmployeeHomeController>(
+            builder: (controller) => controller.isSearching
+                ? TextField(
+                    controller: controller.searchController,
+                    autofocus: true,
+                    style: TextStyle(
+                      color: colorWhite,
+                      fontSize: width * 0.041,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Search by client name or phone...',
+                      hintStyle: TextStyle(color: colorWhite70),
+                      border: InputBorder.none,
+                      suffixIcon: IconButton(
+                        icon: Icon(Icons.close, color: colorWhite),
+                        onPressed: controller.stopSearch,
+                      ),
+                    ),
+                    onChanged: controller.onSearchChanged,
+                  )
+                : WantText(
+                    text: 'My Leads',
+                    fontSize: width * 0.061,
+                    fontWeight: FontWeight.w600,
+                    textColor: colorWhite,
+                  ),
           ),
           backgroundColor: colorMainTheme,
           iconTheme: IconThemeData(color: colorWhite),
+          actions: [
+            GetBuilder<EmployeeHomeController>(
+              builder: (controller) => controller.isSearching
+                  ? const SizedBox.shrink()
+                  : Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.search, color: colorWhite),
+                          onPressed: controller.startSearch,
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.filter_list,
+                            color: controller.filtersApplied
+                                ? colorAmber
+                                : colorWhite,
+                          ),
+                          onPressed: () =>
+                              _showFilterBottomSheet(context, controller),
+                        ),
+                      ],
+                    ),
+            ),
+          ],
           bottom: TabBar(
             isScrollable: true,
             tabAlignment: TabAlignment.start,
@@ -158,13 +203,13 @@ class EmployeeHomeScreen extends StatelessWidget {
           ),
         ),
         body: GetBuilder<EmployeeHomeController>(
-          builder: (EmployeeHomeController controller) {
+          builder: (controller) {
             if (controller.isLoading) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(color: colorMainTheme),
+                    const CircularProgressIndicator(color: colorMainTheme),
                     SizedBox(height: height * 0.008),
                     WantText(
                       text: 'Loading your leads...',
@@ -206,13 +251,12 @@ class EmployeeHomeScreen extends StatelessWidget {
 
             return TabBarView(
               children: [
-                _buildLeadList('all'),
-                _buildLeadList('today'),
-                _buildLeadList('new'),
-
-                _buildLeadList('inProgress'),
-                _buildLeadList('completed'),
-                _buildLeadList('cancelled'),
+                _buildLeadList('all', controller),
+                _buildLeadList('today', controller),
+                _buildLeadList('new', controller),
+                _buildLeadList('inProgress', controller),
+                _buildLeadList('completed', controller),
+                _buildLeadList('cancelled', controller),
               ],
             );
           },
@@ -226,166 +270,328 @@ class EmployeeHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLeadList(String stage) {
-    return GetBuilder<EmployeeHomeController>(
-      builder: (EmployeeHomeController controller) {
-        List<Lead> leads;
-        if (stage == 'today') {
-          leads = controller.myLeads
-              .where((lead) => controller.hasFollowUpToday(lead))
-              .toList();
-        } else if (stage == 'all') {
-          leads = controller.myLeads;
-        } else {
-          leads = controller.myLeads
-              .where((lead) => lead.stage == stage)
-              .toList();
-        }
+  void _showFilterBottomSheet(
+    BuildContext context,
+    EmployeeHomeController controller,
+  ) {
+    String? tempTechnician = controller.selectedTechnician;
 
-        if (leads.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: EdgeInsets.all(width * 0.041),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.filter_list, size: width * 0.1, color: colorGrey),
-                  SizedBox(height: height * 0.019),
-                  WantText(
-                    text: stage == 'today'
-                        ? 'No leads created today'
-                        : 'No $stage leads',
-                    fontSize: width * 0.041,
-                    fontWeight: FontWeight.w500,
-                    textColor: colorGrey,
-                  ),
-                ],
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      backgroundColor: colorWhite,
+      builder: (BuildContext bottomSheetContext) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: width * 0.041,
+                vertical: height * 0.025,
               ),
-            ),
-          );
-        }
-
-        return ListView.builder(
-          padding: EdgeInsets.only(top: width * 0.041),
-          itemCount: leads.length,
-          itemBuilder: (context, index) {
-            Lead lead = leads[index];
-            return GestureDetector(
-              onTap: () {
-                Get.to(
-                  () =>
-                      LeadDetailsScreen(leadId: lead.leadId, initialData: lead),
-                );
-              },
-              child: Container(
-                padding: EdgeInsets.all(width * 0.041),
-                margin: EdgeInsets.only(
-                  bottom: height * 0.019,
-                  left: width * 0.041,
-                  right: width * 0.041,
-                ),
-                decoration: BoxDecoration(
-                  color: colorWhite,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: colorBoxShadow,
-                      blurRadius: 7,
-                      offset: Offset(4, 3),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CircleAvatar(
-                      backgroundColor: colorMainTheme,
-                      radius: 22,
-                      child: WantText(
-                        text: lead.clientName[0].toUpperCase(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      WantText(
+                        text: 'Filters',
                         fontSize: width * 0.046,
-                        fontWeight: FontWeight.w600,
-                        textColor: colorWhite,
+                        fontWeight: FontWeight.bold,
+                        textColor: colorBlack,
                       ),
-                    ),
-                    SizedBox(width: width * 0.04),
-                    Expanded(
-                      child: Column(
+                      IconButton(
+                        icon: Icon(Icons.close, color: colorBlack),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: height * 0.02),
+                  GetBuilder<EmployeeHomeController>(
+                    builder: (controller) {
+                      if (controller.isTechnicianListLoading) {
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            color: colorMainTheme,
+                          ),
+                        );
+                      }
+                      if (controller.technicianListError != null) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            WantText(
+                              text: 'Technician',
+                              fontSize: width * 0.041,
+                              fontWeight: FontWeight.w500,
+                              textColor: colorBlack,
+                            ),
+                            SizedBox(height: height * 0.01),
+                            WantText(
+                              text: controller.technicianListError!,
+                              fontSize: width * 0.035,
+                              textColor: colorRedCalendar,
+                            ),
+                          ],
+                        );
+                      }
+                      return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           WantText(
-                            text: lead.clientName,
+                            text: 'Technician',
                             fontSize: width * 0.041,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                             textColor: colorBlack,
                           ),
-                          SizedBox(height: height * 0.005),
-                          WantText(
-                            text: 'Assigned To: ${lead.assignedToName}',
-                            fontSize: width * 0.038,
-                            fontWeight: FontWeight.w600,
-                            textColor: colorDarkGreyText,
-                          ),
-                          SizedBox(height: height * 0.005),
-                          WantText(
-                            text: 'Added By: ${lead.addedByName}',
-                            fontSize: width * 0.038,
-                            fontWeight: FontWeight.w600,
-                            textColor: colorDarkGreyText,
-                          ),
-                          SizedBox(height: height * 0.005),
-                          WantText(
-                            text: '📞 ${lead.clientPhone}',
-                            fontSize: width * 0.035,
-                            fontWeight: FontWeight.w400,
-                            textColor: colorDarkGreyText,
-                          ),
-                          SizedBox(height: height * 0.012),
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 3,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _getStageColor(lead.stage),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: WantText(
-                                  text: lead.stage,
-                                  fontSize: width * 0.030,
-                                  fontWeight: FontWeight.w500,
-                                  textColor: colorWhite,
-                                ),
+                          SizedBox(height: height * 0.01),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: controller.technicianTypes.isEmpty
+                                    ? colorGrey
+                                    : colorGreyTextFieldBorder,
                               ),
-                              SizedBox(width: width * 0.0205),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 3,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _getStatusColor(lead.callStatus),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: WantText(
-                                  text: lead.callStatus,
-                                  fontSize: width * 0.030,
-                                  fontWeight: FontWeight.w500,
-                                  textColor: colorWhite,
-                                ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: DropdownButton<String>(
+                              value: tempTechnician,
+                              hint: WantText(
+                                text: controller.technicianTypes.isEmpty
+                                    ? 'No technicians available'
+                                    : 'Select Technician',
+                                fontSize: width * 0.035,
+                                textColor: colorGreyText,
                               ),
-                            ],
+                              isExpanded: true,
+                              underline: const SizedBox(),
+                              items: controller.technicianTypes.isEmpty
+                                  ? []
+                                  : controller.technicianTypes
+                                        .map(
+                                          (e) => DropdownMenuItem<String>(
+                                            value: e,
+                                            child: WantText(
+                                              text: e,
+                                              fontSize: width * 0.035,
+                                              textColor: colorBlack,
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                              onChanged: controller.technicianTypes.isEmpty
+                                  ? null
+                                  : (value) {
+                                      setState(() {
+                                        tempTechnician = value;
+                                      });
+                                    },
+                            ),
                           ),
                         ],
+                      );
+                    },
+                  ),
+                  SizedBox(height: height * 0.03),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: CustomButton(
+                          Width: width * 0.4,
+                          onTap: () {
+                            controller.clearFilters();
+                            Navigator.of(context).pop();
+                          },
+                          label: "Clear",
+                          backgroundColor: colorWhite,
+                          borderColor: colorRedCalendar,
+                          textColor: colorRedCalendar,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                      SizedBox(width: width * 0.041),
+                      Expanded(
+                        child: CustomButton(
+                          Width: width * 0.4,
+                          onTap: () {
+                            controller.setSelectedTechnician(tempTechnician);
+                            controller.applyFilters();
+                            Navigator.of(context).pop();
+                          },
+                          label: "Apply",
+                          backgroundColor: colorMainTheme,
+                          borderColor: colorMainTheme,
+                          textColor: colorWhite,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: height * 0.02),
+                ],
               ),
             );
           },
+        );
+      },
+    );
+  }
+
+  Widget _buildLeadList(String stage, EmployeeHomeController controller) {
+    List<Lead> leads = controller.getFilteredLeads(stage);
+
+    if (leads.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.all(width * 0.041),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.filter_list, size:width*0.1, color: colorGrey),
+              SizedBox(height: height * 0.019),
+              WantText(
+                text:
+                    controller.isSearching && controller.searchQuery.isNotEmpty
+                    ? 'No leads found for "${controller.searchQuery}"'
+                    : controller.filtersApplied
+                    ? 'No leads for selected technician'
+                    : stage == 'today'
+                    ? 'No leads created today'
+                    : 'No $stage leads',
+                fontSize: width * 0.041,
+                fontWeight: FontWeight.w500,
+                textColor: colorGrey,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: EdgeInsets.only(top: width * 0.041),
+      itemCount: leads.length,
+      itemBuilder: (context, index) {
+        Lead lead = leads[index];
+        return GestureDetector(
+          onTap: () {
+            Get.to(
+              () => LeadDetailsScreen(leadId: lead.leadId, initialData: lead),
+            );
+          },
+          child: Container(
+            padding: EdgeInsets.all(width * 0.041),
+            margin: EdgeInsets.only(
+              bottom: height * 0.019,
+              left: width * 0.041,
+              right: width * 0.041,
+            ),
+            decoration: BoxDecoration(
+              color: colorWhite,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: colorBoxShadow,
+                  blurRadius: 7,
+                  offset: Offset(4, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  backgroundColor: colorMainTheme,
+                  radius: 22,
+                  child: WantText(
+                    text: lead.clientName[0].toUpperCase(),
+                    fontSize: width * 0.046,
+                    fontWeight: FontWeight.w600,
+                    textColor: colorWhite,
+                  ),
+                ),
+                SizedBox(width: width * 0.04),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      WantText(
+                        text: lead.clientName,
+                        fontSize: width * 0.041,
+                        fontWeight: FontWeight.w600,
+                        textColor: colorBlack,
+                      ),
+                      SizedBox(height: height * 0.005),
+                      WantText(
+                        text: 'Assigned To: ${lead.assignedToName}',
+                        fontSize: width * 0.038,
+                        fontWeight: FontWeight.w600,
+                        textColor: colorDarkGreyText,
+                      ),
+                      SizedBox(height: height * 0.005),
+                      WantText(
+                        text: 'Added By: ${lead.addedByName}',
+                        fontSize: width * 0.038,
+                        fontWeight: FontWeight.w600,
+                        textColor: colorDarkGreyText,
+                      ),
+                      SizedBox(height: height * 0.005),
+                      WantText(
+                        text: '📞 ${lead.clientPhone}',
+                        fontSize: width * 0.035,
+                        fontWeight: FontWeight.w400,
+                        textColor: colorDarkGreyText,
+                      ),
+                      SizedBox(height: height * 0.012),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _getStageColor(lead.stage),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: WantText(
+                              text: lead.stage,
+                              fontSize: width * 0.030,
+                              fontWeight: FontWeight.w500,
+                              textColor: colorWhite,
+                            ),
+                          ),
+                          SizedBox(width: width * 0.0205),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _getStatusColor(lead.callStatus),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: WantText(
+                              text: lead.callStatus,
+                              fontSize: width * 0.030,
+                              fontWeight: FontWeight.w500,
+                              textColor: colorWhite,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -427,3 +633,4 @@ class EmployeeHomeScreen extends StatelessWidget {
     }
   }
 }
+

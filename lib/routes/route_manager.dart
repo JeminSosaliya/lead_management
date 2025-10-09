@@ -7,6 +7,7 @@ import 'package:lead_management/ui_and_controllers/main/add_users/add_technician
 import 'package:lead_management/ui_and_controllers/main/analytics/analytics_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/analytics/lead_list_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/employee_home/employee_home_screen.dart';
+import 'package:lead_management/ui_and_controllers/main/home/home_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/member_details_screen/member_detail_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/member_list_screen/member_list_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/owner_home/owner_home_screen.dart';
@@ -18,8 +19,9 @@ class AppRoutes {
 
   static const String splash = "/splash";
   static const String login = "/login";
-  static const String ownerHomeScreen = '/ownerHomeScreen';
-  static const String employeeHomeScreen = '/employeeHomeScreen';
+  static const String home = "/home";
+  // static const String ownerHomeScreen = '/ownerHomeScreen';
+  // static const String employeeHomeScreen = '/employeeHomeScreen';
   static const String addLeadScreen = '/addLeadScreen';
   static const String addEmployee = "/add-employee";
   static const String addAdmin = "/add-admin";
@@ -34,8 +36,9 @@ class AppRoutes {
   static List<GetPage> pages = [
     GetPage(name: splash, page: () => SplashScreen()),
     GetPage(name: login, page: () => LoginScreen()),
-    GetPage(name: ownerHomeScreen, page: () => OwnerHomeScreen()),
-    GetPage(name: employeeHomeScreen, page: () => EmployeeHomeScreen()),
+    GetPage(name: home, page: () => HomeScreen()),
+    // GetPage(name: ownerHomeScreen, page: () => OwnerHomeScreen()),
+    // GetPage(name: employeeHomeScreen, page: () => EmployeeHomeScreen()),
     GetPage(name: addLeadScreen, page: () => AddLeadScreen()),
     GetPage(name: addEmployee, page: () => const AddEmployeeScreen()),
     GetPage(name: addAdmin, page: () => const AddAdminScreen()),
