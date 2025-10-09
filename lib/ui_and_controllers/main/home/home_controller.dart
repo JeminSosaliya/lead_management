@@ -4,17 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:lead_management/core/constant/app_color.dart';
-import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/constant/list_const.dart';
-import 'package:lead_management/core/utils/extension.dart';
-import 'package:lead_management/core/utils/user_status_service.dart';
 import 'package:lead_management/model/lead_add_model.dart';
-import 'package:lead_management/routes/route_manager.dart';
-import 'package:lead_management/ui_and_controllers/main/lead_details_screen/lead_details_screen.dart';
-import 'package:lead_management/ui_and_controllers/main/profile/profile_controller.dart';
-import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
-import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
 class HomeController extends GetxController {
   List<Lead> leads = [];
@@ -113,8 +104,11 @@ class HomeController extends GetxController {
   }
 
   void applyFilters() {
-    filtersApplied = (isAdmin && selectedEmployeeId != null) || selectedTechnician != null;
-    log('Filters applied: $filtersApplied, Selected employee: $selectedEmployeeId, Selected technician: $selectedTechnician');
+    filtersApplied =
+        (isAdmin && selectedEmployeeId != null) || selectedTechnician != null;
+    log(
+      'Filters applied: $filtersApplied, Selected employee: $selectedEmployeeId, Selected technician: $selectedTechnician',
+    );
     update();
   }
 
@@ -131,13 +125,25 @@ class HomeController extends GetxController {
     log('Setting up real-time listener for leads');
     String currentUserId = ListConst.currentUserProfileData.uid.toString();
     Query query;
+
     if (isAdmin) {
-      query = fireStore.collection('leads').orderBy('updatedAt', descending: true);
+      query = fireStore
+          .collection('leads')
+          .orderBy('updatedAt', descending: true);
     } else {
-      query = fireStore.collection('leads').where('assignedTo', isEqualTo: currentUserId);
+      query = fireStore
+          .collection('leads')
+          .where('assignedTo', isEqualTo: currentUserId);
     }
+
     query.snapshots().listen((QuerySnapshot snapshot) {
-      leads = snapshot.docs.map((doc) => Lead.fromMap(doc.data() as Map<String, dynamic>)).toList();
+      List<Lead> tempLeads = snapshot.docs
+          .map((doc) => Lead.fromMap(doc.data() as Map<String, dynamic>))
+          .toList();
+
+      tempLeads.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+      leads = tempLeads;
       log('Leads updated: ${leads.length} leads fetched');
       isLoading = false;
       update();
@@ -152,16 +158,24 @@ class HomeController extends GetxController {
     try {
       String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
       QuerySnapshot querySnapshot;
+
       if (isAdmin) {
-        querySnapshot = await fireStore.collection('leads').orderBy('updatedAt', descending: true).get();
+        querySnapshot = await fireStore.collection('leads').get();
       } else {
-        querySnapshot = await fireStore.collection('leads').where('assignedTo', isEqualTo: currentUserId).get();
+        querySnapshot = await fireStore
+            .collection('leads')
+            .where('assignedTo', isEqualTo: currentUserId)
+            .get();
       }
 
-      leads = querySnapshot.docs.map((doc) {
+      List<Lead> tempLeads = querySnapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         return Lead.fromMap(data);
       }).toList();
+
+      tempLeads.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+      leads = tempLeads;
       log('Leads loaded: ${leads.length} leads');
     } catch (e) {
       log("Error loading leads: $e");
@@ -229,10 +243,14 @@ class HomeController extends GetxController {
     }
 
     if (isAdmin && selectedEmployeeId != null) {
-      filteredLeads = filteredLeads.where((lead) => lead.assignedTo == selectedEmployeeId).toList();
+      filteredLeads = filteredLeads
+          .where((lead) => lead.assignedTo == selectedEmployeeId)
+          .toList();
     }
     if (selectedTechnician != null) {
-      filteredLeads = filteredLeads.where((lead) => lead.technician == selectedTechnician).toList();
+      filteredLeads = filteredLeads
+          .where((lead) => lead.technician == selectedTechnician)
+          .toList();
     }
 
     if (isSearching && searchQuery.isNotEmpty) {
@@ -265,17 +283,19 @@ class HomeController extends GetxController {
   }
 
   Future<bool> updateLeadStatus(
-      String leadId,
-      String stage,
-      String callStatus,
-      ) async {
+    String leadId,
+    String stage,
+    String callStatus,
+  ) async {
     try {
       await fireStore.collection('leads').doc(leadId).update({
         'stage': stage,
         'callStatus': callStatus,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      log('Lead status updated: $leadId, stage: $stage, callStatus: $callStatus');
+      log(
+        'Lead status updated: $leadId, stage: $stage, callStatus: $callStatus',
+      );
       return true;
     } catch (e) {
       log("Error updating lead: $e");
@@ -289,4 +309,3 @@ class HomeController extends GetxController {
     super.onClose();
   }
 }
-

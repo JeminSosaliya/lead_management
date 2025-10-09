@@ -392,7 +392,7 @@ class LeadDetailsScreen extends StatelessWidget {
                 SizedBox(height: height * 0.02),
 
                 _infoCard(
-                  title: "Phone",
+                  title: "Client Number",
                   value: lead.clientPhone,
                   trailing: GestureDetector(
                     onTap: () {
