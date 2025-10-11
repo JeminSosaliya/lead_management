@@ -6,6 +6,7 @@ import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/constant/list_const.dart';
 import 'package:lead_management/ui_and_controllers/main/add_laed/add_lead_controller.dart';
 import 'package:lead_management/ui_and_controllers/main/member_list_screen/member_controller.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
 
 import 'package:lead_management/ui_and_controllers/widgets/custom_textformfield.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
@@ -26,18 +27,9 @@ class AddLeadScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorWhite,
-      appBar: AppBar(
-        title: WantText(
-          text: isOwner ? 'Add New Lead' : 'Add My Lead',
-          fontSize: width * 0.061,
-          fontWeight: FontWeight.w600,
-          textColor: colorWhite,
-        ),
-        backgroundColor: colorMainTheme,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colorWhite),
-          onPressed: () => Get.back(),
-        ),
+      appBar: CustomAppBar(
+        title: isOwner ? 'Add New Lead' : 'Add My Lead',
+        showBackButton: true,
       ),
       body: GetBuilder<AddLeadController>(
         builder: (AddLeadController controller) {

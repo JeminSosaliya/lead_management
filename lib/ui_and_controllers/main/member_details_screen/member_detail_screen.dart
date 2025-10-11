@@ -5,6 +5,7 @@ import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/ui_and_controllers/main/member_list_screen/member_controller.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
 import 'package:lead_management/ui_and_controllers/widgets/rich_text.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
@@ -59,18 +60,11 @@ class MemberDetailScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorWhite,
-
-      appBar: AppBar(
-        title: WantText(text: member!['name'] ?? 'Member Details'),
-        backgroundColor: colorMainTheme,
-        foregroundColor: colorWhite,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
-        ),
+      appBar: CustomAppBar(
+        title: member!['name'] ?? 'Member Details',
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh,color: colorWhite),
             onPressed: () => controller.loadMembers(),
           ),
         ],

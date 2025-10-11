@@ -10,6 +10,7 @@ import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/model/lead_add_model.dart';
 import 'package:lead_management/ui_and_controllers/main/lead_details_screen/lead_details_controller.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_textformfield.dart';
@@ -32,15 +33,8 @@ class LeadDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorWhite,
-      appBar: AppBar(
-        title: WantText(
-          text: 'Lead Details',
-          fontSize: width * 0.061,
-          fontWeight: FontWeight.w600,
-          textColor: colorWhite,
-        ),
-        backgroundColor: colorMainTheme,
-        iconTheme: IconThemeData(color: colorWhite),
+      appBar: CustomAppBar(
+        title: "Lead Details",
         actions: [
           GetBuilder<LeadDetailsController>(
             builder: (controller) {

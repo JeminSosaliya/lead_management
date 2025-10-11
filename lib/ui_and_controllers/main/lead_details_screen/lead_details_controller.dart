@@ -470,7 +470,6 @@ class LeadDetailsController extends GetxController {
 
     }
   }
-
   void callLead() async {
     if (lead == null) return;
 
@@ -493,19 +492,75 @@ class LeadDetailsController extends GetxController {
       return;
     }
 
-    final Uri url = Uri(scheme: 'tel', path: phone);
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-      showUpdateForm = true;
-      update();
-    } else {
+    try {
+      // Clean phone number (remove spaces, dashes, etc.)
+      String cleanPhone = phone.replaceAll(RegExp(r'[^\d+]'), '');
+
+      final Uri url = Uri(scheme: 'tel', path: cleanPhone);
+
+      // Check if the URL can be launched
+      bool canLaunch = await canLaunchUrl(url);
+
+      if (canLaunch) {
+        // ✅ Add LaunchMode.externalApplication for better compatibility
+        bool launched = await launchUrl(
+          url,
+          mode: LaunchMode.externalApplication,
+        );
+
+        if (launched) {
+          showUpdateForm = true;
+          update();
+        } else {
+          throw Exception('Failed to launch dialer');
+        }
+      } else {
+        throw Exception('Cannot launch phone dialer');
+      }
+    } catch (e) {
+      log("Error launching call: $e");
       Get.context?.showAppSnackBar(
-        message: 'Could not launch call',
+        message: 'Could not launch call. Please check if you have a dialer app installed.',
         backgroundColor: colorRedCalendar,
         textColor: colorWhite,
       );
     }
   }
+  // void callLead() async {
+  //   if (lead == null) return;
+  //
+  //   if (lead!.stage == 'completed' || lead!.stage == 'cancelled') {
+  //     Get.context?.showAppSnackBar(
+  //       message: 'Cannot call completed leads',
+  //       backgroundColor: colorRedCalendar,
+  //       textColor: colorWhite,
+  //     );
+  //     return;
+  //   }
+  //
+  //   String? phone = lead!.clientPhone;
+  //   if (phone.isEmpty) {
+  //     Get.context?.showAppSnackBar(
+  //       message: 'Phone number not available',
+  //       backgroundColor: colorRedCalendar,
+  //       textColor: colorWhite,
+  //     );
+  //     return;
+  //   }
+  //
+  //   final Uri url = Uri(scheme: 'tel', path: phone);
+  //   if (await canLaunchUrl(url)) {
+  //     await launchUrl(url);
+  //     showUpdateForm = true;
+  //     update();
+  //   } else {
+  //     Get.context?.showAppSnackBar(
+  //       message: 'Could not launch call',
+  //       backgroundColor: colorRedCalendar,
+  //       textColor: colorWhite,
+  //     );
+  //   }
+  // }
 
   void openWhatsApp(String phone) async {
     String cleanPhone = phone.replaceAll(RegExp(r'[^\d+]'), '');

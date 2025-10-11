@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/ui_and_controllers/main/add_users/add_technician/add_technician_controller.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_textformfield.dart';
@@ -17,15 +18,8 @@ class AddTechnicianScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorWhite,
-      appBar: AppBar(
-        title: WantText(
-          text: "Technician Types",
-          fontSize: width * 0.051,
-          fontWeight: FontWeight.w600,
-          textColor: colorWhite,
-        ),
-        backgroundColor: colorMainTheme,
-        iconTheme: IconThemeData(color: colorWhite),
+      appBar: CustomAppBar(
+        title: "Technician Types",
         actions: [
           IconButton(
             icon: Icon(Icons.refresh, color: colorWhite),
