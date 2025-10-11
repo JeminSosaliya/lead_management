@@ -5,6 +5,7 @@ import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/routes/route_manager.dart';
 import 'package:lead_management/ui_and_controllers/main/analytics/analytics_controller.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
 class AnalyticsScreen extends StatelessWidget {
@@ -56,7 +57,7 @@ class AnalyticsScreen extends StatelessWidget {
         }
 
         return SingleChildScrollView(
-          padding: EdgeInsets.all(width * 0.05),
+          padding: EdgeInsets.all(width * 0.041),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -140,7 +141,7 @@ class AnalyticsScreen extends StatelessWidget {
               if (controller.selectedEmployeeId.value != null || controller.selectedTechnicianId.value != null)
                 Container(
                   width: double.infinity,
-                  padding: EdgeInsets.all(width * 0.04),
+                  padding: EdgeInsets.all(width * 0.03),
                   decoration: BoxDecoration(
                     color: colorMainTheme.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -156,14 +157,15 @@ class AnalyticsScreen extends StatelessWidget {
                           children: [
                             WantText(
                               text: 'Active Filters',
-                              fontSize: width * 0.032,
-                              textColor: colorGreyText,
+                              fontSize: width * 0.041,
+                              textColor: colorBlack,
+                              fontWeight: FontWeight.w500,
                             ),
                             WantText(
                               text: controller.filterDescription,
-                              fontSize: width * 0.042,
-                              fontWeight: FontWeight.bold,
-                              textColor: colorMainTheme,
+                              fontSize: width * 0.035,
+                              fontWeight: FontWeight.w500,
+                              textColor: colorDarkGreyText,
                             ),
                           ],
                         ),
@@ -202,14 +204,14 @@ class AnalyticsScreen extends StatelessWidget {
                       text: (controller.selectedEmployeeId.value != null || controller.selectedTechnicianId.value != null)
                           ? 'Filtered Leads'
                           : 'Total Leads',
-                      fontSize: width * 0.045,
+                      fontSize: width * 0.041,
                       fontWeight: FontWeight.w500,
                       textColor: colorWhite,
                     ),
                     SizedBox(height: height * 0.01),
                     WantText(
                       text: '${controller.totalLeads}',
-                      fontSize: width * 0.1,
+                      fontSize: width * 0.06,
                       fontWeight: FontWeight.bold,
                       textColor: colorWhite,
                     ),
@@ -248,25 +250,14 @@ class AnalyticsScreen extends StatelessWidget {
               if (controller.totalLeads != 0)
                 Column(
                  children: [
-                   Container(
-                     width: double.infinity,
-                     padding: EdgeInsets.all(width * 0.05),
-                     decoration: BoxDecoration(
-                       color: colorWhite,
-                       borderRadius: BorderRadius.circular(12),
-                       boxShadow: [
-                         BoxShadow(
-                           color: colorBoxShadow,
-                           blurRadius: 7,
-                           offset: Offset(4, 3),
-                         ),
-                       ],
-                     ),
+                   CustomCard(
+                     leftMargin: 0,
+                     rightMargin: 0,
                      child: Column(
                        children: [
                          WantText(
                            text: 'Lead Status Distribution',
-                           fontSize: width * 0.05,
+                           fontSize: width * 0.041,
                            fontWeight: FontWeight.bold,
                            textColor: colorBlack,
                          ),
@@ -373,7 +364,7 @@ class AnalyticsScreen extends StatelessWidget {
       children: [
         WantText(
           text: title,
-          fontSize: width * 0.038,
+          fontSize: width * 0.035,
           fontWeight: FontWeight.w600,
           textColor: colorBlack,
         ),
@@ -393,7 +384,7 @@ class AnalyticsScreen extends StatelessWidget {
             value: selectedValue,
             hint: WantText(
               text: hintText,
-              fontSize: width * 0.04,
+              fontSize: width * 0.035,
               textColor: colorGreyText,
             ),
             underline: SizedBox(),
@@ -403,7 +394,7 @@ class AnalyticsScreen extends StatelessWidget {
                 value: null,
                 child: WantText(
                   text: 'All $title' + (title == 'Employee' ? 's' : 's'),
-                  fontSize: width * 0.04,
+                  fontSize: width * 0.035,
                   fontWeight: FontWeight.w600,
                   textColor: colorMainTheme,
                 ),
@@ -417,15 +408,15 @@ class AnalyticsScreen extends StatelessWidget {
                     children: [
                       WantText(
                         text: item['name'],
-                        fontSize: width * 0.04,
+                        fontSize: width * 0.035,
                         fontWeight: FontWeight.w500,
                         textColor: colorBlack,
                       ),
                       if (item['email'] != null && item['email'].isNotEmpty)
                         WantText(
                           text: item['email'],
-                          fontSize: width * 0.032,
-                          textColor: colorGreyText,
+                          fontSize: width * 0.031,
+                          textColor: colorDarkGreyText,
                         ),
                     ],
                   ),
@@ -541,7 +532,7 @@ class AnalyticsScreen extends StatelessWidget {
           SizedBox(width: width * 0.02),
           WantText(
             text: label,
-            fontSize: width * 0.038,
+            fontSize: width * 0.035,
             fontWeight: FontWeight.w500,
             textColor: colorBlack,
           ),
@@ -571,7 +562,7 @@ class AnalyticsScreen extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              padding: EdgeInsets.all(width * 0.03),
+              padding: EdgeInsets.all(width * 0.02),
               decoration: BoxDecoration(
                 color: color.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(8),
@@ -579,7 +570,7 @@ class AnalyticsScreen extends StatelessWidget {
               child: Icon(
                 Icons.pie_chart,
                 color: color,
-                size: width * 0.08,
+                size: width * 0.07,
               ),
             ),
             SizedBox(width: width * 0.04),
@@ -589,23 +580,23 @@ class AnalyticsScreen extends StatelessWidget {
                 children: [
                   WantText(
                     text: title,
-                    fontSize: width * 0.04,
+                    fontSize: width * 0.035,
                     fontWeight: FontWeight.w500,
                     textColor: colorBlack,
                   ),
-                  SizedBox(height: height * 0.005),
+                  SizedBox(height: height * 0.003),
                   WantText(
                     text: '$count leads (${percentage.toStringAsFixed(1)}%)',
-                    fontSize: width * 0.035,
+                    fontSize: width * 0.031,
                     fontWeight: FontWeight.w400,
-                    textColor: colorGreyText,
+                    textColor: colorDarkGreyText,
                   ),
                 ],
               ),
             ),
             WantText(
               text: '$count',
-              fontSize: width * 0.06,
+              fontSize: width * 0.05,
               fontWeight: FontWeight.bold,
               textColor: color,
             ),

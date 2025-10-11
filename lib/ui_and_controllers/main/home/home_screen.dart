@@ -14,6 +14,8 @@ import 'package:lead_management/ui_and_controllers/main/home/home_controller.dar
 import 'package:lead_management/ui_and_controllers/main/lead_details_screen/lead_details_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/profile/profile_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
+import 'package:lead_management/ui_and_controllers/widgets/rich_text.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -178,18 +180,21 @@ class HomeScreen extends StatelessWidget {
                             );
                           }),
                         if (controller.isAdmin)
-                        ListTile(
-                          leading: Icon(Icons.analytics, color: colorMainTheme),
-                          title: WantText(
-                            text: "Analytics",
-                            textColor: colorBlack,
-                            fontWeight: FontWeight.w500,
+                          ListTile(
+                            leading: Icon(
+                              Icons.analytics,
+                              color: colorMainTheme,
+                            ),
+                            title: WantText(
+                              text: "Analytics",
+                              textColor: colorBlack,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            onTap: () {
+                              Get.back();
+                              Get.toNamed(AppRoutes.analytics);
+                            },
                           ),
-                          onTap: () {
-                            Get.back();
-                            Get.toNamed(AppRoutes.analytics);
-                          },
-                        ),
                         ListTile(
                           leading: const Icon(
                             Icons.person,
@@ -317,6 +322,8 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               bottom: TabBar(
+                isScrollable: true,
+                tabAlignment: TabAlignment.start,
                 labelColor: colorWhite,
                 unselectedLabelColor: colorWhite70,
                 indicatorColor: colorWhite,
@@ -387,6 +394,7 @@ class HomeScreen extends StatelessWidget {
             floatingActionButton: FloatingActionButton(
               backgroundColor: colorMainTheme,
               onPressed: () => Get.toNamed(AppRoutes.addLeadScreen),
+              shape: const CircleBorder(),
               child: Icon(Icons.add, color: colorWhite),
             ),
           ),
@@ -652,124 +660,100 @@ class HomeScreen extends StatelessWidget {
     }
 
     return ListView.builder(
-      padding: EdgeInsets.only(top: width * 0.041),
       itemCount: leads.length,
       itemBuilder: (context, index) {
         Lead lead = leads[index];
         return GestureDetector(
           onTap: () {
-            Get.toNamed(AppRoutes.leadDetailsScreen,arguments: [
-              lead.leadId,
-              lead]
+            Get.toNamed(
+              AppRoutes.leadDetailsScreen,
+              arguments: [lead.leadId, lead],
             );
           },
-          child: Container(
-            padding: EdgeInsets.all(width * 0.041),
-            margin: EdgeInsets.only(
-              bottom: height * 0.019,
-              left: width * 0.041,
-              right: width * 0.041,
-            ),
-            decoration: BoxDecoration(
-              color: colorWhite,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: colorBoxShadow,
-                  blurRadius: 7,
-                  offset: Offset(4, 3),
-                ),
-              ],
-            ),
+          child: CustomCard(
+            horizontalPadding: 0,
+            verticalPadding: 0,
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  backgroundColor: colorMainTheme,
-                  radius: 22,
-                  child: WantText(
-                    text: lead.clientName[0].toUpperCase(),
-                    fontSize: width * 0.046,
-                    fontWeight: FontWeight.w600,
-                    textColor: colorWhite,
-                  ),
+                Row(
+                  children: [
+                    SizedBox(width: width * 0.03),
+                    Center(
+                      child: CircleAvatar(
+                        backgroundColor: colorMainTheme,
+                        radius: width * 0.06,
+                        child: WantText(
+                          text: lead.clientName[0].toUpperCase(),
+                          fontSize: width * 0.046,
+                          fontWeight: FontWeight.w600,
+                          textColor: colorWhite,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: height * 0.012,
+                        horizontal: width * 0.03,
+                      ),
+                      child: SizedBox(
+                        width: width * 0.45,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            WantText(
+                              text: lead.clientName,
+                              fontSize: width * 0.041,
+                              fontWeight: FontWeight.w600,
+                              textColor: colorBlack,
+                            ),
+                            CustomRichText(
+                              title: 'Assigned To: ',
+                              value: lead.assignedToName,
+                            ),
+                            SizedBox(height: height * 0.005),
+                            CustomRichText(
+                              title: 'Added By: ',
+                              value: lead.addedByName,
+                            ),
+                            SizedBox(height: height * 0.005),
+                            WantText(
+                              text: '📞 ${lead.clientPhone}',
+                              fontSize: width * 0.031,
+                              fontWeight: FontWeight.w400,
+                              textColor: colorDarkGreyText,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(width: width * 0.04),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      WantText(
-                        text: lead.clientName,
-                        fontSize: width * 0.041,
-                        fontWeight: FontWeight.w600,
-                        textColor: colorBlack,
-                      ),
-                      SizedBox(height: height * 0.005),
-                      WantText(
-                        text: 'Assigned To: ${lead.assignedToName}',
-                        fontSize: width * 0.038,
-                        fontWeight: FontWeight.w600,
-                        textColor: colorDarkGreyText,
-                      ),
-                      SizedBox(height: height * 0.005),
-                      WantText(
-                        text: 'Added By: ${lead.addedByName}',
-                        fontSize: width * 0.038,
-                        fontWeight: FontWeight.w600,
-                        textColor: colorDarkGreyText,
-                      ),
-                      SizedBox(height: height * 0.005),
-                      WantText(
-                        text: '📞 ${lead.clientPhone}',
-                        fontSize: width * 0.035,
-                        fontWeight: FontWeight.w400,
-                        textColor: colorDarkGreyText,
-                      ),
-                      SizedBox(height: height * 0.012),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _getStageColor(lead.stage),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: WantText(
-                              text: lead.stage,
-                              fontSize: width * 0.030,
-                              fontWeight: FontWeight.w500,
-                              textColor: colorWhite,
-                            ),
-                          ),
-                          SizedBox(width: width * 0.0205),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _getStatusColor(lead.callStatus),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: WantText(
-                              text: lead.callStatus,
-                              fontSize: width * 0.030,
-                              fontWeight: FontWeight.w500,
-                              textColor: colorWhite,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                Container(
+                  width: width * 0.23,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: width * 0.015,
+                    vertical: height * 0.002,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor(lead.callStatus),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(12),
+                      topRight: Radius.circular(12),
+                    ),
+                  ),
+                  child: WantText(
+                    text: lead.callStatus,
+                    fontSize: width * 0.030,
+                    fontWeight: FontWeight.w500,
+                    textColor: colorWhite,
                   ),
                 ),
               ],
             ),
           ),
+        
         );
       },
     );

@@ -29,7 +29,7 @@ class AddAdminScreen extends StatelessWidget {
         ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(width * 0.05),
+        padding: EdgeInsets.all(width * 0.041),
         child: Form(
           key: controller.formKey,
           child: Column(
@@ -57,14 +57,14 @@ class AddAdminScreen extends StatelessWidget {
                     SizedBox(height: height * 0.02),
                     WantText(
                       text: "Add New Admin",
-                      fontSize: width * 0.06,
+                      fontSize: width * 0.045,
                       fontWeight: FontWeight.bold,
                       textColor: colorBlack,
                     ),
-                    SizedBox(height: height * 0.01),
+                    SizedBox(height: height * 0.005),
                     WantText(
                       text: "Fill in the details to create a new admin account",
-                      fontSize: width * 0.04,
+                      fontSize: width * 0.035,
                       textColor: colorGreyText,
                       textAlign: TextAlign.center,
                     ),
@@ -72,7 +72,7 @@ class AddAdminScreen extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(height: height * 0.04),
+              SizedBox(height: height * 0.03),
 
               // Name Field
               CustomTextFormField(
@@ -236,9 +236,6 @@ class AddAdminScreen extends StatelessWidget {
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Please enter the address";
-                  }
-                  if (value.length < 10) {
-                    return "Please enter a complete address";
                   }
                   return null;
                 },

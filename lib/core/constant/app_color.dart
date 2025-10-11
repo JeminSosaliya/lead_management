@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-const Color colorMainTheme = Color.fromRGBO(24, 144, 255, 1);
+const Color colorMainTheme = Color(0xff0E3253);
 const Color colorCustomButton = Color.fromRGBO(37, 99, 235, 1);
 Color colorRedCalendar = const Color.fromRGBO(240, 77, 35, 1);
 Color colorRedError = const Color.fromRGBO(183, 28, 28, 1);

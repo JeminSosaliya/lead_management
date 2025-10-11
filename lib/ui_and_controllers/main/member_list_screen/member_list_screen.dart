@@ -5,6 +5,7 @@ import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/routes/route_manager.dart';
 import 'package:lead_management/ui_and_controllers/main/member_details_screen/member_detail_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/member_list_screen/member_controller.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
 class MemberListScreen extends StatelessWidget {
@@ -36,8 +37,8 @@ class MemberListScreen extends StatelessWidget {
           // Dropdown for selecting type
           Container(
             width: double.infinity,
-            margin: EdgeInsets.all(width * 0.05),
-            padding: EdgeInsets.symmetric(horizontal: width * 0.04),
+            margin: EdgeInsets.all(width * 0.041),
+            padding: EdgeInsets.symmetric(horizontal: width * 0.041),
             decoration: BoxDecoration(
               border: Border.all(color: colorGreyTextFieldBorder),
               borderRadius: BorderRadius.circular(8),
@@ -122,7 +123,6 @@ class MemberListScreen extends StatelessWidget {
               }
 
               return ListView.builder(
-                padding: EdgeInsets.symmetric(horizontal: width * 0.05),
                 itemCount: controller.currentList.length,
                 itemBuilder: (context, index) {
                   final member = controller.currentList[index];
@@ -140,20 +140,8 @@ class MemberListScreen extends StatelessWidget {
       Map<String, dynamic> member,
       MemberController controller,
       ) {
-    return Container(
-      margin: EdgeInsets.only(bottom: height * 0.015),
-      padding: EdgeInsets.all(width * 0.04),
-      decoration: BoxDecoration(
-        color: colorWhite,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: colorBoxShadow,
-            blurRadius: 7,
-            offset:  Offset(4, 3),
-          ),
-        ],
-      ),
+    return CustomCard(
+      verticalPadding: height * 0.008,
       child: ListTile(
         contentPadding: EdgeInsets.zero,
         leading: CircleAvatar(
@@ -165,8 +153,8 @@ class MemberListScreen extends StatelessWidget {
         ),
         title: WantText(
           text: member['name'] ?? 'Unknown',
-          fontSize: width * 0.045,
-          fontWeight: FontWeight.bold,
+          fontSize: width * 0.041,
+          fontWeight: FontWeight.w600,
           textColor: colorBlack,
         ),
         subtitle: Column(
@@ -175,14 +163,14 @@ class MemberListScreen extends StatelessWidget {
             SizedBox(height: height * 0.005),
             WantText(
               text: member['email'] ?? 'No email',
-              fontSize: width * 0.035,
-              textColor: colorGreyText,
+              fontSize: width * 0.031,
+              textColor: colorDarkGreyText,
             ),
             SizedBox(height: height * 0.002),
             WantText(
               text: member['phone'] ?? 'No phone',
-              fontSize: width * 0.035,
-              textColor: colorGreyText,
+              fontSize: width * 0.031,
+              textColor: colorDarkGreyText,
             ),
             SizedBox(height: height * 0.005),
             Row(
@@ -190,7 +178,7 @@ class MemberListScreen extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: width * 0.02,
-                    vertical: height * 0.005,
+                    vertical: height * 0.002,
                   ),
                   decoration: BoxDecoration(
                     color: member['isActive'] == true
@@ -201,7 +189,7 @@ class MemberListScreen extends StatelessWidget {
                   child: WantText(
                     text: member['isActive'] == true ? 'Active' : 'Inactive',
                     fontSize: width * 0.03,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w500,
                     textColor: colorWhite,
                   ),
                 ),
@@ -209,7 +197,7 @@ class MemberListScreen extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: width * 0.02,
-                    vertical: height * 0.005,
+                    vertical: height * 0.002,
                   ),
                   decoration: BoxDecoration(
                     color: member['type'] == 'admin'
@@ -220,7 +208,7 @@ class MemberListScreen extends StatelessWidget {
                   child: WantText(
                     text: (member['type'] ?? 'unknown').toUpperCase(),
                     fontSize: width * 0.03,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w500,
                     textColor: colorWhite,
                   ),
                 ),
