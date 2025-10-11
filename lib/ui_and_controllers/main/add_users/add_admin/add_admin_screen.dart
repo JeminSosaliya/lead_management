@@ -5,6 +5,7 @@ import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/ui_and_controllers/main/add_users/add_admin/add_admin_controller.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_textformfield.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
@@ -18,16 +19,7 @@ class AddAdminScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorWhite,
-
-      appBar: AppBar(
-        title: const WantText(text: "Add Admin"),
-        backgroundColor: colorMainTheme,
-        foregroundColor: colorWhite,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
-        ),
-      ),
+      appBar: CustomAppBar(title: 'Add Admin', showBackButton: true),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(width * 0.041),
         child: Form(
@@ -36,8 +28,6 @@ class AddAdminScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(height: height * 0.02),
-              
-              // Header Section
               Center(
                 child: Column(
                   children: [
@@ -110,9 +100,7 @@ class AddAdminScreen extends StatelessWidget {
                   color: colorGreyText,
                   size: width * 0.05,
                 ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter the phone number';
@@ -144,7 +132,9 @@ class AddAdminScreen extends StatelessWidget {
                   if (value == null || value.isEmpty) {
                     return 'Please enter the email';
                   }
-                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                  if (!RegExp(
+                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                  ).hasMatch(value)) {
                     return 'Please enter a valid email address';
                   }
                   return null;
@@ -158,65 +148,73 @@ class AddAdminScreen extends StatelessWidget {
               SizedBox(height: height * 0.02),
 
               // Password Field
-              Obx(() => CustomTextFormField(
-                controller: controller.passwordController,
-                labelText: "Password",
-                hintText: "Enter admin's password",
-                obscureText: controller.obscurePassword,
-                prefixIcon: Icon(
-                  Icons.lock,
-                  color: colorGreyText,
-                  size: width * 0.05,
-                ),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    controller.obscurePassword ? Icons.visibility_off : Icons.visibility,
+              Obx(
+                () => CustomTextFormField(
+                  controller: controller.passwordController,
+                  labelText: "Password",
+                  hintText: "Enter admin's password",
+                  obscureText: controller.obscurePassword,
+                  prefixIcon: Icon(
+                    Icons.lock,
                     color: colorGreyText,
                     size: width * 0.05,
                   ),
-                  onPressed: controller.togglePasswordVisibility,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      controller.obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: colorGreyText,
+                      size: width * 0.05,
+                    ),
+                    onPressed: controller.togglePasswordVisibility,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Please enter the password";
+                    }
+                    if (value.length < 6) {
+                      return "Password must be at least 6 characters";
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter the password";
-                  }
-                  if (value.length < 6) {
-                    return "Password must be at least 6 characters";
-                  }
-                  return null;
-                },
-              )),
+              ),
 
               SizedBox(height: height * 0.02),
 
-              Obx(() => CustomTextFormField(
-                controller: controller.confirmPasswordController,
-                labelText: "Confirm Password",
-                hintText: "Confirm admin's password",
-                obscureText: controller.obscureConfirmPassword,
-                prefixIcon: Icon(
-                  Icons.lock_outline,
-                  color: colorGreyText,
-                  size: width * 0.05,
-                ),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    controller.obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+              Obx(
+                () => CustomTextFormField(
+                  controller: controller.confirmPasswordController,
+                  labelText: "Confirm Password",
+                  hintText: "Confirm admin's password",
+                  obscureText: controller.obscureConfirmPassword,
+                  prefixIcon: Icon(
+                    Icons.lock_outline,
                     color: colorGreyText,
                     size: width * 0.05,
                   ),
-                  onPressed: controller.toggleConfirmPasswordVisibility,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      controller.obscureConfirmPassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: colorGreyText,
+                      size: width * 0.05,
+                    ),
+                    onPressed: controller.toggleConfirmPasswordVisibility,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Please confirm the password";
+                    }
+                    if (value != controller.passwordController.text) {
+                      return "Passwords do not match";
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please confirm the password";
-                  }
-                  if (value != controller.passwordController.text) {
-                    return "Passwords do not match";
-                  }
-                  return null;
-                },
-              )),
+              ),
 
               SizedBox(height: height * 0.02),
 
@@ -244,12 +242,16 @@ class AddAdminScreen extends StatelessWidget {
               SizedBox(height: height * 0.04),
 
               // Add Admin Button
-              Obx(() => CustomButton(
-                Width: width,
-                onTap: controller.isLoading ? null : controller.addAdmin,
-                label: controller.isLoading ? "Adding Admin..." : "Add Admin",
-                backgroundColor: controller.isLoading ? colorGreyText : colorMainTheme,
-              )),
+              Obx(
+                () => CustomButton(
+                  Width: width,
+                  onTap: controller.isLoading ? null : controller.addAdmin,
+                  label: controller.isLoading ? "Adding Admin..." : "Add Admin",
+                  backgroundColor: controller.isLoading
+                      ? colorGreyText
+                      : colorMainTheme,
+                ),
+              ),
 
               SizedBox(height: height * 0.02),
 
@@ -268,4 +270,4 @@ class AddAdminScreen extends StatelessWidget {
       ),
     );
   }
-} 
+}

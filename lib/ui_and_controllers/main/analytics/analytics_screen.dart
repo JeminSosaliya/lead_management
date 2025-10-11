@@ -5,6 +5,7 @@ import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/routes/route_manager.dart';
 import 'package:lead_management/ui_and_controllers/main/analytics/analytics_controller.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
@@ -17,18 +18,11 @@ class AnalyticsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorWhite,
-      appBar: AppBar(
-        title: WantText(
-          text: 'Analytics',
-          fontSize: width * 0.061,
-          fontWeight: FontWeight.w600,
-          textColor: colorWhite,
-        ),
-        backgroundColor: colorMainTheme,
-        iconTheme: IconThemeData(color: colorWhite),
+      appBar: CustomAppBar(
+        title: 'Analytics',
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh, color: colorWhite),
+            icon: Icon(Icons.refresh,color: colorWhite),
             onPressed: () {
               controller.loadEmployees();
               controller.loadTechnicians();

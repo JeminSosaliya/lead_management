@@ -5,6 +5,7 @@ import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/routes/route_manager.dart';
 import 'package:lead_management/ui_and_controllers/main/member_details_screen/member_detail_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/member_list_screen/member_controller.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
@@ -17,17 +18,11 @@ class MemberListScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorWhite,
-      appBar: AppBar(
-        title: const WantText(text: "Members"),
-        backgroundColor: colorMainTheme,
-        foregroundColor: colorWhite,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
-        ),
+      appBar: CustomAppBar(
+        title: "Technician Types",
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh,color: colorWhite),
             onPressed: controller.loadMembers,
           ),
         ],
@@ -45,7 +40,7 @@ class MemberListScreen extends StatelessWidget {
             ),
             child: DropdownButtonHideUnderline(
               child: Obx(
-                    () => DropdownButton<String>(
+                () => DropdownButton<String>(
                   value: controller.selectedType,
                   isExpanded: true,
                   items: [
@@ -137,9 +132,9 @@ class MemberListScreen extends StatelessWidget {
   }
 
   Widget _buildMemberCard(
-      Map<String, dynamic> member,
-      MemberController controller,
-      ) {
+    Map<String, dynamic> member,
+    MemberController controller,
+  ) {
     return CustomCard(
       verticalPadding: height * 0.008,
       child: ListTile(
@@ -222,9 +217,8 @@ class MemberListScreen extends StatelessWidget {
           color: colorGreyText,
         ),
         onTap: () {
-          if(member != null)
-          Get.toNamed(AppRoutes.memberDetailScreen, arguments: member);
-
+          if (member != null)
+            Get.toNamed(AppRoutes.memberDetailScreen, arguments: member);
         },
       ),
     );

@@ -9,6 +9,8 @@ import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_textformfield.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
+import '../../../widgets/custom_appbar.dart';
+
 class AddEmployeeScreen extends StatelessWidget {
   const AddEmployeeScreen({super.key});
 
@@ -18,15 +20,7 @@ class AddEmployeeScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorWhite,
-      appBar: AppBar(
-        title: const WantText(text: "Add Employee"),
-        backgroundColor: colorMainTheme,
-        foregroundColor: colorWhite,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
-        ),
-      ),
+      appBar: CustomAppBar(title: 'Add Employee', showBackButton: true),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(width * 0.041),
         child: Form(
@@ -35,8 +29,6 @@ class AddEmployeeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(height: height * 0.02),
-
-              // Header Section
               Center(
                 child: Column(
                   children: [

@@ -6,6 +6,7 @@ import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/constant/list_const.dart';
 import 'package:lead_management/ui_and_controllers/main/profile/profile_controller.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
@@ -17,18 +18,12 @@ class ProfileScreen extends StatelessWidget {
     final controller = Get.put(ProfileController());
     return Scaffold(
       backgroundColor: colorWhite,
-      appBar: AppBar(
-        title: const WantText(text: "Profile"),
-        backgroundColor: colorMainTheme,
-        foregroundColor: colorWhite,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
-        ),
+      appBar: CustomAppBar(
+        title: 'Profile',
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: controller.refreshProfile,
+            icon: Icon(Icons.refresh,color: colorWhite),
+            onPressed: controller.refreshProfile
           ),
         ],
       ),
