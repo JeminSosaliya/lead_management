@@ -44,7 +44,7 @@ class AddLeadController extends GetxController {
   final formKey = GlobalKey<FormState>();
 
   TextEditingController nameController = TextEditingController();
-  TextEditingController phoneController = TextEditingController();
+  TextEditingController clientPhoneController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController companyController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
@@ -262,10 +262,10 @@ class AddLeadController extends GetxController {
 
     if (nameController.text.trim().isEmpty) {
       errorMessage = 'Client name is required';
-    } else if (phoneController.text.trim().isEmpty) {
+    } else if (clientPhoneController.text.trim().isEmpty) {
       errorMessage = 'Client number is required';
-    } else if (phoneController.text.length != 10 ||
-        !RegExp(r'^\d{10}$').hasMatch(phoneController.text)) {
+    } else if (clientPhoneController.text.length != 10 ||
+        !RegExp(r'^\d{10}$').hasMatch(clientPhoneController.text)) {
       errorMessage = 'Client number must be exactly 10 digits';
     } else if (emailController.text.isNotEmpty &&
         !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
@@ -297,7 +297,7 @@ class AddLeadController extends GetxController {
 
     bool success = await addLead(
       clientName: nameController.text.trim(),
-      clientPhone: phoneController.text.trim(),
+      clientPhone: clientPhoneController.text.trim(),
       clientEmail: emailController.text.trim().isEmpty
           ? null
           : emailController.text.trim(),
