@@ -4,6 +4,7 @@ import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/ui_and_controllers/main/add_users/add_technician/add_technician_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_textformfield.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
@@ -89,7 +90,7 @@ class AddTechnicianScreen extends StatelessWidget {
                 ],
               ),
             ),
-
+            SizedBox(height: height * 0.02),
             // List Section
             Expanded(
               child: controller.technicianTypes.isEmpty
@@ -116,36 +117,27 @@ class AddTechnicianScreen extends StatelessWidget {
                       ),
                     )
                   : ListView.builder(
-                      padding: EdgeInsets.all(width * 0.041),
                       itemCount: controller.technicianTypes.length,
                       itemBuilder: (context, index) {
                         final technicianType = controller.technicianTypes[index];
-                        return Container(
-                          margin: EdgeInsets.only(bottom: height * 0.015),
-                          decoration: BoxDecoration(
-                            color: colorWhite,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: colorBoxShadow,
-                                blurRadius: 6,
-                                offset: Offset(4, 3),
-                              ),
-                            ],
-                          ),
+                        return CustomCard(
+                          verticalPadding: height * 0.004,
                           child: ListTile(
+                            minVerticalPadding: 0,
+                            contentPadding: EdgeInsets.zero,
                             leading: CircleAvatar(
+                              radius: width * 0.05,
                               backgroundColor: colorMainTheme,
                               child: WantText(
                                 text: '${index + 1}',
-                                fontSize: width * 0.041,
+                                fontSize: width * 0.035,
                                 fontWeight: FontWeight.w600,
                                 textColor: colorWhite,
                               ),
                             ),
                             title: WantText(
                               text: technicianType,
-                              fontSize: width * 0.041,
+                              fontSize: width * 0.035,
                               fontWeight: FontWeight.w500,
                               textColor: colorBlack,
                             ),

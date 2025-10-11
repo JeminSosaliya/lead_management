@@ -6,6 +6,7 @@ import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/constant/list_const.dart';
 import 'package:lead_management/ui_and_controllers/main/profile/profile_controller.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -83,28 +84,16 @@ class ProfileScreen extends StatelessWidget {
         }
 
         return SingleChildScrollView(
-          padding: EdgeInsets.all(width * 0.05),
           child: Column(
             children: [
               SizedBox(height: height * 0.02),
-
               Center(
                 child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: width * 0.15,
-                      backgroundColor: colorMainTheme,
-                      child: Icon(
-                        Icons.person,
-                        size: width * 0.2,
-                        color: colorWhite,
-                      ),
-                    ),
-                    SizedBox(height: height * 0.02),
                     WantText(
                       text: ListConst.currentUserProfileData.name.toString(),
-                      fontSize: width * 0.06,
-                      fontWeight: FontWeight.bold,
+                      fontSize: width * 0.045,
+                      fontWeight: FontWeight.w600,
                       textColor: colorBlack,
                     ),
                     SizedBox(height: height * 0.01),
@@ -132,29 +121,16 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(height: height * 0.04),
+              SizedBox(height: height * 0.03),
 
-              Container(
-                width: width,
-                padding: EdgeInsets.all(width * 0.05),
-                decoration: BoxDecoration(
-                  color: colorWhite,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: colorBoxShadow,
-                      blurRadius: 7,
-                      offset: Offset(4, 3),
-                    ),
-                  ],
-                ),
+              CustomCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     WantText(
                       text: "Personal Information",
-                      fontSize: width * 0.05,
-                      fontWeight: FontWeight.bold,
+                      fontSize: width * 0.045,
+                      fontWeight: FontWeight.w500,
                       textColor: colorBlack,
                     ),
                     SizedBox(height: height * 0.02),
@@ -177,18 +153,20 @@ class ProfileScreen extends StatelessWidget {
                       value: ListConst.currentUserProfileData.address
                           .toString(),
                     ),
-                    if(ListConst.currentUserProfileData.type == 'employee')
-                    _buildInfoRow(
-                      icon: Icons.work,
-                      label: "Designation",
-                      value: ListConst.currentUserProfileData.designation
-                          .toString(),
-                    ),
+                    if (ListConst.currentUserProfileData.type == 'employee')
+                      _buildInfoRow(
+                        icon: Icons.work,
+                        label: "Designation",
+                        value: ListConst.currentUserProfileData.designation
+                            .toString(),
+                      ),
                     _buildInfoRow(
                       icon: Icons.calendar_today,
                       label: "Member Since",
                       value: ListConst.currentUserProfileData.createdAt != null
-                          ? DateFormat('dd/MM/yyyy').format(ListConst.currentUserProfileData.createdAt!)
+                          ? DateFormat('dd/MM/yyyy').format(
+                              ListConst.currentUserProfileData.createdAt!,
+                            )
                           : 'N/A',
                     ),
                   ],
@@ -197,27 +175,14 @@ class ProfileScreen extends StatelessWidget {
 
               SizedBox(height: height * 0.03),
 
-              Container(
-                width:width,
-                padding: EdgeInsets.all(width * 0.05),
-                decoration: BoxDecoration(
-                  color: colorWhite,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: colorBoxShadow,
-                      blurRadius: 7,
-                      offset: Offset(4, 3),
-                    ),
-                  ],
-                ),
+              CustomCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     WantText(
                       text: "Account Information",
-                      fontSize: width * 0.05,
-                      fontWeight: FontWeight.bold,
+                      fontSize: width * 0.045,
+                      fontWeight: FontWeight.w500,
                       textColor: colorBlack,
                     ),
                     SizedBox(height: height * 0.02),
@@ -251,7 +216,7 @@ class ProfileScreen extends StatelessWidget {
     required String value,
   }) {
     return Padding(
-      padding: EdgeInsets.only(bottom: height * 0.015),
+      padding: EdgeInsets.only(bottom: height * 0.025),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -265,14 +230,14 @@ class ProfileScreen extends StatelessWidget {
                   text: label,
                   fontSize: width * 0.035,
                   fontWeight: FontWeight.w500,
-                  textColor: colorGreyText,
+                  textColor: colorBlack,
                 ),
                 SizedBox(height: height * 0.005),
                 WantText(
                   text: value,
-                  fontSize: width * 0.04,
-                  fontWeight: FontWeight.w500,
-                  textColor: colorBlack,
+                  fontSize: width * 0.031,
+                  fontWeight: FontWeight.w400,
+                  textColor: colorDarkGreyText,
                 ),
               ],
             ),

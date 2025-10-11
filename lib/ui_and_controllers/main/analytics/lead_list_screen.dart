@@ -4,6 +4,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/routes/route_manager.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
 class AnalyticsListScreen extends StatefulWidget {
@@ -49,24 +50,7 @@ class _AnalyticsListScreenState extends State<AnalyticsListScreen> {
                 lead]
               );
             },
-            child: Container(
-              padding: EdgeInsets.all(width * 0.041),
-              margin: EdgeInsets.only(
-                bottom: height * 0.019,
-                left: width * 0.041,
-                right: width * 0.041,
-              ),
-              decoration: BoxDecoration(
-                color: colorWhite,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: colorBoxShadow,
-                    blurRadius: 6,
-                    offset: Offset(4, 3),
-                  ),
-                ],
-              ),
+            child: CustomCard(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [

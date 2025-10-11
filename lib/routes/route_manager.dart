@@ -19,8 +19,6 @@ class AppRoutes {
   static const String splash = "/splash";
   static const String login = "/login";
   static const String home = "/home";
-  // static const String ownerHomeScreen = '/ownerHomeScreen';
-  // static const String employeeHomeScreen = '/employeeHomeScreen';
   static const String addLeadScreen = '/addLeadScreen';
   static const String addEmployee = "/add-employee";
   static const String addAdmin = "/add-admin";

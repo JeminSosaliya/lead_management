@@ -10,15 +10,13 @@ import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/model/lead_add_model.dart';
 import 'package:lead_management/ui_and_controllers/main/lead_details_screen/lead_details_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_textformfield.dart';
 import 'package:lead_management/ui_and_controllers/widgets/dropdown.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
 class LeadDetailsScreen extends StatelessWidget {
-
-  const LeadDetailsScreen({
-    super.key,
-  });
+  const LeadDetailsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -29,8 +27,6 @@ class LeadDetailsScreen extends StatelessWidget {
     if (initialData != null) {
       controller.initializeData(initialData!);
     }
-
-
 
     return Scaffold(
       backgroundColor: colorWhite,
@@ -92,7 +88,9 @@ class LeadDetailsScreen extends StatelessWidget {
           }
 
           bool hasValue(String? value) {
-            return value != null && value.trim().isNotEmpty && value.toLowerCase() != 'null';
+            return value != null &&
+                value.trim().isNotEmpty &&
+                value.toLowerCase() != 'null';
           }
 
           if (controller.isEditMode) {
@@ -110,7 +108,8 @@ class LeadDetailsScreen extends StatelessWidget {
                       controller: controller.nameController,
                       prefixIcon: Icon(Icons.person, color: colorGrey),
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'Please enter the client name';
+                        if (value == null || value.isEmpty)
+                          return 'Please enter the client name';
                         return null;
                       },
                     ),
@@ -126,9 +125,12 @@ class LeadDetailsScreen extends StatelessWidget {
                         LengthLimitingTextInputFormatter(10),
                       ],
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'Enter phone number';
-                        if (value.length != 10) return 'Phone number must be exactly 10 digits';
-                        if (!RegExp(r'^\d{10}$').hasMatch(value)) return 'Invalid phone number format';
+                        if (value == null || value.isEmpty)
+                          return 'Enter phone number';
+                        if (value.length != 10)
+                          return 'Phone number must be exactly 10 digits';
+                        if (!RegExp(r'^\d{10}$').hasMatch(value))
+                          return 'Invalid phone number format';
                         return null;
                       },
                     ),
@@ -141,14 +143,18 @@ class LeadDetailsScreen extends StatelessWidget {
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
                         if (value != null && value.isNotEmpty) {
-                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                          if (!RegExp(
+                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                          ).hasMatch(value)) {
                             return 'Please enter a valid email address';
                           }
                         }
                         return null;
                       },
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'[a-zA-Z0-9@._-]'),
+                        ),
                         LengthLimitingTextInputFormatter(100),
                       ],
                     ),
@@ -159,7 +165,8 @@ class LeadDetailsScreen extends StatelessWidget {
                       controller: controller.companyController,
                       prefixIcon: Icon(Icons.business, color: colorGrey),
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'Please enter the company name';
+                        if (value == null || value.isEmpty)
+                          return 'Please enter the company name';
                         return null;
                       },
                     ),
@@ -179,7 +186,8 @@ class LeadDetailsScreen extends StatelessWidget {
                       maxLines: 3,
                       prefixIcon: Icon(Icons.note, color: colorGrey),
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'Please enter the note';
+                        if (value == null || value.isEmpty)
+                          return 'Please enter the note';
                         return null;
                       },
                     ),
@@ -225,8 +233,11 @@ class LeadDetailsScreen extends StatelessWidget {
                     SizedBox(height: height * 0.023),
                     SearchableCSCDropdown(
                       title: 'Reassign To Employee',
-                      items: controller.employees.map((e) => e['name'] as String).toList(),
-                      hintText: controller.selectedEmployeeName ?? 'Select Employee',
+                      items: controller.employees
+                          .map((e) => e['name'] as String)
+                          .toList(),
+                      hintText:
+                          controller.selectedEmployeeName ?? 'Select Employee',
                       iconData1: Icons.arrow_drop_down,
                       iconData2: Icons.arrow_drop_up,
                       onChanged: (value) {
@@ -246,7 +257,8 @@ class LeadDetailsScreen extends StatelessWidget {
                     SearchableCSCDropdown(
                       title: 'Select Technician (Optional)',
                       items: controller.technicianTypes,
-                      hintText: controller.selectedTechnician ?? 'Select Technician',
+                      hintText:
+                          controller.selectedTechnician ?? 'Select Technician',
                       iconData1: Icons.arrow_drop_down,
                       iconData2: Icons.arrow_drop_up,
                       onChanged: (value) {
@@ -279,15 +291,22 @@ class LeadDetailsScreen extends StatelessWidget {
                             SizedBox(width: width * 0.03),
                             Expanded(
                               child: Text(
-                                controller.locationAddress ?? 'Tap to select location from map',
+                                controller.locationAddress ??
+                                    'Tap to select location from map',
                                 style: TextStyle(
-                                  color: controller.locationAddress == null ? colorGreyText : colorBlack,
+                                  color: controller.locationAddress == null
+                                      ? colorGreyText
+                                      : colorBlack,
                                   fontSize: width * 0.035,
                                   fontWeight: FontWeight.w400,
                                 ),
                               ),
                             ),
-                            Icon(Icons.arrow_forward_ios, color: colorGreyText, size: 16),
+                            Icon(
+                              Icons.arrow_forward_ios,
+                              color: colorGreyText,
+                              size: 16,
+                            ),
                           ],
                         ),
                       ),
@@ -304,7 +323,9 @@ class LeadDetailsScreen extends StatelessWidget {
                     SizedBox(height: height * 0.023),
                     CustomButton(
                       Width: width,
-                      onTap: controller.isUpdating ? null : controller.updateLeadDetails,
+                      onTap: controller.isUpdating
+                          ? null
+                          : controller.updateLeadDetails,
                       label: 'Save Changes',
                       boarderRadius: 8,
                     ),
@@ -363,7 +384,7 @@ class LeadDetailsScreen extends StatelessWidget {
                           children: [
                             WantText(
                               text: lead.clientName,
-                              fontSize: width * 0.046,
+                              fontSize: width * 0.041,
                               fontWeight: FontWeight.w600,
                               textColor: colorBlack,
                             ),
@@ -385,11 +406,10 @@ class LeadDetailsScreen extends StatelessWidget {
 
                 WantText(
                   text: 'Basic Information',
-                  fontSize: width * 0.045,
+                  fontSize: width * 0.041,
                   fontWeight: FontWeight.w600,
                   textColor: colorBlack,
                 ),
-                SizedBox(height: height * 0.02),
 
                 _infoCard(
                   title: "Client Number",
@@ -408,21 +428,12 @@ class LeadDetailsScreen extends StatelessWidget {
                 ),
 
                 if (hasValue(lead.clientEmail))
-                  _infoCard(
-                    title: "Email",
-                    value: lead.clientEmail!,
-                  ),
+                  _infoCard(title: "Email", value: lead.clientEmail!),
 
                 if (hasValue(lead.companyName))
-                  _infoCard(
-                    title: "Company",
-                    value: lead.companyName!,
-                  ),
+                  _infoCard(title: "Company", value: lead.companyName!),
 
-                _infoCard(
-                  title: "Source",
-                  value: lead.source ?? 'N/A',
-                ),
+                _infoCard(title: "Source", value: lead.source ?? 'N/A'),
 
                 if (hasValue(lead.description))
                   _infoCard(
@@ -431,10 +442,7 @@ class LeadDetailsScreen extends StatelessWidget {
                   ),
 
                 if (hasValue(lead.address))
-                  _infoCard(
-                    title: "Address",
-                    value: lead.address!,
-                  ),
+                  _infoCard(title: "Address", value: lead.address!),
 
                 if (lead.initialFollowUp != null)
                   _infoCard(
@@ -448,45 +456,32 @@ class LeadDetailsScreen extends StatelessWidget {
                     value: formatTimestamp(lead.nextFollowUp),
                   ),
 
-                SizedBox(height: height * 0.008),
-
+                SizedBox(height: height * 0.03),
                 WantText(
                   text: 'Assignment Information',
-                  fontSize: width * 0.045,
+                  fontSize:  width * 0.041,
                   fontWeight: FontWeight.w600,
                   textColor: colorBlack,
                 ),
-                SizedBox(height: height * 0.02),
 
-                _infoCard(
-                  title: "Added By",
-                  value: lead.addedByName,
-                ),
+                _infoCard(title: "Added By", value: lead.addedByName),
 
-                _infoCard(
-                  title: "Assigned To",
-                  value: lead.assignedToName,
-                ),
+                _infoCard(title: "Assigned To", value: lead.assignedToName),
 
                 if (hasValue(lead.technician))
-                  _infoCard(
-                    title: "Technician",
-                    value: lead.technician!,
-                  ),
-
-                if (hasValue(lead.referralName) || hasValue(lead.referralNumber))
+                  _infoCard(title: "Technician", value: lead.technician!),
+                SizedBox(height: height * 0.03),
+                if (hasValue(lead.referralName) ||
+                    hasValue(lead.referralNumber))
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: height * 0.008),
                       WantText(
                         text: 'Referral Information',
-                        fontSize: width * 0.045,
+                        fontSize: width * 0.041,
                         fontWeight: FontWeight.w600,
                         textColor: colorBlack,
                       ),
-                      SizedBox(height: height * 0.02),
-
                       if (hasValue(lead.referralName))
                         _infoCard(
                           title: "Referral Name",
@@ -601,9 +596,8 @@ class LeadDetailsScreen extends StatelessWidget {
                           onTap: controller.isUpdating
                               ? null
                               : () {
-                            controller.updateLead();
-
-                          },
+                                  controller.updateLead();
+                                },
                           label: 'Update Lead',
                         ),
                       ],
@@ -626,8 +620,9 @@ class LeadDetailsScreen extends StatelessWidget {
                         SizedBox(width: width * 0.03),
                         Expanded(
                           child: WantText(
-                            text: 'This lead is ${lead.stage} and cannot be updated.',
-                            fontSize: width*0.038,
+                            text:
+                                'This lead is ${lead.stage} and cannot be updated.',
+                            fontSize: width * 0.038,
                             fontWeight: FontWeight.w500,
                             textOverflow: TextOverflow.visible,
                             textColor: colorRedCalendar,
@@ -653,7 +648,7 @@ class LeadDetailsScreen extends StatelessWidget {
       ),
       child: WantText(
         text: text,
-        fontSize: width * 0.035,
+        fontSize: width * 0.031,
         fontWeight: FontWeight.w500,
         textColor: colorWhite,
       ),
@@ -665,17 +660,9 @@ class LeadDetailsScreen extends StatelessWidget {
     required String value,
     Widget? trailing,
   }) {
-    return Container(
-      width: width,
-      margin: EdgeInsets.only(bottom: height * 0.015),
-      padding: EdgeInsets.all(width * 0.035),
-      decoration: BoxDecoration(
-        color: colorWhite,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(color: colorBoxShadow, blurRadius: 5, offset: Offset(1, 1)),
-        ],
-      ),
+    return CustomCard(
+      rightMargin: 0,
+      leftMargin: 0,
       child: Row(
         children: [
           Expanded(
@@ -687,15 +674,15 @@ class LeadDetailsScreen extends StatelessWidget {
                     style: TextStyle(
                       color: colorBlack,
                       fontWeight: FontWeight.w500,
-                      fontSize: width*0.040,
+                      fontSize: width * 0.035,
                     ),
                   ),
                   TextSpan(
                     text: value,
-                    style:  TextStyle(
+                    style: TextStyle(
                       color: colorDarkGreyText,
-                      fontWeight: FontWeight.w500,
-                      fontSize: width*0.040,
+                      fontWeight: FontWeight.w400,
+                      fontSize: width * 0.031,
                     ),
                   ),
                 ],

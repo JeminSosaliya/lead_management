@@ -68,7 +68,7 @@ class CustomTextFormField extends StatelessWidget {
             fontWeight: FontWeight.w500,
             textColor: colorBlack,
           ),
-        if (extraSpace) SizedBox(height: height * 0.016),
+        if (extraSpace) SizedBox(height: height * 0.012),
         SizedBox(
           width: width,
           child: TextFormField(
@@ -81,7 +81,7 @@ class CustomTextFormField extends StatelessWidget {
             inputFormatters: inputFormatters,
             validator: validator,
             style: GoogleFonts.roboto(
-              fontSize: width * 0.038,
+              fontSize: width * 0.035,
               color: colorBlack,
               fontWeight: FontWeight.w400,
             ),

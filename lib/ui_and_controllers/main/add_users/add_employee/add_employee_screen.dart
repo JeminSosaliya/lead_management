@@ -28,14 +28,14 @@ class AddEmployeeScreen extends StatelessWidget {
         ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(width * 0.05),
+        padding: EdgeInsets.all(width * 0.041),
         child: Form(
           key: controller.formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(height: height * 0.02),
-              
+
               // Header Section
               Center(
                 child: Column(
@@ -56,14 +56,15 @@ class AddEmployeeScreen extends StatelessWidget {
                     SizedBox(height: height * 0.02),
                     WantText(
                       text: "Add New Employee",
-                      fontSize: width * 0.06,
+                      fontSize: width * 0.045,
                       fontWeight: FontWeight.bold,
                       textColor: colorBlack,
                     ),
-                    SizedBox(height: height * 0.01),
+                    SizedBox(height: height * 0.005),
                     WantText(
-                      text: "Fill in the details to create a new employee account",
-                      fontSize: width * 0.04,
+                      text:
+                          "Fill in the details to create a new employee account",
+                      fontSize: width * 0.035,
                       textColor: colorGreyText,
                       textAlign: TextAlign.center,
                     ),
@@ -71,7 +72,7 @@ class AddEmployeeScreen extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(height: height * 0.04),
+              SizedBox(height: height * 0.03),
 
               CustomTextFormField(
                 controller: controller.nameController,
@@ -107,9 +108,7 @@ class AddEmployeeScreen extends StatelessWidget {
                   color: colorGreyText,
                   size: width * 0.05,
                 ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter the phone number';
@@ -140,7 +139,9 @@ class AddEmployeeScreen extends StatelessWidget {
                   if (value == null || value.isEmpty) {
                     return 'Please enter the email';
                   }
-                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                  if (!RegExp(
+                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                  ).hasMatch(value)) {
                     return 'Please enter a valid email address';
                   }
                   return null;
@@ -153,65 +154,73 @@ class AddEmployeeScreen extends StatelessWidget {
 
               SizedBox(height: height * 0.02),
 
-              Obx(() => CustomTextFormField(
-                controller: controller.passwordController,
-                labelText: "Password",
-                hintText: "Enter employee's password",
-                obscureText: controller.obscurePassword,
-                prefixIcon: Icon(
-                  Icons.lock,
-                  color: colorGreyText,
-                  size: width * 0.05,
-                ),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    controller.obscurePassword ? Icons.visibility_off : Icons.visibility,
+              Obx(
+                () => CustomTextFormField(
+                  controller: controller.passwordController,
+                  labelText: "Password",
+                  hintText: "Enter employee's password",
+                  obscureText: controller.obscurePassword,
+                  prefixIcon: Icon(
+                    Icons.lock,
                     color: colorGreyText,
                     size: width * 0.05,
                   ),
-                  onPressed: controller.togglePasswordVisibility,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      controller.obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: colorGreyText,
+                      size: width * 0.05,
+                    ),
+                    onPressed: controller.togglePasswordVisibility,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Please enter the password";
+                    }
+                    if (value.length < 6) {
+                      return "Password must be at least 6 characters";
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter the password";
-                  }
-                  if (value.length < 6) {
-                    return "Password must be at least 6 characters";
-                  }
-                  return null;
-                },
-              )),
+              ),
 
               SizedBox(height: height * 0.02),
 
-              Obx(() => CustomTextFormField(
-                controller: controller.confirmPasswordController,
-                labelText: "Confirm Password",
-                hintText: "Confirm employee's password",
-                obscureText: controller.obscureConfirmPassword,
-                prefixIcon: Icon(
-                  Icons.lock_outline,
-                  color: colorGreyText,
-                  size: width * 0.05,
-                ),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    controller.obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+              Obx(
+                () => CustomTextFormField(
+                  controller: controller.confirmPasswordController,
+                  labelText: "Confirm Password",
+                  hintText: "Confirm employee's password",
+                  obscureText: controller.obscureConfirmPassword,
+                  prefixIcon: Icon(
+                    Icons.lock_outline,
                     color: colorGreyText,
                     size: width * 0.05,
                   ),
-                  onPressed: controller.toggleConfirmPasswordVisibility,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      controller.obscureConfirmPassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: colorGreyText,
+                      size: width * 0.05,
+                    ),
+                    onPressed: controller.toggleConfirmPasswordVisibility,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Please confirm the password";
+                    }
+                    if (value != controller.passwordController.text) {
+                      return "Passwords do not match";
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please confirm the password";
-                  }
-                  if (value != controller.passwordController.text) {
-                    return "Passwords do not match";
-                  }
-                  return null;
-                },
-              )),
+              ),
 
               SizedBox(height: height * 0.02),
 
@@ -230,9 +239,6 @@ class AddEmployeeScreen extends StatelessWidget {
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Please enter the address";
-                  }
-                  if (value.length < 10) {
-                    return "Please enter a complete address";
                   }
                   return null;
                 },
@@ -277,12 +283,18 @@ class AddEmployeeScreen extends StatelessWidget {
                 textCapitalization: TextCapitalization.words,
               ),
               SizedBox(height: height * 0.04),
-              Obx(() => CustomButton(
-                Width: width,
-                onTap: controller.isLoading ? null : controller.addUser,
-                label: controller.isLoading ? "Adding Employee..." : "Add Employee",
-                backgroundColor: controller.isLoading ? colorGreyText : colorMainTheme,
-              )),
+              Obx(
+                () => CustomButton(
+                  Width: width,
+                  onTap: controller.isLoading ? null : controller.addUser,
+                  label: controller.isLoading
+                      ? "Adding Employee..."
+                      : "Add Employee",
+                  backgroundColor: controller.isLoading
+                      ? colorGreyText
+                      : colorMainTheme,
+                ),
+              ),
 
               SizedBox(height: height * 0.02),
 
@@ -301,4 +313,4 @@ class AddEmployeeScreen extends StatelessWidget {
       ),
     );
   }
-} 
+}

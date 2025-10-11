@@ -6,6 +6,7 @@ import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/ui_and_controllers/main/member_list_screen/member_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
+import 'package:lead_management/ui_and_controllers/widgets/rich_text.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
 class MemberDetailScreen extends StatelessWidget {
@@ -78,19 +79,19 @@ class MemberDetailScreen extends StatelessWidget {
         padding: EdgeInsets.all(width * 0.05),
         child: Column(
           children: [
-            SizedBox(height: height * 0.02),
+            SizedBox(height: height * 0.005),
 
             Center(
               child: Column(
                 children: [
                   WantText(
                     text: member!['name'] ?? 'Unknown',
-                    fontSize: width * 0.06,
-                    fontWeight: FontWeight.bold,
+                    fontSize: width * 0.045,
+                    fontWeight: FontWeight.w600,
                     textColor: colorBlack,
                   ),
 
-                  SizedBox(height: height * 0.03),
+                  SizedBox(height: height * 0.01),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -139,7 +140,7 @@ class MemberDetailScreen extends StatelessWidget {
               ),
             ),
 
-            SizedBox(height: height * 0.025),
+            SizedBox(height: height * 0.035),
 
             Container(
               width: double.infinity,
@@ -160,8 +161,8 @@ class MemberDetailScreen extends StatelessWidget {
                 children: [
                   WantText(
                     text: "Personal Information",
-                    fontSize: width * 0.05,
-                    fontWeight: FontWeight.bold,
+                    fontSize: width * 0.045,
+                    fontWeight: FontWeight.w500,
                     textColor: colorBlack,
                   ),
                   SizedBox(height: height * 0.02),
@@ -234,18 +235,18 @@ class MemberDetailScreen extends StatelessWidget {
                 children: [
                   WantText(
                     text: "Status Management",
-                    fontSize: width * 0.05,
-                    fontWeight: FontWeight.bold,
+                    fontSize: width * 0.045,
+                    fontWeight: FontWeight.w500,
                     textColor: colorBlack,
                   ),
                   SizedBox(height: height * 0.02),
-
-                  WantText(
-                    text:
-                        "Current Status: ${member!['isActive'] == true ? 'Active' : 'Inactive'}",
-                    fontSize: width * 0.04,
-                    textColor: colorBlack,
+                  CustomRichText(
+                    title: 'Current Status: ',
+                    titleFontSize: width * 0.041,
+                    value: member!['isActive'] == true ? 'Active' : 'Inactive',
+                    valueFontSize: width * 0.035,
                   ),
+
                   SizedBox(height: height * 0.02),
 
                   if (member!['type'] != 'admin')
@@ -276,7 +277,7 @@ class MemberDetailScreen extends StatelessWidget {
     required String value,
   }) {
     return Padding(
-      padding: EdgeInsets.only(bottom: height * 0.015),
+      padding: EdgeInsets.only(bottom: height * 0.025),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -290,14 +291,14 @@ class MemberDetailScreen extends StatelessWidget {
                   text: label,
                   fontSize: width * 0.035,
                   fontWeight: FontWeight.w500,
-                  textColor: colorGreyText,
+                  textColor: colorBlack,
                 ),
-                SizedBox(height: height * 0.005),
+                SizedBox(height: height * 0.001),
                 WantText(
                   text: value,
-                  fontSize: width * 0.04,
-                  fontWeight: FontWeight.w500,
-                  textColor: colorBlack,
+                  fontSize: width * 0.031,
+                  fontWeight: FontWeight.w400,
+                  textColor: colorDarkGreyText,
                 ),
               ],
             ),
