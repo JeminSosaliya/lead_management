@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -395,6 +396,79 @@ class LeadDetailsController extends GetxController {
     }
     isLoading = false;
     update();
+  }
+
+
+  Future<void> openDirectionsToLead(double destLat, double destLng) async {
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          Get.context?.showAppSnackBar(
+            message: 'Location permission is required to show directions',
+            backgroundColor: colorRedCalendar,
+            textColor: colorWhite,
+          );
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        Get.context?.showAppSnackBar(
+          message: 'Location permission denied. Please enable it in settings.',
+          backgroundColor: colorRedCalendar,
+          textColor: colorWhite,
+        );
+        return;
+      }
+
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        Get.context?.showAppSnackBar(
+          message: 'Please turn on location services',
+          backgroundColor: colorRedCalendar,
+          textColor: colorWhite,
+        );
+        return;
+      }
+
+      Get.context?.showAppSnackBar(
+        message: 'Getting your location...',
+        backgroundColor: colorMainTheme,
+        textColor: colorWhite,
+      );
+
+      Position currentPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: Duration(seconds: 10),
+      );
+
+      final String directionsUrl =
+          'https://www.google.com/maps/dir/?api=1&origin=${currentPosition.latitude},${currentPosition.longitude}&destination=$destLat,$destLng&travelmode=driving';
+
+      final Uri uri = Uri.parse(directionsUrl);
+
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        Get.context?.showAppSnackBar(
+          message: 'Could not open maps',
+          backgroundColor: colorRedCalendar,
+          textColor: colorWhite,
+        );
+      }
+    } on TimeoutException catch (_) {
+      Get.context?.showAppSnackBar(
+        message: 'Location request timed out. Please try again.',
+        backgroundColor: colorRedCalendar,
+        textColor: colorWhite,
+      );
+    } catch (e) {
+      log("Error opening directions: $e");
+
+    }
   }
 
   void callLead() async {

@@ -57,7 +57,7 @@ class AddLeadScreen extends StatelessWidget {
                   children: [
                     CustomTextFormField(
                       labelText: "Client Name",
-                      hintText: 'Enter client Name*',
+                      hintText: 'Enter client Name',
                       controller: controller.nameController,
                       prefixIcon: Icon(Icons.person, color: colorGrey),
 
@@ -70,9 +70,9 @@ class AddLeadScreen extends StatelessWidget {
                     SizedBox(height: height * 0.023),
 
                     CustomTextFormField(
-                      labelText: "Phone Number",
-                      hintText: 'Phone Number*',
-                      controller: controller.phoneController,
+                      labelText: "Client Contact Number",
+                      hintText: 'Enter client contact number',
+                      controller: controller.clientPhoneController,
                       prefixIcon: Icon(Icons.phone, color: colorGrey),
                       keyboardType: TextInputType.phone,
                       inputFormatters: [

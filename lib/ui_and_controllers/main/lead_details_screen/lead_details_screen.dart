@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:lead_management/core/constant/app_assets.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
+import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/model/lead_add_model.dart';
 import 'package:lead_management/ui_and_controllers/main/lead_details_screen/lead_details_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
@@ -14,6 +15,7 @@ import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_textformfield.dart';
 import 'package:lead_management/ui_and_controllers/widgets/dropdown.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LeadDetailsScreen extends StatelessWidget {
   const LeadDetailsScreen({super.key});
@@ -412,7 +414,7 @@ class LeadDetailsScreen extends StatelessWidget {
                 ),
 
                 _infoCard(
-                  title: "Client Number",
+                  title: "Client Contact Number",
                   value: lead.clientPhone,
                   trailing: GestureDetector(
                     onTap: () {
@@ -444,6 +446,121 @@ class LeadDetailsScreen extends StatelessWidget {
                 if (hasValue(lead.address))
                   _infoCard(title: "Address", value: lead.address!),
 
+                if (hasValue(lead.callNote))
+                  _infoCard(title: "Call Note", value: lead.callNote!),
+
+                // ... existing code ...
+
+                if (lead.latitude != null && lead.longitude != null)
+                  GestureDetector(
+                    onTap: () => controller.openDirectionsToLead(
+                      lead.latitude!,
+                      lead.longitude!,
+                    ),
+                    child: Container(
+                      margin: EdgeInsets.only(
+                        left: width * 0.041,
+                        right: width * 0.041,
+                        top: height * 0.016,
+                        bottom: height * 0.016,
+                      ),
+                      padding: EdgeInsets.all(width * 0.041),
+                      decoration: BoxDecoration(
+                        color: colorWhite,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: colorMainTheme.withOpacity(0.3),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colorBoxShadow,
+                            blurRadius: 6,
+                            offset: Offset(4, 3),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: colorMainTheme.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  Icons.location_on,
+                                  color: colorMainTheme,
+                                  size: 24,
+                                ),
+                              ),
+                              SizedBox(width: width * 0.03),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    WantText(
+                                      text: 'Location',
+                                      fontSize: width * 0.035,
+                                      fontWeight: FontWeight.w600,
+                                      textColor: colorBlack,
+                                    ),
+                                    SizedBox(height: 4),
+                                    WantText(
+                                      text:
+                                      'Lat: ${lead.latitude!.toStringAsFixed(6)}, Lng: ${lead.longitude!.toStringAsFixed(6)}',
+                                      fontSize: width * 0.03,
+                                      fontWeight: FontWeight.w400,
+                                      textColor: colorDarkGreyText,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: height * 0.015),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: width * 0.03,
+                              vertical: height * 0.01,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colorMainTheme,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.directions,
+                                  color: colorWhite,
+                                  size: 18,
+                                ),
+                                SizedBox(width: width * 0.02),
+                                WantText(
+                                  text: 'View Directions on Map',
+                                  fontSize: width * 0.035,
+                                  fontWeight: FontWeight.w500,
+                                  textColor: colorWhite,
+                                ),
+                                SizedBox(width: width * 0.02),
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  color: colorWhite,
+                                  size: 14,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+
                 if (lead.initialFollowUp != null)
                   _infoCard(
                     title: "Initial Follow-up",
@@ -459,7 +576,7 @@ class LeadDetailsScreen extends StatelessWidget {
                 SizedBox(height: height * 0.03),
                 WantText(
                   text: 'Assignment Information',
-                  fontSize:  width * 0.041,
+                  fontSize: width * 0.041,
                   fontWeight: FontWeight.w600,
                   textColor: colorBlack,
                 ),

@@ -262,23 +262,13 @@ class HomeController extends GetxController {
   }
 
   List<Lead> _filterLeadsBySearch(List<Lead> leads, String query) {
+    if (query.isEmpty) return leads;
+    query = query.toLowerCase();
     return leads.where((lead) {
-      if (lead.clientName.toLowerCase().contains(query)) {
-        return true;
-      }
-      if (lead.clientPhone.contains(query)) {
-        return true;
-      }
-      if (isAdmin) {
-        if (lead.assignedToName.toLowerCase().contains(query)) {
-          return true;
-        }
-      } else {
-        if (lead.addedByName.toLowerCase().contains(query)) {
-          return true;
-        }
-      }
-      return false;
+      return lead.clientName.toLowerCase().contains(query) ||
+          lead.clientPhone.contains(query) ||
+          lead.assignedToName.toLowerCase().contains(query) ||
+          lead.addedByName.toLowerCase().contains(query);
     }).toList();
   }
 

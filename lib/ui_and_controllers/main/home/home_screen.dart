@@ -330,7 +330,7 @@ class HomeScreen extends StatelessWidget {
                 tabs: [
                   Tab(text: 'All'),
                   Tab(text: 'Today'),
-                  Tab(text: 'New'),
+                  Tab(text: 'New Contacted'),
                   Tab(text: 'In Progress'),
                   Tab(text: 'Completed'),
                   Tab(text: 'Cancelled'),
@@ -385,7 +385,7 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       _buildLeadList('all', controller),
                       _buildLeadList('today', controller),
-                      _buildLeadList('new', controller),
+                      _buildLeadList('newContacted', controller),
                       _buildLeadList('inProgress', controller),
                       _buildLeadList('completed', controller),
                       _buildLeadList('cancelled', controller),
@@ -744,7 +744,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   child: WantText(
-                    text: lead.callStatus,
+                    text: _formatStatus(lead.callStatus),
                     fontSize: width * 0.030,
                     fontWeight: FontWeight.w500,
                     textColor: colorWhite,
@@ -759,20 +759,34 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Color _getStageColor(String stage) {
-    switch (stage) {
-      case 'new':
-        return colorBlue;
-      case 'inProgress':
-        return colorOrange;
-      case 'completed':
-        return colorGreenOne;
-      case 'cancelled':
-        return colorBlue;
-      default:
-        return colorGrey;
+  String _formatStatus(String status) {
+    final Map<String, String> statusMap = {
+      'numberdoesnotexist': 'Number Does Not Exist',
+      'notContacted': 'Not Contacted',
+      'notinterested': 'Not Interested',
+      'numberbusy': 'Number Busy',
+      'outofrange': 'Out Of Range',
+      'switchoff': 'Switch Off',
+      'willvisitoffice': 'Will Visit Office',
+      'interested': 'Interested',
+    };
+
+    if (statusMap.containsKey(status.toLowerCase())) {
+      return statusMap[status.toLowerCase()]!;
     }
+
+    String formatted = status
+        .replaceAllMapped(
+      RegExp(r'([a-z])([A-Z])'),
+          (Match m) => '${m[1]} ${m[2]}',
+    )
+        .replaceAll('_', ' ');
+    return formatted
+        .split(' ')
+        .map((word) => word.isNotEmpty ? word[0].toUpperCase() + word.substring(1).toLowerCase() : '')
+        .join(' ');
   }
+
 
   Color _getStatusColor(String status) {
     switch (status) {
