@@ -225,17 +225,29 @@ class LeadDetailsController extends GetxController {
   }
 
   Future<void> pickInitialFollowUp() async {
+    DateTime now = DateTime.now();
     DateTime? date = await showDatePicker(
       context: Get.context!,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
+      initialDate: now,
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
+      firstDate: now,
       lastDate: DateTime(2100),
     );
+
     if (date != null) {
+      bool isToday = date.year == now.year &&
+          date.month == now.month &&
+          date.day == now.day;
+
+      TimeOfDay initialTime = isToday
+          ? TimeOfDay.fromDateTime(now.add(Duration(minutes: 1)))
+          : TimeOfDay(hour: 9, minute: 0);
+
       TimeOfDay? time = await showTimePicker(
         context: Get.context!,
-        initialTime: TimeOfDay.now(),
+        initialTime: initialTime,
       );
+
       if (time != null) {
         initialFollowUp = DateTime(
           date.year,
@@ -244,6 +256,18 @@ class LeadDetailsController extends GetxController {
           time.hour,
           time.minute,
         );
+
+        if (initialFollowUp!.isBefore(now)) {
+          Get.context?.showAppSnackBar(
+            message: 'Please select a future date and time',
+            backgroundColor: colorRedCalendar,
+            textColor: colorWhite,
+          );
+          initialFollowUp = null;
+          initialFollowUpController.clear();
+          return;
+        }
+
         initialFollowUpController.text =
             DateFormat('dd MMM yyyy, hh:mm a').format(initialFollowUp!);
         update();
@@ -586,17 +610,29 @@ class LeadDetailsController extends GetxController {
   }
 
   void pickFollowUp() async {
+    DateTime now = DateTime.now();
     DateTime? date = await showDatePicker(
       context: Get.context!,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
+      initialDate: now,
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
+      firstDate: now,
       lastDate: DateTime(2100),
     );
+
     if (date != null) {
+      bool isToday = date.year == now.year &&
+          date.month == now.month &&
+          date.day == now.day;
+
+      TimeOfDay initialTime = isToday
+          ? TimeOfDay.fromDateTime(now.add(Duration(minutes: 1)))
+          : TimeOfDay(hour: 9, minute: 0);
+
       TimeOfDay? time = await showTimePicker(
         context: Get.context!,
-        initialTime: TimeOfDay.now(),
+        initialTime: initialTime,
       );
+
       if (time != null) {
         nextFollowUpDateTime = DateTime(
           date.year,
@@ -605,7 +641,19 @@ class LeadDetailsController extends GetxController {
           time.hour,
           time.minute,
         );
-        final formattedDateTime = DateFormat('dd MMM yyyy, hh:mm a').format(nextFollowUpDateTime!);
+
+        if (nextFollowUpDateTime!.isBefore(now)) {
+          Get.context?.showAppSnackBar(
+            message: 'Please select a future date and time',
+            backgroundColor: colorRedCalendar,
+            textColor: colorWhite,
+          );
+          nextFollowUpDateTime = null;
+          return;
+        }
+
+        final formattedDateTime = DateFormat('dd MMM yyyy, hh:mm a').format(
+            nextFollowUpDateTime!);
         followUpController.text = formattedDateTime;
         update();
       }
