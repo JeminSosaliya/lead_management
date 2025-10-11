@@ -313,15 +313,15 @@ class LeadDetailsScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    SizedBox(height: height * 0.023),
-                    CustomTextFormField(
-                      labelText: "Initial Follow-up Date & Time",
-                      hintText: 'Initial Follow-up Date & Time',
-                      controller: controller.initialFollowUpController,
-                      readOnly: true,
-                      onTap: controller.pickInitialFollowUp,
-                      prefixIcon: Icon(Icons.calendar_today, color: colorGrey),
-                    ),
+                    // SizedBox(height: height * 0.023),
+                    // CustomTextFormField(
+                    //   labelText: "Initial Follow-up Date & Time",
+                    //   hintText: 'Initial Follow-up Date & Time',
+                    //   controller: controller.initialFollowUpController,
+                    //   readOnly: true,
+                    //   onTap: controller.pickInitialFollowUp,
+                    //   prefixIcon: Icon(Icons.calendar_today, color: colorGrey),
+                    // ),
                     SizedBox(height: height * 0.023),
                     CustomButton(
                       Width: width,
@@ -346,7 +346,6 @@ class LeadDetailsScreen extends StatelessWidget {
             );
           }
 
-          // View mode
           return SingleChildScrollView(
             padding: EdgeInsets.all(width * 0.04),
             child: Column(
@@ -447,9 +446,7 @@ class LeadDetailsScreen extends StatelessWidget {
                   _infoCard(title: "Address", value: lead.address!),
 
                 if (hasValue(lead.callNote))
-                  _infoCard(title: "Call Note", value: lead.callNote!),
-
-                // ... existing code ...
+                  _infoCard(title: "Reason", value: lead.callNote!),
 
                 if (lead.latitude != null && lead.longitude != null)
                   GestureDetector(
@@ -511,7 +508,7 @@ class LeadDetailsScreen extends StatelessWidget {
                                     SizedBox(height: 4),
                                     WantText(
                                       text:
-                                      'Lat: ${lead.latitude!.toStringAsFixed(6)}, Lng: ${lead.longitude!.toStringAsFixed(6)}',
+                                          'Lat: ${lead.latitude!.toStringAsFixed(6)}, Lng: ${lead.longitude!.toStringAsFixed(6)}',
                                       fontSize: width * 0.03,
                                       fontWeight: FontWeight.w400,
                                       textColor: colorDarkGreyText,
@@ -559,7 +556,6 @@ class LeadDetailsScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-
 
                 if (lead.initialFollowUp != null)
                   _infoCard(
