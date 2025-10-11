@@ -601,6 +601,7 @@ class LeadDetailsController extends GetxController {
         textColor: colorWhite,
       );
       }
+
     } catch (e) { Get.context?.showAppSnackBar(
       message: 'Could not open WhatsApp: $e',
       backgroundColor: colorRedCalendar,
