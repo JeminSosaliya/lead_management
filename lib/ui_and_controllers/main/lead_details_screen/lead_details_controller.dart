@@ -544,7 +544,7 @@ class LeadDetailsController extends GetxController {
     } catch (e) {
       log("Error launching call: $e");
       Get.context?.showAppSnackBar(
-        message: 'Could not launch call. Please check if you have a dialer app installed.',
+        message: 'Could not launch call.',
         backgroundColor: colorRedCalendar,
         textColor: colorWhite,
       );

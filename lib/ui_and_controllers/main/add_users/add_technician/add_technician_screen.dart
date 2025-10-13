@@ -6,8 +6,10 @@ import 'package:lead_management/ui_and_controllers/main/add_users/add_technician
 import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_shimmer.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_textformfield.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
+import 'package:shimmer/shimmer.dart';
 
 class AddTechnicianScreen extends StatelessWidget {
   const AddTechnicianScreen({super.key});
@@ -31,8 +33,33 @@ class AddTechnicianScreen extends StatelessWidget {
       ),
       body: Obx(() {
         if (controller.isLoading) {
-          return const Center(
-            child: CircularProgressIndicator(color: colorMainTheme),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Shimmer.fromColors(
+                baseColor: colorGrey.withValues(alpha: .3),
+                highlightColor: colorGrey.withValues(alpha: .1),
+                child: Container(
+                  height: height * 0.15,
+                  decoration: BoxDecoration(
+                    color: colorWhite,
+                  ),
+                ),
+              ),
+              SizedBox(height: height * 0.02),
+
+              Expanded(
+                child: ListView.builder(
+                  itemCount: 5, // placeholder shimmer count
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: height * 0.015, right: width * 0.04, left: width * 0.04),
+                      child: CustomShimmer(height: height * 0.08,)
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         }
 
