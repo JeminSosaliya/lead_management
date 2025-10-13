@@ -69,8 +69,8 @@ class LoginController extends GetxController {
       );
       Get.offAllNamed(
         ListConst.currentUserProfileData.type == 'admin'
-            ? AppRoutes.home
-            : AppRoutes.home,
+            ? AppRoutes.adminLogin
+            : AppRoutes.adminLogin,
       );
       // Get.offAllNamed(
       //   ListConst.currentUserProfileData.type == 'admin'

@@ -13,6 +13,8 @@ import 'package:lead_management/ui_and_controllers/main/member_list_screen/membe
 import 'package:lead_management/ui_and_controllers/main/profile/profile_screen.dart';
 import 'package:lead_management/ui_and_controllers/splash/splash_screen.dart';
 
+import '../ui_and_controllers/auth/goggle_login/admin_login_page.dart';
+
 class AppRoutes {
   AppRoutes._();
 
@@ -29,12 +31,15 @@ class AppRoutes {
   static const String analytics = "/analytics";
   static const String analyticsListScreen = "/analyticsListScreen";
   static const String leadDetailsScreen = "/leadDetailsScreen";
+  static const String adminLogin = "/adminLogin";
 
 
   static List<GetPage> pages = [
     GetPage(name: splash, page: () => SplashScreen()),
     GetPage(name: login, page: () => LoginScreen()),
     GetPage(name: home, page: () => HomeScreen()),
+    GetPage(name: adminLogin, page: () => AdminLoginPage()),
+
     // GetPage(name: ownerHomeScreen, page: () => OwnerHomeScreen()),
     // GetPage(name: employeeHomeScreen, page: () => EmployeeHomeScreen()),
     GetPage(name: addLeadScreen, page: () => AddLeadScreen()),

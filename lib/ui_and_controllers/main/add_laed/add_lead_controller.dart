@@ -12,6 +12,8 @@ import 'package:lead_management/ui_and_controllers/main/home/home_controller.dar
 import 'package:lead_management/ui_and_controllers/widgets/location_picker_screen.dart';
 import 'package:lead_management/ui_and_controllers/widgets/dropdown.dart';
 
+import '../../auth/goggle_login/google_calendar_controller.dart';
+
 class AddLeadController extends GetxController {
   List<CurrentUserProfileData> employees = [];
   bool isLoading = false;
@@ -34,6 +36,7 @@ class AddLeadController extends GetxController {
 
   TextEditingController addressController =
       TextEditingController();
+  final calendarController = Get.put(GoogleCalendarController());
 
   @override
   void onInit() {
@@ -259,32 +262,32 @@ class AddLeadController extends GetxController {
     formKey.currentState!.validate();
 
     String? errorMessage;
-
-    if (nameController.text.trim().isEmpty) {
-      errorMessage = 'Client name is required';
-    } else if (clientPhoneController.text.trim().isEmpty) {
-      errorMessage = 'Client number is required';
-    } else if (clientPhoneController.text.length != 10 ||
-        !RegExp(r'^\d{10}$').hasMatch(clientPhoneController.text)) {
-      errorMessage = 'Client number must be exactly 10 digits';
-    } else if (emailController.text.isNotEmpty &&
-        !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-            .hasMatch(emailController.text)) {
-      errorMessage = 'Invalid email format';
-    } else if (companyController.text.trim().isEmpty) {
-      errorMessage = 'Company name is required';
-    } else if (descriptionController.text.trim().isEmpty) {
-      errorMessage = 'Description/Notes is required';
-    }
-    else if (referralNumberController.text.isNotEmpty &&
-        (referralNumberController.text.length != 10 ||
-            !RegExp(r'^\d{10}$').hasMatch(referralNumberController.text))) {
-      errorMessage = 'Referral number must be exactly 10 digits';
-    } else if (showSourceError) {
-      errorMessage = 'Please select a source';
-    } else if (showEmployeeError) {
-      errorMessage = 'Please select an employee';
-    }
+///todo uncomment this code
+    // if (nameController.text.trim().isEmpty) {
+    //   errorMessage = 'Client name is required';
+    // } else if (clientPhoneController.text.trim().isEmpty) {
+    //   errorMessage = 'Client number is required';
+    // } else if (clientPhoneController.text.length != 10 ||
+    //     !RegExp(r'^\d{10}$').hasMatch(clientPhoneController.text)) {
+    //   errorMessage = 'Client number must be exactly 10 digits';
+    // } else if (emailController.text.isNotEmpty &&
+    //     !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+    //         .hasMatch(emailController.text)) {
+    //   errorMessage = 'Invalid email format';
+    // } else if (companyController.text.trim().isEmpty) {
+    //   errorMessage = 'Company name is required';
+    // } else if (descriptionController.text.trim().isEmpty) {
+    //   errorMessage = 'Description/Notes is required';
+    // }
+    // else if (referralNumberController.text.isNotEmpty &&
+    //     (referralNumberController.text.length != 10 ||
+    //         !RegExp(r'^\d{10}$').hasMatch(referralNumberController.text))) {
+    //   errorMessage = 'Referral number must be exactly 10 digits';
+    // } else if (showSourceError) {
+    //   errorMessage = 'Please select a source';
+    // } else if (showEmployeeError) {
+    //   errorMessage = 'Please select an employee';
+    // }
 
     if (errorMessage != null) {
       Get.context?.showAppSnackBar(
@@ -324,6 +327,26 @@ class AddLeadController extends GetxController {
         textColor: colorWhite,
       );
 
+      try {
+        final calendarController = Get.find<GoogleCalendarController>();
+
+        if (calendarController.isLoggedIn) {
+          await calendarController.addEvent(
+            title: 'Test Event',
+            description: 'This is a test',
+            startTime: DateTime.now().add(Duration(minutes: 2)),
+            endTime: DateTime.now().add(Duration(minutes: 4)),
+            employeeEmails: ['harshusavaliya8320@gmail.com'],
+          );
+        }
+      } catch (e) {
+        print('Failed to add Google Calendar event: $e');
+        Get.context?.showAppSnackBar(
+          message: 'Event could not be added to calendar',
+          backgroundColor: colorRedCalendar,
+          textColor: colorWhite,
+        );
+      }
       String role = ListConst.currentUserProfileData.type ?? '';
       if (role == 'employee' || role == 'admin') {
         try {
