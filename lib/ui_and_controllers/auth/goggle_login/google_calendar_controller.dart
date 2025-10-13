@@ -126,7 +126,7 @@ class GoogleCalendarController extends GetxController {
     if (calendarApi == null) {
       Get.context?.showAppSnackBar(
         message: "⚠️ Not Logged In', 'Please login as Admin first",
-        backgroundColor: colorGreen,
+        backgroundColor: colorRed,
         textColor: colorWhite,
       );
       log('🚫 Attempted to add event without logging in.');
@@ -171,7 +171,7 @@ class GoogleCalendarController extends GetxController {
       if (inserted.id != null) {
         Get.context?.showAppSnackBar(
           message: "🎉 Event Added, Event $title added successfully",
-          backgroundColor: colorRed,
+          backgroundColor: colorGreen,
           textColor: colorWhite,
         );
         log('✅ Event added successfully with ID: ${inserted.id}');

@@ -246,8 +246,7 @@ class AddLeadController extends GetxController {
 
 
   Future<void> submitForm() async {
-    String currentUserRole =
-        ListConst.currentUserProfileData.type ?? 'employee';
+    String currentUserRole = ListConst.currentUserProfileData.type ?? 'employee';
 
     showSourceError = selectedSource == null;
     if (currentUserRole == 'admin') {
@@ -262,7 +261,8 @@ class AddLeadController extends GetxController {
     formKey.currentState!.validate();
 
     String? errorMessage;
-///todo uncomment this code
+
+    // 🔍 Validation
     if (nameController.text.trim().isEmpty) {
       errorMessage = 'Client name is required';
     } else if (clientPhoneController.text.trim().isEmpty) {
@@ -278,8 +278,7 @@ class AddLeadController extends GetxController {
       errorMessage = 'Company name is required';
     } else if (descriptionController.text.trim().isEmpty) {
       errorMessage = 'Description/Notes is required';
-    }
-    else if (referralNumberController.text.isNotEmpty &&
+    } else if (referralNumberController.text.isNotEmpty &&
         (referralNumberController.text.length != 10 ||
             !RegExp(r'^\d{10}$').hasMatch(referralNumberController.text))) {
       errorMessage = 'Referral number must be exactly 10 digits';
@@ -297,6 +296,30 @@ class AddLeadController extends GetxController {
       );
       return;
     }
+
+  Get.dialog(
+      Center(
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children:  [
+              CircularProgressIndicator(color: colorMainTheme,),
+              SizedBox(height: 15),
+              Text(
+                'Adding Lead...',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600,color:colorMainTheme),
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
 
     bool success = await addLead(
       clientName: nameController.text.trim(),
@@ -319,9 +342,11 @@ class AddLeadController extends GetxController {
       nextFollowUp: nextFollowUp,
     );
 
+    Get.back();
+
     if (success) {
       Get.back();
-        Get.context?.showAppSnackBar(
+      Get.context?.showAppSnackBar(
         message: "Lead added successfully",
         backgroundColor: colorGreen,
         textColor: colorWhite,
@@ -331,13 +356,39 @@ class AddLeadController extends GetxController {
         final calendarController = Get.find<GoogleCalendarController>();
 
         if (calendarController.isLoggedIn) {
+          Get.dialog(
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 15),
+                    Text(
+                      'Adding to Google Calendar...',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            barrierDismissible: false,
+          );
+
           await calendarController.addEvent(
-            title: 'Test Event',
-            description: 'This is a test',
-            startTime: DateTime.now().add(Duration(minutes: 2)),
-            endTime: DateTime.now().add(Duration(minutes: 4)),
+            title: nameController.text.trim(),
+            description: descriptionController.text.trim(),
+            startTime: DateTime.now().add(const Duration(minutes: 2)),
+            endTime: DateTime.now().add(const Duration(minutes: 4)),
             employeeEmails: ['harshusavaliya8320@gmail.com'],
           );
+
+          Get.back(); // close calendar loading
         }
       } catch (e) {
         print('Failed to add Google Calendar event: $e');
@@ -347,6 +398,8 @@ class AddLeadController extends GetxController {
           textColor: colorWhite,
         );
       }
+
+      // 🔄 Reload leads on home
       String role = ListConst.currentUserProfileData.type ?? '';
       if (role == 'employee' || role == 'admin') {
         try {

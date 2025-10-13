@@ -32,7 +32,7 @@ class AdminLoginPage extends StatelessWidget {
                   Get.offAllNamed(AppRoutes.home);
                   Get.context?.showAppSnackBar(
                     message: "Already signed in as ${controller.adminEmail}",
-                    backgroundColor: colorRed,
+                    backgroundColor: colorGreen,
                     textColor: colorWhite,
                   );
                 }
