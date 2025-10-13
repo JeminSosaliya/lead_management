@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/routes/route_manager.dart';
+import '../../../core/constant/app_color.dart';
 import 'google_calendar_controller.dart';
 
 class AdminLoginPage extends StatelessWidget {
@@ -28,10 +30,10 @@ class AdminLoginPage extends StatelessWidget {
                   await controller.loginAdmin();
                 } else {
                   Get.offAllNamed(AppRoutes.home);
-                  Get.snackbar(
-                    "Info",
-                    "Already signed in as ${controller.adminEmail}",
-                    snackPosition: SnackPosition.BOTTOM,
+                  Get.context?.showAppSnackBar(
+                    message: "Already signed in as ${controller.adminEmail}",
+                    backgroundColor: colorRed,
+                    textColor: colorWhite,
                   );
                 }
               },

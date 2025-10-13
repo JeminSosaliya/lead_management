@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart';
 import 'package:http/http.dart' as http;
+import 'package:lead_management/core/utils/extension.dart';
+import '../../../core/constant/app_color.dart';
 import '../../../routes/route_manager.dart';
 
 /// 🌟 Google Calendar Controller (Admin Only)
@@ -54,7 +56,11 @@ class GoogleCalendarController extends GetxController {
       final account = await _googleSignIn.signIn();
       if (account == null) {
         print('🚫 Login cancelled by user.');
-        Get.snackbar('Login Cancelled', 'You cancelled the sign-in process');
+        Get.context?.showAppSnackBar(
+          message: "Login Cancelled', 'You cancelled the sign-in process",
+          backgroundColor: colorRed,
+          textColor: colorWhite,
+        );
         return;
       }
 
@@ -63,11 +69,19 @@ class GoogleCalendarController extends GetxController {
       calendarApi = CalendarApi(_GoogleAuthClient(authHeaders));
 
       print('✅ Admin signed in: ${account.email}');
-      Get.snackbar('✅ Login Successful', 'Welcome, ${account.email}');
+      Get.context?.showAppSnackBar(
+        message: "✅ Login Successful', 'Welcome, ${account.email}",
+        backgroundColor: colorGreen,
+        textColor: colorWhite,
+      );
       Get.offAllNamed(AppRoutes.home);
     } catch (e) {
       errorMessage = '❌ Login error: $e';
-      Get.snackbar('Login Failed', errorMessage, snackPosition: SnackPosition.BOTTOM);
+      Get.context?.showAppSnackBar(
+        message: "Login Failed $errorMessage",
+        backgroundColor: colorRed,
+        textColor: colorWhite,
+      );
       print(errorMessage);
     } finally {
       isLoading = false;
@@ -83,12 +97,20 @@ class GoogleCalendarController extends GetxController {
       currentUser = null;
       calendarApi = null;
       errorMessage = '';
-      Get.snackbar('👋 Logged Out', 'Admin successfully logged out');
+      Get.context?.showAppSnackBar(
+        message: '👋 Logged Out, Admin successfully logged out',
+        backgroundColor: colorGreen,
+        textColor: colorWhite,
+      );
       print('✅ Admin logged out successfully.');
       update();
     } catch (e) {
       errorMessage = '❌ Logout error: $e';
-      Get.snackbar('Logout Failed', errorMessage, snackPosition: SnackPosition.BOTTOM);
+      Get.context?.showAppSnackBar(
+        message: 'Logout Failed $errorMessage',
+        backgroundColor: colorGreen,
+        textColor: colorWhite,
+      );
       print(errorMessage);
       update();
     }
@@ -102,7 +124,11 @@ class GoogleCalendarController extends GetxController {
     required List<String> employeeEmails,
   }) async {
     if (calendarApi == null) {
-      Get.snackbar('⚠️ Not Logged In', 'Please login as Admin first');
+      Get.context?.showAppSnackBar(
+        message: "⚠️ Not Logged In', 'Please login as Admin first",
+        backgroundColor: colorGreen,
+        textColor: colorWhite,
+      );
       log('🚫 Attempted to add event without logging in.');
       update();
       return false;
@@ -143,7 +169,11 @@ class GoogleCalendarController extends GetxController {
       );
 
       if (inserted.id != null) {
-        Get.snackbar('🎉 Event Added', 'Event "$title" added successfully');
+        Get.context?.showAppSnackBar(
+          message: "🎉 Event Added, Event $title added successfully",
+          backgroundColor: colorRed,
+          textColor: colorWhite,
+        );
         log('✅ Event added successfully with ID: ${inserted.id}');
 
         for (var emp in employeeEmails) {
@@ -152,13 +182,22 @@ class GoogleCalendarController extends GetxController {
 
         return true;
       } else {
-        Get.snackbar('❌ Add Failed', 'Event could not be added');
+
+        Get.context?.showAppSnackBar(
+          message: "❌ Add Failed', 'Event could not be added",
+          backgroundColor: colorRed,
+          textColor: colorWhite,
+        );
         log('⚠️ Failed to insert event.');
         return false;
       }
     } catch (e) {
       errorMessage = '💥 Add event error: $e';
-      Get.snackbar('Error', errorMessage, snackPosition: SnackPosition.BOTTOM);
+      Get.context?.showAppSnackBar(
+        message: "Error'$errorMessage",
+        backgroundColor: colorRed,
+        textColor: colorWhite,
+      );
       log('💥 Error details: $errorMessage');
       return false;
     } finally {

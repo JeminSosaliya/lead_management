@@ -263,31 +263,31 @@ class AddLeadController extends GetxController {
 
     String? errorMessage;
 ///todo uncomment this code
-    // if (nameController.text.trim().isEmpty) {
-    //   errorMessage = 'Client name is required';
-    // } else if (clientPhoneController.text.trim().isEmpty) {
-    //   errorMessage = 'Client number is required';
-    // } else if (clientPhoneController.text.length != 10 ||
-    //     !RegExp(r'^\d{10}$').hasMatch(clientPhoneController.text)) {
-    //   errorMessage = 'Client number must be exactly 10 digits';
-    // } else if (emailController.text.isNotEmpty &&
-    //     !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-    //         .hasMatch(emailController.text)) {
-    //   errorMessage = 'Invalid email format';
-    // } else if (companyController.text.trim().isEmpty) {
-    //   errorMessage = 'Company name is required';
-    // } else if (descriptionController.text.trim().isEmpty) {
-    //   errorMessage = 'Description/Notes is required';
-    // }
-    // else if (referralNumberController.text.isNotEmpty &&
-    //     (referralNumberController.text.length != 10 ||
-    //         !RegExp(r'^\d{10}$').hasMatch(referralNumberController.text))) {
-    //   errorMessage = 'Referral number must be exactly 10 digits';
-    // } else if (showSourceError) {
-    //   errorMessage = 'Please select a source';
-    // } else if (showEmployeeError) {
-    //   errorMessage = 'Please select an employee';
-    // }
+    if (nameController.text.trim().isEmpty) {
+      errorMessage = 'Client name is required';
+    } else if (clientPhoneController.text.trim().isEmpty) {
+      errorMessage = 'Client number is required';
+    } else if (clientPhoneController.text.length != 10 ||
+        !RegExp(r'^\d{10}$').hasMatch(clientPhoneController.text)) {
+      errorMessage = 'Client number must be exactly 10 digits';
+    } else if (emailController.text.isNotEmpty &&
+        !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+            .hasMatch(emailController.text)) {
+      errorMessage = 'Invalid email format';
+    } else if (companyController.text.trim().isEmpty) {
+      errorMessage = 'Company name is required';
+    } else if (descriptionController.text.trim().isEmpty) {
+      errorMessage = 'Description/Notes is required';
+    }
+    else if (referralNumberController.text.isNotEmpty &&
+        (referralNumberController.text.length != 10 ||
+            !RegExp(r'^\d{10}$').hasMatch(referralNumberController.text))) {
+      errorMessage = 'Referral number must be exactly 10 digits';
+    } else if (showSourceError) {
+      errorMessage = 'Please select a source';
+    } else if (showEmployeeError) {
+      errorMessage = 'Please select an employee';
+    }
 
     if (errorMessage != null) {
       Get.context?.showAppSnackBar(
@@ -321,7 +321,7 @@ class AddLeadController extends GetxController {
 
     if (success) {
       Get.back();
-      Get.context?.showAppSnackBar(
+        Get.context?.showAppSnackBar(
         message: "Lead added successfully",
         backgroundColor: colorGreen,
         textColor: colorWhite,
