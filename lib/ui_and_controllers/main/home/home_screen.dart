@@ -46,6 +46,7 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     Get.put(HomeController());

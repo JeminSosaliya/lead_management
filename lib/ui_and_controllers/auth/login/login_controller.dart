@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lead_management/core/constant/app_color.dart';
@@ -7,6 +9,7 @@ import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/core/utils/user_status_service.dart';
 import 'package:lead_management/routes/route_manager.dart';
 import 'package:lead_management/ui_and_controllers/main/profile/profile_controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginController extends GetxController {
   final _formKey = GlobalKey<FormState>();
@@ -58,8 +61,11 @@ class LoginController extends GetxController {
         );
         return;
       }
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('current_user_id', userCredential.user!.uid);
 
       // ✅ START LISTENING TO USER STATUS CHANGES
+
       final userStatusService = Get.put(UserStatusService());
       await userStatusService.startListening();
 
@@ -117,7 +123,6 @@ class LoginController extends GetxController {
       _isLoading.value = false;
     }
   }
-
   @override
   void onClose() {
     _emailController.dispose();
