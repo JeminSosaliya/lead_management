@@ -7,6 +7,8 @@ import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
+import 'custom_appbar.dart';
+
 class LocationPickerScreen extends StatefulWidget {
   final double? initialLatitude;
   final double? initialLongitude;
@@ -77,15 +79,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: colorWhite,
-        appBar: AppBar(
-          title: WantText(
-            text: "Select Location",
-            fontSize: width * 0.051,
-            fontWeight: FontWeight.w600,
-            textColor: colorWhite,
-          ),
-          backgroundColor: colorMainTheme,
-          iconTheme: IconThemeData(color: colorWhite),
+        appBar: CustomAppBar(
+          title: 'Select Location',
+          showBackButton: true,
         ),
         body: const Center(
           child: CircularProgressIndicator(color: colorMainTheme),
@@ -95,15 +91,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
     return Scaffold(
       backgroundColor: colorWhite,
-      appBar: AppBar(
-        title: WantText(
-          text: "Select Location",
-          fontSize: width * 0.051,
-          fontWeight: FontWeight.w600,
-          textColor: colorWhite,
-        ),
-        backgroundColor: colorMainTheme,
-        iconTheme: IconThemeData(color: colorWhite),
+      appBar: CustomAppBar(
+        title: 'Select Location',
+        showBackButton: true,
       ),
       body: Stack(
         children: [

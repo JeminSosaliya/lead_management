@@ -4,8 +4,10 @@ import 'package:get/get.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/constant/list_const.dart';
+import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/ui_and_controllers/main/add_laed/add_lead_controller.dart';
 import 'package:lead_management/ui_and_controllers/main/member_list_screen/member_controller.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
 
 import 'package:lead_management/ui_and_controllers/widgets/custom_textformfield.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
@@ -26,18 +28,9 @@ class AddLeadScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorWhite,
-      appBar: AppBar(
-        title: WantText(
-          text: isOwner ? 'Add New Lead' : 'Add My Lead',
-          fontSize: width * 0.061,
-          fontWeight: FontWeight.w600,
-          textColor: colorWhite,
-        ),
-        backgroundColor: colorMainTheme,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colorWhite),
-          onPressed: () => Get.back(),
-        ),
+      appBar: CustomAppBar(
+        title: isOwner ? 'Add New Lead' : 'Add My Lead',
+        showBackButton: true,
       ),
       body: GetBuilder<AddLeadController>(
         builder: (AddLeadController controller) {
@@ -330,21 +323,33 @@ class AddLeadScreen extends StatelessWidget {
                       controller: controller.followUpController,
                       readOnly: true,
                       onTap: () async {
+                        DateTime now = DateTime.now();
                         DateTime? date = await showDatePicker(
                           context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime.now(),
+                          initialDate: now,
+                          initialEntryMode: DatePickerEntryMode.calendarOnly,
+                          firstDate: now,
                           lastDate: DateTime(2100),
                         );
 
                         if (date != null) {
+                          bool isToday =
+                              date.year == now.year &&
+                              date.month == now.month &&
+                              date.day == now.day;
+
+                          TimeOfDay initialTime = isToday
+                              ? TimeOfDay.fromDateTime(
+                                  now.add(Duration(minutes: 1)),
+                                )
+                              : TimeOfDay(hour: 9, minute: 0);
+
                           TimeOfDay? time = await showTimePicker(
                             context: context,
-                            initialTime: TimeOfDay.now(),
+                            initialTime: initialTime,
                           );
 
                           if (time != null) {
-                            // Combine date and time
                             DateTime dateTime = DateTime(
                               date.year,
                               date.month,
@@ -352,6 +357,15 @@ class AddLeadScreen extends StatelessWidget {
                               time.hour,
                               time.minute,
                             );
+
+                            if (dateTime.isBefore(now)) {
+                              Get.context?.showAppSnackBar(
+                                message: 'Please select a future date and time',
+                                backgroundColor: colorRedCalendar,
+                                textColor: colorWhite,
+                              );
+                              return;
+                            }
 
                             final formattedDateTime = DateFormat(
                               'dd MMM yyyy, hh:mm a',

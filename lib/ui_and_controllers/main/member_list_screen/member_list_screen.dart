@@ -5,8 +5,11 @@ import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/routes/route_manager.dart';
 import 'package:lead_management/ui_and_controllers/main/member_details_screen/member_detail_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/member_list_screen/member_controller.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_shimmer.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
+import 'package:shimmer/shimmer.dart';
 
 class MemberListScreen extends StatelessWidget {
   const MemberListScreen({super.key});
@@ -17,17 +20,11 @@ class MemberListScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colorWhite,
-      appBar: AppBar(
-        title: const WantText(text: "Members"),
-        backgroundColor: colorMainTheme,
-        foregroundColor: colorWhite,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
-        ),
+      appBar: CustomAppBar(
+        title: "Technician Types",
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, color: colorWhite),
             onPressed: controller.loadMembers,
           ),
         ],
@@ -45,7 +42,7 @@ class MemberListScreen extends StatelessWidget {
             ),
             child: DropdownButtonHideUnderline(
               child: Obx(
-                    () => DropdownButton<String>(
+                () => DropdownButton<String>(
                   value: controller.selectedType,
                   isExpanded: true,
                   items: [
@@ -81,20 +78,20 @@ class MemberListScreen extends StatelessWidget {
           Expanded(
             child: Obx(() {
               if (controller.isLoading) {
-                return Center(
+                return Padding(
+                  padding: EdgeInsets.all(width * 0.04),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          colorMainTheme,
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: 5,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: EdgeInsets.only(bottom: height * 0.015),
+                              child: CustomShimmer(height: height * 0.145,),
+                            );
+                          },
                         ),
-                      ),
-                      SizedBox(height: height * 0.02),
-                      WantText(
-                        text: "Loading ${controller.selectedType}s...",
-                        fontSize: width * 0.04,
-                        textColor: colorGreyText,
                       ),
                     ],
                   ),
@@ -137,9 +134,9 @@ class MemberListScreen extends StatelessWidget {
   }
 
   Widget _buildMemberCard(
-      Map<String, dynamic> member,
-      MemberController controller,
-      ) {
+    Map<String, dynamic> member,
+    MemberController controller,
+  ) {
     return CustomCard(
       verticalPadding: height * 0.008,
       child: ListTile(
@@ -222,9 +219,8 @@ class MemberListScreen extends StatelessWidget {
           color: colorGreyText,
         ),
         onTap: () {
-          if(member != null)
-          Get.toNamed(AppRoutes.memberDetailScreen, arguments: member);
-
+          if (member != null)
+            Get.toNamed(AppRoutes.memberDetailScreen, arguments: member);
         },
       ),
     );

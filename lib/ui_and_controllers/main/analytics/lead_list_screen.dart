@@ -4,6 +4,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/routes/route_manager.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
@@ -17,37 +18,29 @@ class AnalyticsListScreen extends StatefulWidget {
 class _AnalyticsListScreenState extends State<AnalyticsListScreen> {
   final leadTitle = Get.arguments[0];
   final newList = Get.arguments[1];
-  
+
   @override
   void initState() {
     super.initState();
     debugPrint('newList: $newList');
     debugPrint('newList length:: ${newList.length}');
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: colorWhite,
-      appBar: AppBar(
-        title: WantText(
-          text: '$leadTitle List',
-          fontSize: width * 0.061,
-          fontWeight: FontWeight.w600,
-          textColor: colorWhite,
-        ),
-        backgroundColor: colorMainTheme,
-        iconTheme: IconThemeData(color: colorWhite),
-      ),
+      appBar: CustomAppBar(title: '$leadTitle List', showBackButton: true),
+
       body: ListView.builder(
         itemCount: newList.length,
         itemBuilder: (context, index) {
           final lead = newList[index];
           return GestureDetector(
             onTap: () {
-              Get.toNamed(AppRoutes.leadDetailsScreen,arguments: [
-                lead.leadId,
-                lead]
+              Get.toNamed(
+                AppRoutes.leadDetailsScreen,
+                arguments: [lead.leadId, lead],
               );
             },
             child: CustomCard(
@@ -96,7 +89,6 @@ class _AnalyticsListScreenState extends State<AnalyticsListScreen> {
                           fontWeight: FontWeight.w400,
                           textColor: colorDarkGreyText,
                         ),
-
                       ],
                     ),
                   ),
@@ -108,9 +100,4 @@ class _AnalyticsListScreenState extends State<AnalyticsListScreen> {
       ),
     );
   }
-
-
 }
-
-
-

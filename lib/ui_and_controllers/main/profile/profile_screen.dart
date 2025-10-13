@@ -6,8 +6,11 @@ import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/constant/list_const.dart';
 import 'package:lead_management/ui_and_controllers/main/profile/profile_controller.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_shimmer.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -17,36 +20,53 @@ class ProfileScreen extends StatelessWidget {
     final controller = Get.put(ProfileController());
     return Scaffold(
       backgroundColor: colorWhite,
-      appBar: AppBar(
-        title: const WantText(text: "Profile"),
-        backgroundColor: colorMainTheme,
-        foregroundColor: colorWhite,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
-        ),
+      appBar: CustomAppBar(
+        title: 'Profile',
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, color: colorWhite),
             onPressed: controller.refreshProfile,
           ),
         ],
       ),
       body: Obx(() {
         if (controller.isLoading) {
-          return Center(
+          return Padding(
+            padding: EdgeInsets.all(width * 0.041),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(colorMainTheme),
+                SizedBox(height: height * 0.02),
+                Shimmer.fromColors(
+                  baseColor: Colors.grey.shade300,
+                  highlightColor: Colors.grey.shade100,
+                  child: Container(
+                    height: height * 0.03,
+                    width: width * 0.25,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
                 ),
                 SizedBox(height: height * 0.02),
-                WantText(
-                  text: "Loading profile...",
-                  fontSize: width * 0.04,
-                  textColor: colorGreyText,
+                Shimmer.fromColors(
+                  baseColor: Colors.grey.shade300,
+                  highlightColor: Colors.grey.shade100,
+                  child: Container(
+                    height: height * 0.02,
+                    width: width * 0.4,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
                 ),
+
+                SizedBox(height: height * 0.04),
+                CustomShimmer(height: height * 0.35),
+                SizedBox(height: height * 0.04),
+                CustomShimmer(height: height * 0.25),
               ],
             ),
           );

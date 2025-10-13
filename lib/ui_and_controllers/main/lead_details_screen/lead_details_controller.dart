@@ -225,17 +225,29 @@ class LeadDetailsController extends GetxController {
   }
 
   Future<void> pickInitialFollowUp() async {
+    DateTime now = DateTime.now();
     DateTime? date = await showDatePicker(
       context: Get.context!,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
+      initialDate: now,
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
+      firstDate: now,
       lastDate: DateTime(2100),
     );
+
     if (date != null) {
+      bool isToday = date.year == now.year &&
+          date.month == now.month &&
+          date.day == now.day;
+
+      TimeOfDay initialTime = isToday
+          ? TimeOfDay.fromDateTime(now.add(Duration(minutes: 1)))
+          : TimeOfDay(hour: 9, minute: 0);
+
       TimeOfDay? time = await showTimePicker(
         context: Get.context!,
-        initialTime: TimeOfDay.now(),
+        initialTime: initialTime,
       );
+
       if (time != null) {
         initialFollowUp = DateTime(
           date.year,
@@ -244,6 +256,18 @@ class LeadDetailsController extends GetxController {
           time.hour,
           time.minute,
         );
+
+        if (initialFollowUp!.isBefore(now)) {
+          Get.context?.showAppSnackBar(
+            message: 'Please select a future date and time',
+            backgroundColor: colorRedCalendar,
+            textColor: colorWhite,
+          );
+          initialFollowUp = null;
+          initialFollowUpController.clear();
+          return;
+        }
+
         initialFollowUpController.text =
             DateFormat('dd MMM yyyy, hh:mm a').format(initialFollowUp!);
         update();
@@ -470,7 +494,6 @@ class LeadDetailsController extends GetxController {
 
     }
   }
-
   void callLead() async {
     if (lead == null) return;
 
@@ -493,19 +516,75 @@ class LeadDetailsController extends GetxController {
       return;
     }
 
-    final Uri url = Uri(scheme: 'tel', path: phone);
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-      showUpdateForm = true;
-      update();
-    } else {
+    try {
+      // Clean phone number (remove spaces, dashes, etc.)
+      String cleanPhone = phone.replaceAll(RegExp(r'[^\d+]'), '');
+
+      final Uri url = Uri(scheme: 'tel', path: cleanPhone);
+
+      // Check if the URL can be launched
+      bool canLaunch = await canLaunchUrl(url);
+
+      if (canLaunch) {
+        // ✅ Add LaunchMode.externalApplication for better compatibility
+        bool launched = await launchUrl(
+          url,
+          mode: LaunchMode.externalApplication,
+        );
+
+        if (launched) {
+          showUpdateForm = true;
+          update();
+        } else {
+          throw Exception('Failed to launch dialer');
+        }
+      } else {
+        throw Exception('Cannot launch phone dialer');
+      }
+    } catch (e) {
+      log("Error launching call: $e");
       Get.context?.showAppSnackBar(
-        message: 'Could not launch call',
+        message: 'Could not launch call.',
         backgroundColor: colorRedCalendar,
         textColor: colorWhite,
       );
     }
   }
+  // void callLead() async {
+  //   if (lead == null) return;
+  //
+  //   if (lead!.stage == 'completed' || lead!.stage == 'cancelled') {
+  //     Get.context?.showAppSnackBar(
+  //       message: 'Cannot call completed leads',
+  //       backgroundColor: colorRedCalendar,
+  //       textColor: colorWhite,
+  //     );
+  //     return;
+  //   }
+  //
+  //   String? phone = lead!.clientPhone;
+  //   if (phone.isEmpty) {
+  //     Get.context?.showAppSnackBar(
+  //       message: 'Phone number not available',
+  //       backgroundColor: colorRedCalendar,
+  //       textColor: colorWhite,
+  //     );
+  //     return;
+  //   }
+  //
+  //   final Uri url = Uri(scheme: 'tel', path: phone);
+  //   if (await canLaunchUrl(url)) {
+  //     await launchUrl(url);
+  //     showUpdateForm = true;
+  //     update();
+  //   } else {
+  //     Get.context?.showAppSnackBar(
+  //       message: 'Could not launch call',
+  //       backgroundColor: colorRedCalendar,
+  //       textColor: colorWhite,
+  //     );
+  //   }
+  // }
 
   void openWhatsApp(String phone) async {
     String cleanPhone = phone.replaceAll(RegExp(r'[^\d+]'), '');
@@ -522,6 +601,7 @@ class LeadDetailsController extends GetxController {
         textColor: colorWhite,
       );
       }
+
     } catch (e) { Get.context?.showAppSnackBar(
       message: 'Could not open WhatsApp: $e',
       backgroundColor: colorRedCalendar,
@@ -531,17 +611,29 @@ class LeadDetailsController extends GetxController {
   }
 
   void pickFollowUp() async {
+    DateTime now = DateTime.now();
     DateTime? date = await showDatePicker(
       context: Get.context!,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
+      initialDate: now,
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
+      firstDate: now,
       lastDate: DateTime(2100),
     );
+
     if (date != null) {
+      bool isToday = date.year == now.year &&
+          date.month == now.month &&
+          date.day == now.day;
+
+      TimeOfDay initialTime = isToday
+          ? TimeOfDay.fromDateTime(now.add(Duration(minutes: 1)))
+          : TimeOfDay(hour: 9, minute: 0);
+
       TimeOfDay? time = await showTimePicker(
         context: Get.context!,
-        initialTime: TimeOfDay.now(),
+        initialTime: initialTime,
       );
+
       if (time != null) {
         nextFollowUpDateTime = DateTime(
           date.year,
@@ -550,7 +642,19 @@ class LeadDetailsController extends GetxController {
           time.hour,
           time.minute,
         );
-        final formattedDateTime = DateFormat('dd MMM yyyy, hh:mm a').format(nextFollowUpDateTime!);
+
+        if (nextFollowUpDateTime!.isBefore(now)) {
+          Get.context?.showAppSnackBar(
+            message: 'Please select a future date and time',
+            backgroundColor: colorRedCalendar,
+            textColor: colorWhite,
+          );
+          nextFollowUpDateTime = null;
+          return;
+        }
+
+        final formattedDateTime = DateFormat('dd MMM yyyy, hh:mm a').format(
+            nextFollowUpDateTime!);
         followUpController.text = formattedDateTime;
         update();
       }
