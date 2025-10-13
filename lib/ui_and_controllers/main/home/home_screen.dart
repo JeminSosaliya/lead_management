@@ -15,6 +15,7 @@ import 'package:lead_management/ui_and_controllers/main/lead_details_screen/lead
 import 'package:lead_management/ui_and_controllers/main/profile/profile_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_shimmer.dart';
 import 'package:lead_management/ui_and_controllers/widgets/rich_text.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
@@ -338,20 +339,14 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             body: controller.isLoading
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const CircularProgressIndicator(color: colorMainTheme),
-                        SizedBox(height: height * 0.008),
-                        WantText(
-                          text: 'Loading your leads...',
-                          fontSize: width * 0.041,
-                          fontWeight: FontWeight.w500,
-                          textColor: colorGreyText,
-                        ),
-                      ],
-                    ),
+                ? ListView.builder(
+                    itemCount: 5,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: EdgeInsets.only(top: height * 0.015,right: width * 0.041, left: width * 0.041),
+                        child: CustomShimmer(height: height * 0.12),
+                      );
+                    },
                   )
                 : controller.leads.isEmpty
                 ? Center(
@@ -688,7 +683,7 @@ class HomeScreen extends StatelessWidget {
 
                         // Check if there are active employees
                         if (activeEmployees.isEmpty)
-                        // Show message when no employees available
+                          // Show message when no employees available
                           Container(
                             padding: EdgeInsets.all(width * 0.041),
                             decoration: BoxDecoration(
@@ -719,11 +714,13 @@ class HomeScreen extends StatelessWidget {
                             ),
                           )
                         else
-                        // Show dropdown when employees exist
+                          // Show dropdown when employees exist
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             decoration: BoxDecoration(
-                              border: Border.all(color: colorGreyTextFieldBorder),
+                              border: Border.all(
+                                color: colorGreyTextFieldBorder,
+                              ),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: DropdownButton<String>(
@@ -738,18 +735,18 @@ class HomeScreen extends StatelessWidget {
                               items: activeEmployees
                                   .map(
                                     (e) => DropdownMenuItem<String>(
-                                  value: e['name'].toString(),
-                                  child: WantText(
-                                    text: e['name'].toString(),
-                                    fontSize: width * 0.035,
-                                    textColor: colorBlack,
-                                  ),
-                                  onTap: () {
-                                    tempEmployeeId = e['uid'];
-                                    tempEmployeeName = e['name'].toString();
-                                  },
-                                ),
-                              )
+                                      value: e['name'].toString(),
+                                      child: WantText(
+                                        text: e['name'].toString(),
+                                        fontSize: width * 0.035,
+                                        textColor: colorBlack,
+                                      ),
+                                      onTap: () {
+                                        tempEmployeeId = e['uid'];
+                                        tempEmployeeName = e['name'].toString();
+                                      },
+                                    ),
+                                  )
                                   .toList(),
                               onChanged: (value) {
                                 setState(() {
@@ -758,7 +755,7 @@ class HomeScreen extends StatelessWidget {
                                     tempEmployeeName = null;
                                   } else {
                                     final employee = activeEmployees.firstWhere(
-                                          (e) => e['name'].toString() == value,
+                                      (e) => e['name'].toString() == value,
                                       orElse: () => {'uid': '', 'name': ''},
                                     );
                                     if (employee['uid'] != '') {
@@ -787,14 +784,14 @@ class HomeScreen extends StatelessWidget {
                       SizedBox(height: height * 0.01),
 
                       if (controller.isTechnicianListLoading)
-                      // Show loading
+                        // Show loading
                         const Center(
                           child: CircularProgressIndicator(
                             color: colorMainTheme,
                           ),
                         )
                       else if (controller.technicianListError != null)
-                      // Show error
+                        // Show error
                         Container(
                           padding: EdgeInsets.all(width * 0.041),
                           decoration: BoxDecoration(
@@ -826,71 +823,71 @@ class HomeScreen extends StatelessWidget {
                         )
                       else if (controller.technicianTypes.isEmpty)
                         // Show message when no technicians available
-                          Container(
-                            padding: EdgeInsets.all(width * 0.041),
-                            decoration: BoxDecoration(
-                              color: Colors.orange.shade50,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: Colors.orange.shade200,
-                                width: 1,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.info_outline,
-                                  color: Colors.orange.shade700,
-                                  size: 20,
-                                ),
-                                SizedBox(width: width * 0.03),
-                                Expanded(
-                                  child: WantText(
-                                    text: 'No technicians available',
-                                    fontSize: width * 0.035,
-                                    textColor: Colors.orange.shade900,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        else
-                        // Show dropdown when technicians exist
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: colorGreyTextFieldBorder),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: DropdownButton<String>(
-                              value: tempTechnician,
-                              hint: WantText(
-                                text: 'Select Technician',
-                                fontSize: width * 0.035,
-                                textColor: colorGreyText,
-                              ),
-                              isExpanded: true,
-                              underline: const SizedBox(),
-                              items: controller.technicianTypes
-                                  .map(
-                                    (e) => DropdownMenuItem<String>(
-                                  value: e,
-                                  child: WantText(
-                                    text: e,
-                                    fontSize: width * 0.035,
-                                    textColor: colorBlack,
-                                  ),
-                                ),
-                              )
-                                  .toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  tempTechnician = value;
-                                });
-                              },
+                        Container(
+                          padding: EdgeInsets.all(width * 0.041),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Colors.orange.shade200,
+                              width: 1,
                             ),
                           ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.info_outline,
+                                color: Colors.orange.shade700,
+                                size: 20,
+                              ),
+                              SizedBox(width: width * 0.03),
+                              Expanded(
+                                child: WantText(
+                                  text: 'No technicians available',
+                                  fontSize: width * 0.035,
+                                  textColor: Colors.orange.shade900,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        // Show dropdown when technicians exist
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: colorGreyTextFieldBorder),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: DropdownButton<String>(
+                            value: tempTechnician,
+                            hint: WantText(
+                              text: 'Select Technician',
+                              fontSize: width * 0.035,
+                              textColor: colorGreyText,
+                            ),
+                            isExpanded: true,
+                            underline: const SizedBox(),
+                            items: controller.technicianTypes
+                                .map(
+                                  (e) => DropdownMenuItem<String>(
+                                    value: e,
+                                    child: WantText(
+                                      text: e,
+                                      fontSize: width * 0.035,
+                                      textColor: colorBlack,
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                tempTechnician = value;
+                              });
+                            },
+                          ),
+                        ),
                     ],
                   ),
                   SizedBox(height: height * 0.03),
@@ -1091,7 +1088,6 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
-        
         );
       },
     );
@@ -1115,16 +1111,19 @@ class HomeScreen extends StatelessWidget {
 
     String formatted = status
         .replaceAllMapped(
-      RegExp(r'([a-z])([A-Z])'),
+          RegExp(r'([a-z])([A-Z])'),
           (Match m) => '${m[1]} ${m[2]}',
-    )
+        )
         .replaceAll('_', ' ');
     return formatted
         .split(' ')
-        .map((word) => word.isNotEmpty ? word[0].toUpperCase() + word.substring(1).toLowerCase() : '')
+        .map(
+          (word) => word.isNotEmpty
+              ? word[0].toUpperCase() + word.substring(1).toLowerCase()
+              : '',
+        )
         .join(' ');
   }
-
 
   Color _getStatusColor(String status) {
     switch (status) {
