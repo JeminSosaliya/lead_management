@@ -7,7 +7,9 @@ import 'package:lead_management/ui_and_controllers/main/member_details_screen/me
 import 'package:lead_management/ui_and_controllers/main/member_list_screen/member_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_shimmer.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
+import 'package:shimmer/shimmer.dart';
 
 class MemberListScreen extends StatelessWidget {
   const MemberListScreen({super.key});
@@ -22,7 +24,7 @@ class MemberListScreen extends StatelessWidget {
         title: "Technician Types",
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh,color: colorWhite),
+            icon: Icon(Icons.refresh, color: colorWhite),
             onPressed: controller.loadMembers,
           ),
         ],
@@ -76,20 +78,20 @@ class MemberListScreen extends StatelessWidget {
           Expanded(
             child: Obx(() {
               if (controller.isLoading) {
-                return Center(
+                return Padding(
+                  padding: EdgeInsets.all(width * 0.04),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          colorMainTheme,
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: 5,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: EdgeInsets.only(bottom: height * 0.015),
+                              child: CustomShimmer(height: height * 0.145,),
+                            );
+                          },
                         ),
-                      ),
-                      SizedBox(height: height * 0.02),
-                      WantText(
-                        text: "Loading ${controller.selectedType}s...",
-                        fontSize: width * 0.04,
-                        textColor: colorGreyText,
                       ),
                     ],
                   ),
