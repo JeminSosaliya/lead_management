@@ -330,7 +330,7 @@ class HomeScreen extends StatelessWidget {
                 tabs: [
                   Tab(text: 'All'),
                   Tab(text: 'Today'),
-                  Tab(text: 'New Contacted'),
+                  Tab(text: 'Not Contacted'),
                   Tab(text: 'In Progress'),
                   Tab(text: 'Completed'),
                   Tab(text: 'Cancelled'),
@@ -385,7 +385,7 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       _buildLeadList('all', controller),
                       _buildLeadList('today', controller),
-                      _buildLeadList('newContacted', controller),
+                      _buildLeadList('notContacted', controller),
                       _buildLeadList('inProgress', controller),
                       _buildLeadList('completed', controller),
                       _buildLeadList('cancelled', controller),
