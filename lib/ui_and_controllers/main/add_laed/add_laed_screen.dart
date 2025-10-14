@@ -134,16 +134,24 @@ class AddLeadScreen extends StatelessWidget {
                     ),
                     SizedBox(height: height * 0.023),
 
+                    SearchableCSCDropdown(
+                      title: 'Select Category (Optional)',
+                      items: controller.technicianTypes,
+                      hintText:
+                      controller.selectedTechnician ?? 'Select Technician',
+                      iconData1: Icons.arrow_drop_down,
+                      iconData2: Icons.arrow_drop_up,
+                      onChanged: (value) {
+                        controller.setSelectedTechnician(value);
+                      },
+                    ),
+                    SizedBox(height: height * 0.023),
+
                     CustomTextFormField(
                       labelText: "Company Name",
                       hintText: 'Company Name',
                       controller: controller.companyController,
                       prefixIcon: Icon(Icons.business, color: colorGrey),
-                      validator: (value) {
-                        if (value == null || value.isEmpty)
-                          return 'Please enter the company name';
-                        return null;
-                      },
                     ),
                     SizedBox(height: height * 0.023),
                     CustomTextFormField(
@@ -167,26 +175,7 @@ class AddLeadScreen extends StatelessWidget {
                         return null;
                       },
                     ),
-                    SizedBox(height: height * 0.023),
-                    CustomTextFormField(
-                      labelText: "Referral Name",
-                      hintText: 'Enter referral Name',
-                      controller: controller.referralNameController,
-                      prefixIcon: Icon(Icons.person, color: colorGrey),
-                    ),
-                    SizedBox(height: height * 0.023),
-                    CustomTextFormField(
-                      labelText: "Referral Number",
-                      hintText: 'Enter referral number',
-                      controller: controller.referralNumberController,
-                      prefixIcon: Icon(Icons.call, color: colorGrey),
-                      keyboardType: TextInputType.phone,
 
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(10),
-                      ],
-                    ),
                     SizedBox(height: height * 0.023),
                     SearchableCSCDropdown(
                       title: 'Source',
@@ -255,18 +244,7 @@ class AddLeadScreen extends StatelessWidget {
                       SizedBox(height: height * 0.023),
                     ],
 
-                    SearchableCSCDropdown(
-                      title: 'Select Technician (Optional)',
-                      items: controller.technicianTypes,
-                      hintText:
-                          controller.selectedTechnician ?? 'Select Technician',
-                      iconData1: Icons.arrow_drop_down,
-                      iconData2: Icons.arrow_drop_up,
-                      onChanged: (value) {
-                        controller.setSelectedTechnician(value);
-                      },
-                    ),
-                    SizedBox(height: height * 0.023),
+
 
                     WantText(
                       text: 'Location (Optional)',
@@ -314,6 +292,26 @@ class AddLeadScreen extends StatelessWidget {
                           ],
                         ),
                       ),
+                    ),
+                    SizedBox(height: height * 0.023),
+                    CustomTextFormField(
+                      labelText: "Referral Name",
+                      hintText: 'Enter referral Name',
+                      controller: controller.referralNameController,
+                      prefixIcon: Icon(Icons.person, color: colorGrey),
+                    ),
+                    SizedBox(height: height * 0.023),
+                    CustomTextFormField(
+                      labelText: "Referral Number",
+                      hintText: 'Enter referral number',
+                      controller: controller.referralNumberController,
+                      prefixIcon: Icon(Icons.call, color: colorGrey),
+                      keyboardType: TextInputType.phone,
+
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(10),
+                      ],
                     ),
                     SizedBox(height: height * 0.023),
 

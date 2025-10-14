@@ -281,8 +281,6 @@ class AddLeadController extends GetxController {
           r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
         ).hasMatch(emailController.text)) {
       errorMessage = 'Invalid email format';
-    } else if (companyController.text.trim().isEmpty) {
-      errorMessage = 'Company name is required';
     } else if (descriptionController.text.trim().isEmpty) {
       errorMessage = 'Description/Notes is required';
     } else if (referralNumberController.text.isNotEmpty &&
