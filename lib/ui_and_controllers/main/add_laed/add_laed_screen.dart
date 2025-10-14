@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/constant/list_const.dart';
@@ -8,12 +9,10 @@ import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/ui_and_controllers/main/add_laed/add_lead_controller.dart';
 import 'package:lead_management/ui_and_controllers/main/member_list_screen/member_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
-
-import 'package:lead_management/ui_and_controllers/widgets/custom_textformfield.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
-import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_textformfield.dart';
 import 'package:lead_management/ui_and_controllers/widgets/dropdown.dart';
-import 'package:intl/intl.dart';
+import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
 class AddLeadScreen extends StatelessWidget {
   const AddLeadScreen({super.key});
