@@ -1,10 +1,12 @@
 import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lead_management/core/constant/list_const.dart';
+import 'package:lead_management/core/utils/push_notification_utils.dart';
 import 'package:lead_management/model/lead_add_model.dart';
 
 class HomeController extends GetxController {
@@ -32,12 +34,31 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _printFCMToken();
+    NotificationUtils().init();
     fetchTechnicianTypes();
     if (isAdmin) fetchEmployees();
     setupRealTimeListener();
     searchController.addListener(() {
       onSearchChanged(searchController.text);
     });
+  }
+
+  Future<void> _printFCMToken() async {
+    try {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken != null) {
+        log("========================================");
+        log("FCM TOKEN (Home Screen - Auto Login):");
+        log(fcmToken);
+        log("========================================");
+        print("FCM TOKEN: $fcmToken");
+      } else {
+        log("FCM Token is null");
+      }
+    } catch (e) {
+      log("Error getting FCM token: $e");
+    }
   }
 
   Future<void> fetchEmployees() async {

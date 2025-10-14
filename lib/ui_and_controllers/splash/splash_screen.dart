@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/Get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -35,6 +36,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (initialUser != null &&
         ListConst.currentUserProfileData.isActive == true) {
+      await _printFCMTokenForAutoLogin();
+
       final userStatusService = Get.put(UserStatusService());
       await userStatusService.startListening();
     }
@@ -53,6 +56,24 @@ class _SplashScreenState extends State<SplashScreen> {
       //       : AppRoutes.login,
       // );
     });
+  }
+
+  Future<void> _printFCMTokenForAutoLogin() async {
+    try {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken != null) {
+        log("========================================");
+        log("FCM TOKEN (Auto-Login):");
+        log(fcmToken);
+        log("User: ${initialUser?.email}");
+        log("========================================");
+        print("AUTO-LOGIN FCM TOKEN: $fcmToken");
+      } else {
+        log("FCM Token is null during auto-login");
+      }
+    } catch (e) {
+      log("Error getting FCM token during auto-login: $e");
+    }
   }
 
   @override
