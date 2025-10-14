@@ -29,6 +29,7 @@ class LeadDetailsScreen extends StatelessWidget {
 
     if (initialData != null) {
       controller.initializeData(initialData!);
+      controller.initializeData(initialData!);
     }
 
     return Scaffold(

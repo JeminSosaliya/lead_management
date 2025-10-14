@@ -46,7 +46,7 @@ class _SplashScreenState extends State<SplashScreen> {
       log("intro1");
       log("initialUser :: $initialUser");
       Get.offAllNamed(
-        initialUser != null ? AppRoutes.home : AppRoutes.login,
+        initialUser != null ? AppRoutes.adminLogin : AppRoutes.login,
       );
       // Get.offAllNamed(
       //   initialUser != null
