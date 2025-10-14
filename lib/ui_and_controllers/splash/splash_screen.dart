@@ -43,15 +43,8 @@ class _SplashScreenState extends State<SplashScreen> {
       log("intro1");
       log("initialUser :: $initialUser");
       Get.offAllNamed(
-        initialUser != null ? AppRoutes.adminLogin : AppRoutes.login,
+        initialUser != null ? AppRoutes.home : AppRoutes.login,
       );
-      // Get.offAllNamed(
-      //   initialUser != null
-      //       ? ListConst.currentUserProfileData.type == 'admin'
-      //             ? AppRoutes.ownerHomeScreen
-      //             : AppRoutes.employeeHomeScreen
-      //       : AppRoutes.login,
-      // );
     });
   }
 
