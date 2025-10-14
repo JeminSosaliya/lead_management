@@ -56,6 +56,7 @@ class HomeScreen extends StatelessWidget {
       builder: (controller) {
         return DefaultTabController(
           length: 6,
+          initialIndex: 1,
           child: Scaffold(
             backgroundColor: colorWhite,
             drawer: Drawer(

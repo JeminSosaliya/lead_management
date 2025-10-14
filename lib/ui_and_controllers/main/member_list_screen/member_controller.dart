@@ -24,7 +24,8 @@ class MemberController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadMembers();
+    loadEmployees();
+    loadAdmins();
   }
 
   void setSelectedType(String type) {
