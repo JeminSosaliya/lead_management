@@ -1,16 +1,15 @@
 import 'dart:developer';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/list_const.dart';
 import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/model/lead_add_model.dart';
-import 'package:lead_management/model/profile_model.dart';
 import 'package:lead_management/ui_and_controllers/main/home/home_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/location_picker_screen.dart';
-import 'package:lead_management/ui_and_controllers/widgets/dropdown.dart';
 
 import '../../auth/goggle_login/google_calendar_controller.dart';
 
@@ -19,7 +18,7 @@ class AddLeadController extends GetxController {
   bool isSubmitting = false;
 
   String? selectedEmployee;
-  String?  selectedEmployeeName;
+  String? selectedEmployeeName;
   String? selectedTechnician;
   String? selectedSource;
   String? selectedEmployeeEmail;
@@ -34,8 +33,7 @@ class AddLeadController extends GetxController {
   double? selectedLongitude;
   String? locationAddress;
 
-  TextEditingController addressController =
-      TextEditingController();
+  TextEditingController addressController = TextEditingController();
   final calendarController = Get.put(GoogleCalendarController());
 
   @override
@@ -80,10 +78,14 @@ class AddLeadController extends GetxController {
     }
   }
 
-  void setSelectedEmployee(String? value,{String? email, String? employeeName}) {
+  void setSelectedEmployee(
+    String? value, {
+    String? email,
+    String? employeeName,
+  }) {
     selectedEmployee = value;
     selectedEmployeeName = employeeName;
-    selectedEmployeeEmail  =  email;
+    selectedEmployeeEmail = email;
 
     showEmployeeError = false;
     update();
@@ -246,9 +248,9 @@ class AddLeadController extends GetxController {
     }
   }
 
-
   Future<void> submitForm() async {
-    String currentUserRole = ListConst.currentUserProfileData.type ?? 'employee';
+    String currentUserRole =
+        ListConst.currentUserProfileData.type ?? 'employee';
 
     showSourceError = selectedSource == null;
     if (currentUserRole == 'admin') {
@@ -258,7 +260,9 @@ class AddLeadController extends GetxController {
     }
     update();
 
-    log('Form valid: ${formKey.currentState!.validate()}, Show Employee Error: $showEmployeeError, Show Source Error: $showSourceError');
+    log(
+      'Form valid: ${formKey.currentState!.validate()}, Show Employee Error: $showEmployeeError, Show Source Error: $showSourceError',
+    );
 
     formKey.currentState!.validate();
 
@@ -273,8 +277,9 @@ class AddLeadController extends GetxController {
         !RegExp(r'^\d{10}$').hasMatch(clientPhoneController.text)) {
       errorMessage = 'Client number must be exactly 10 digits';
     } else if (emailController.text.isNotEmpty &&
-        !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-            .hasMatch(emailController.text)) {
+        !RegExp(
+          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+        ).hasMatch(emailController.text)) {
       errorMessage = 'Invalid email format';
     } else if (companyController.text.trim().isEmpty) {
       errorMessage = 'Company name is required';
@@ -299,7 +304,7 @@ class AddLeadController extends GetxController {
       return;
     }
 
-  Get.dialog(
+    Get.dialog(
       Center(
         child: Container(
           padding: const EdgeInsets.all(20),
@@ -309,12 +314,16 @@ class AddLeadController extends GetxController {
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children:  [
-              CircularProgressIndicator(color: colorMainTheme,),
+            children: [
+              CircularProgressIndicator(color: colorMainTheme),
               SizedBox(height: 15),
               Text(
                 'Adding Lead...',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600,color:colorMainTheme),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: colorMainTheme,
+                ),
               ),
             ],
           ),
@@ -373,7 +382,10 @@ class AddLeadController extends GetxController {
                     SizedBox(height: 15),
                     Text(
                       'Adding to Google Calendar...',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
@@ -389,7 +401,7 @@ class AddLeadController extends GetxController {
             endTime: DateTime.now().add(const Duration(minutes: 4)),
             employeeEmails: [selectedEmployeeEmail ?? ''],
           );
-log('seleceted employee email $selectedEmployeeEmail');
+          log('selected employee email $selectedEmployeeEmail');
           Get.back(); // close calendar loading
         }
       } catch (e) {
@@ -418,5 +430,3 @@ log('seleceted employee email $selectedEmployeeEmail');
     }
   }
 }
-
-
