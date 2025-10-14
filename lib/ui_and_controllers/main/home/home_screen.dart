@@ -47,7 +47,6 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     Get.put(HomeController());
@@ -344,7 +343,11 @@ class HomeScreen extends StatelessWidget {
                     itemCount: 5,
                     itemBuilder: (context, index) {
                       return Padding(
-                        padding: EdgeInsets.only(top: height * 0.015,right: width * 0.041, left: width * 0.041),
+                        padding: EdgeInsets.only(
+                          top: height * 0.015,
+                          right: width * 0.041,
+                          left: width * 0.041,
+                        ),
                         child: CustomShimmer(height: height * 0.12),
                       );
                     },
@@ -399,237 +402,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // void _showFilterBottomSheet(BuildContext context, HomeController controller) {
-  //   String? tempEmployeeId = controller.selectedEmployeeId;
-  //   String? tempEmployeeName = controller.selectedEmployeeName;
-  //   String? tempTechnician = controller.selectedTechnician;
-  //
-  //   showModalBottomSheet(
-  //     context: context,
-  //     shape: const RoundedRectangleBorder(
-  //       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-  //     ),
-  //     backgroundColor: colorWhite,
-  //     builder: (BuildContext bottomSheetContext) {
-  //       return StatefulBuilder(
-  //         builder: (BuildContext context, StateSetter setState) {
-  //           return Padding(
-  //             padding: EdgeInsets.symmetric(
-  //               horizontal: width * 0.041,
-  //               vertical: height * 0.025,
-  //             ),
-  //             child: Column(
-  //               mainAxisSize: MainAxisSize.min,
-  //               crossAxisAlignment: CrossAxisAlignment.start,
-  //               children: [
-  //                 Row(
-  //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //                   children: [
-  //                     WantText(
-  //                       text: 'Filters',
-  //                       fontSize: width * 0.046,
-  //                       fontWeight: FontWeight.bold,
-  //                       textColor: colorBlack,
-  //                     ),
-  //                     IconButton(
-  //                       icon: Icon(Icons.close, color: colorBlack),
-  //                       onPressed: () => Navigator.of(context).pop(),
-  //                     ),
-  //                   ],
-  //                 ),
-  //                 SizedBox(height: height * 0.02),
-  //                 if (controller.isAdmin)
-  //                   Column(
-  //                     crossAxisAlignment: CrossAxisAlignment.start,
-  //                     children: [
-  //                       WantText(
-  //                         text: 'Employee',
-  //                         fontSize: width * 0.041,
-  //                         fontWeight: FontWeight.w500,
-  //                         textColor: colorBlack,
-  //                       ),
-  //                       SizedBox(height: height * 0.01),
-  //                       Container(
-  //                         padding: const EdgeInsets.symmetric(horizontal: 12),
-  //                         decoration: BoxDecoration(
-  //                           border: Border.all(color: colorGreyTextFieldBorder),
-  //                           borderRadius: BorderRadius.circular(8),
-  //                         ),
-  //                         child: DropdownButton<String>(
-  //                           value: tempEmployeeName,
-  //                           hint: WantText(
-  //                             text: 'Select Employee',
-  //                             fontSize: width * 0.035,
-  //                             textColor: colorGreyText,
-  //                           ),
-  //                           isExpanded: true,
-  //                           underline: const SizedBox(),
-  //                           items: controller.employees
-  //                               .where((e) => e['isActive'] == true)
-  //                               .map(
-  //                                 (e) => DropdownMenuItem<String>(
-  //                                   value: e['name'].toString(),
-  //                                   child: WantText(
-  //                                     text: e['name'].toString(),
-  //                                     fontSize: width * 0.035,
-  //                                     textColor: colorBlack,
-  //                                   ),
-  //                                   onTap: () {
-  //                                     tempEmployeeId = e['uid'];
-  //                                     tempEmployeeName = e['name'].toString();
-  //                                   },
-  //                                 ),
-  //                               )
-  //                               .toList(),
-  //                           onChanged: (value) {
-  //                             setState(() {
-  //                               if (value == null) {
-  //                                 tempEmployeeId = null;
-  //                                 tempEmployeeName = null;
-  //                               } else {
-  //                                 final employee = controller.employees
-  //                                     .where((e) => e['isActive'] == true)
-  //                                     .firstWhere(
-  //                                       (e) => e['name'].toString() == value,
-  //                                       orElse: () => {'uid': '', 'name': ''},
-  //                                     );
-  //                                 if (employee['uid'] != '') {
-  //                                   tempEmployeeId = employee['uid'];
-  //                                   tempEmployeeName = value;
-  //                                 }
-  //                               }
-  //                             });
-  //                           },
-  //                         ),
-  //                       ),
-  //                       SizedBox(height: height * 0.023),
-  //                     ],
-  //                   ),
-  //                 Column(
-  //                   crossAxisAlignment: CrossAxisAlignment.start,
-  //                   children: [
-  //                     WantText(
-  //                       text: 'Technician',
-  //                       fontSize: width * 0.041,
-  //                       fontWeight: FontWeight.w500,
-  //                       textColor: colorBlack,
-  //                     ),
-  //                     SizedBox(height: height * 0.01),
-  //                     if (controller.isTechnicianListLoading)
-  //                       const Center(
-  //                         child: CircularProgressIndicator(
-  //                           color: colorMainTheme,
-  //                         ),
-  //                       )
-  //                     else if (controller.technicianListError != null)
-  //                       WantText(
-  //                         text: controller.technicianListError!,
-  //                         fontSize: width * 0.035,
-  //                         textColor: colorRedCalendar,
-  //                       )
-  //                     else
-  //                       Container(
-  //                         padding: const EdgeInsets.symmetric(horizontal: 12),
-  //                         decoration: BoxDecoration(
-  //                           border: Border.all(
-  //                             color: controller.technicianTypes.isEmpty
-  //                                 ? colorGrey
-  //                                 : colorGreyTextFieldBorder,
-  //                           ),
-  //                           borderRadius: BorderRadius.circular(8),
-  //                         ),
-  //                         child: DropdownButton<String>(
-  //                           value: tempTechnician,
-  //                           hint: WantText(
-  //                             text: controller.technicianTypes.isEmpty
-  //                                 ? 'No technicians available'
-  //                                 : 'Select Technician',
-  //                             fontSize: width * 0.035,
-  //                             textColor: colorGreyText,
-  //                           ),
-  //                           isExpanded: true,
-  //                           underline: const SizedBox(),
-  //                           items: controller.technicianTypes.isEmpty
-  //                               ? []
-  //                               : controller.technicianTypes
-  //                                     .map(
-  //                                       (e) => DropdownMenuItem<String>(
-  //                                         value: e,
-  //                                         child: WantText(
-  //                                           text: e,
-  //                                           fontSize: width * 0.035,
-  //                                           textColor: colorBlack,
-  //                                         ),
-  //                                       ),
-  //                                     )
-  //                                     .toList(),
-  //                           onChanged: controller.technicianTypes.isEmpty
-  //                               ? null
-  //                               : (value) {
-  //                                   setState(() {
-  //                                     tempTechnician = value;
-  //                                   });
-  //                                 },
-  //                         ),
-  //                       ),
-  //                   ],
-  //                 ),
-  //                 SizedBox(height: height * 0.03),
-  //                 Row(
-  //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //                   children: [
-  //                     Expanded(
-  //                       child: CustomButton(
-  //                         Width: width,
-  //                         onTap: () {
-  //                           controller.clearFilters();
-  //                           Navigator.of(context).pop();
-  //                         },
-  //                         label: "Clear",
-  //                         backgroundColor: colorWhite,
-  //                         borderColor: colorRedCalendar,
-  //                         textColor: colorRedCalendar,
-  //                       ),
-  //                     ),
-  //                     SizedBox(width: width * 0.041),
-  //                     Expanded(
-  //                       child: CustomButton(
-  //                         Width: width,
-  //                         onTap: () {
-  //                           if (controller.isAdmin) {
-  //                             controller.setSelectedEmployee(
-  //                               tempEmployeeId,
-  //                               tempEmployeeName,
-  //                             );
-  //                           }
-  //                           controller.setSelectedTechnician(tempTechnician);
-  //                           controller.applyFilters();
-  //                           Navigator.of(context).pop();
-  //                         },
-  //                         label: "Apply",
-  //                         backgroundColor: colorMainTheme,
-  //                         borderColor: colorMainTheme,
-  //                         textColor: colorWhite,
-  //                       ),
-  //                     ),
-  //                   ],
-  //                 ),
-  //                 SizedBox(height: height * 0.02),
-  //               ],
-  //             ),
-  //           );
-  //         },
-  //       );
-  //     },
-  //   );
-  // }
-
   void _showFilterBottomSheet(BuildContext context, HomeController controller) {
     String? tempEmployeeId = controller.selectedEmployeeId;
     String? tempEmployeeName = controller.selectedEmployeeName;
     String? tempTechnician = controller.selectedTechnician;
 
-    // Get active employees list
     final activeEmployees = controller.employees
         .where((e) => e['isActive'] == true)
         .toList();
@@ -995,6 +772,7 @@ class HomeScreen extends StatelessWidget {
     }
 
     return ListView.builder(
+      padding: EdgeInsets.only(bottom: height * 0.019),
       itemCount: leads.length,
       itemBuilder: (context, index) {
         Lead lead = leads[index];
