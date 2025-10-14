@@ -233,6 +233,7 @@ class AddLeadScreen extends StatelessWidget {
                           if (employee["uid"] != "") {
                             controller.setSelectedEmployee(
                               employee["uid"],
+                              email: employee['email'],
                               employeeName: value,
                             );
                           }
