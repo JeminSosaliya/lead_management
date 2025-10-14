@@ -20,6 +20,7 @@ class AddLeadController extends GetxController {
 
   String? selectedEmployee;
   String?  selectedEmployeeName;
+  String? selectedEmployeeType;
   String? selectedTechnician;
   String? selectedSource;
   String? selectedEmployeeEmail;
@@ -80,9 +81,10 @@ class AddLeadController extends GetxController {
     }
   }
 
-  void setSelectedEmployee(String? value,{String? email, String? employeeName}) {
+  void setSelectedEmployee(String? value, {String? employeeName, String? userType ,String? email}) {
     selectedEmployee = value;
     selectedEmployeeName = employeeName;
+    selectedEmployeeType = userType;
     selectedEmployeeEmail  =  email;
 
     showEmployeeError = false;
@@ -182,7 +184,7 @@ class AddLeadController extends GetxController {
       if (currentUserRole == 'admin') {
         if (selectedEmployee == null) {
           Get.context?.showAppSnackBar(
-            message: 'Please select an employee',
+            message: 'Please select a user to assign',
             backgroundColor: colorRedCalendar,
             textColor: colorWhite,
           );
@@ -192,13 +194,19 @@ class AddLeadController extends GetxController {
         }
         assignedToEmployee = selectedEmployee!;
         assignedToName = selectedEmployeeName ?? '';
-        assignedToRole = 'employee';
+        assignedToRole = selectedEmployeeType ?? 'employee';
         addedByName = currentUserName;
       } else {
-        assignedToEmployee = currentUserId;
-        assignedToName = currentUserName;
+        if (selectedEmployee != null) {
+          assignedToEmployee = selectedEmployee!;
+          assignedToName = selectedEmployeeName ?? '';
+          assignedToRole = selectedEmployeeType ?? 'employee';
+        } else {
+          assignedToEmployee = currentUserId;
+          assignedToName = currentUserName;
+          assignedToRole = 'employee';
+        }
         addedByName = currentUserName;
-        assignedToRole = 'employee';
       }
 
       Lead newLead = Lead(
@@ -399,6 +407,7 @@ log('seleceted employee email $selectedEmployeeEmail');
         );
       }
 
+      // 🔄 Reload leads on home
       String role = ListConst.currentUserProfileData.type ?? '';
       if (role == 'employee' || role == 'admin') {
         try {
