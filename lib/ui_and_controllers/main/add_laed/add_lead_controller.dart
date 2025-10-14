@@ -15,7 +15,6 @@ import 'package:lead_management/ui_and_controllers/widgets/dropdown.dart';
 import '../../auth/goggle_login/google_calendar_controller.dart';
 
 class AddLeadController extends GetxController {
-  List<CurrentUserProfileData> employees = [];
   bool isLoading = false;
   bool isSubmitting = false;
 
@@ -24,6 +23,7 @@ class AddLeadController extends GetxController {
   String? selectedEmployeeType;
   String? selectedTechnician;
   String? selectedSource;
+  String? selectedEmployeeEmail;
   DateTime? nextFollowUp;
   bool showEmployeeError = false;
   bool showSourceError = false;
@@ -81,10 +81,12 @@ class AddLeadController extends GetxController {
     }
   }
 
-  void setSelectedEmployee(String? value, {String? employeeName, String? userType}) {
+  void setSelectedEmployee(String? value, {String? employeeName, String? userType ,String? email}) {
     selectedEmployee = value;
     selectedEmployeeName = employeeName;
     selectedEmployeeType = userType;
+    selectedEmployeeEmail  =  email;
+
     showEmployeeError = false;
     update();
   }
@@ -270,6 +272,7 @@ class AddLeadController extends GetxController {
 
     String? errorMessage;
 
+    // 🔍 Validation
     if (nameController.text.trim().isEmpty) {
       errorMessage = 'Client name is required';
     } else if (clientPhoneController.text.trim().isEmpty) {
@@ -390,9 +393,9 @@ class AddLeadController extends GetxController {
             description: descriptionController.text.trim(),
             startTime: DateTime.now().add(const Duration(minutes: 2)),
             endTime: DateTime.now().add(const Duration(minutes: 4)),
-            employeeEmails: ['harshusavaliya8320@gmail.com'],
+            employeeEmails: [selectedEmployeeEmail ?? ''],
           );
-
+log('seleceted employee email $selectedEmployeeEmail');
           Get.back(); // close calendar loading
         }
       } catch (e) {

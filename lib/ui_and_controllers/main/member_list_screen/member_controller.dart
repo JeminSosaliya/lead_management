@@ -11,14 +11,14 @@ class MemberController extends GetxController {
 
   String get selectedType => _selectedType.value;
 
-  List<Map<String, dynamic>> get employees => _employees.value;
+  List<Map<String, dynamic>> get employees => _employees;
 
-  List<Map<String, dynamic>> get admins => _admins.value;
+  List<Map<String, dynamic>> get admins => _admins;
 
   bool get isLoading => _isLoading.value;
 
   List<Map<String, dynamic>> get currentList {
-    return _selectedType.value == 'employee' ? _employees.value : _admins.value;
+    return _selectedType.value == 'employee' ? _employees : _admins;
   }
 
   @override

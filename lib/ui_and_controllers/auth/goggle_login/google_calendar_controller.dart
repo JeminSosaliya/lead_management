@@ -170,7 +170,7 @@ class GoogleCalendarController extends GetxController {
 
       if (inserted.id != null) {
         Get.context?.showAppSnackBar(
-          message: "🎉 Event Added, Event $title added successfully",
+          message: "Event Added, Event $title added successfully",
           backgroundColor: colorGreen,
           textColor: colorWhite,
         );
