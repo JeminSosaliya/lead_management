@@ -430,6 +430,8 @@ class LeadDetailsScreen extends StatelessWidget {
                           WantText(
                             text: formatTimestamp(lead.initialFollowUp),
                             fontSize: width * 0.031,
+                            fontWeight: FontWeight.w500,
+                            textColor: colorGreenOne
                           ),
                         ],
 
@@ -444,6 +446,8 @@ class LeadDetailsScreen extends StatelessWidget {
                           WantText(
                             text: formatTimestamp(lead.nextFollowUp),
                             fontSize: width * 0.031,
+                            fontWeight: FontWeight.w500,
+                            textColor: colorGreenOne,
                           ),
                         ],
 
@@ -453,11 +457,13 @@ class LeadDetailsScreen extends StatelessWidget {
                             text: "Reason",
                             fontSize: width * 0.041,
                             fontWeight: FontWeight.w500,
-                            textColor: colorRed,
+                            textColor: colorBlack,
                           ),
                           WantText(
                             text: lead.callNote!,
                             fontSize: width * 0.035,
+                            fontWeight: FontWeight.w500,
+                            textColor: colorRed,
                           ),
                         ],
                       ],

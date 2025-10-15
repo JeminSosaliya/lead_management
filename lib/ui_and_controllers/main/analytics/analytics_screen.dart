@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/routes/route_manager.dart';
@@ -90,6 +91,8 @@ class AnalyticsScreen extends StatelessWidget {
                       ],
                     ),
                     SizedBox(height: height * 0.02),
+                    _buildDatePickerButton(context, controller),
+                    SizedBox(height: height * 0.02),
 
                     // Employee Filter Dropdown
                     _buildDropdown(
@@ -138,7 +141,8 @@ class AnalyticsScreen extends StatelessWidget {
               SizedBox(height: height * 0.025),
 
               // Active Filters Info
-              if (controller.selectedEmployeeId.value != null ||
+              if (controller.selectedDate.value != null ||
+                  controller.selectedEmployeeId.value != null ||
                   controller.selectedTechnicianId.value != null)
                 Container(
                   width: double.infinity,
@@ -185,11 +189,11 @@ class AnalyticsScreen extends StatelessWidget {
                   ),
                 ),
 
-              if (controller.selectedEmployeeId.value != null ||
+              if (controller.selectedDate.value != null ||
+                  controller.selectedEmployeeId.value != null ||
                   controller.selectedTechnicianId.value != null)
                 SizedBox(height: height * 0.025),
 
-              // Total Leads Card
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.all(width * 0.05),
@@ -208,7 +212,8 @@ class AnalyticsScreen extends StatelessWidget {
                   children: [
                     WantText(
                       text:
-                          (controller.selectedEmployeeId.value != null ||
+                          (controller.selectedDate.value != null ||
+                              controller.selectedEmployeeId.value != null ||
                               controller.selectedTechnicianId.value != null)
                           ? 'Filtered Leads'
                           : 'Total Leads',
@@ -267,7 +272,8 @@ class AnalyticsScreen extends StatelessWidget {
                       SizedBox(height: 16),
                       WantText(
                         text:
-                            (controller.selectedEmployeeId.value != null ||
+                            (controller.selectedDate.value != null ||
+                                controller.selectedEmployeeId.value != null ||
                                 controller.selectedTechnicianId.value != null)
                             ? 'No leads match the selected filters'
                             : 'No data available',
@@ -286,7 +292,6 @@ class AnalyticsScreen extends StatelessWidget {
                   ),
                 ),
 
-              // Pie Chart Section
               if (controller.totalLeads != 0)
                 Column(
                   children: [
@@ -303,7 +308,6 @@ class AnalyticsScreen extends StatelessWidget {
                           ),
                           SizedBox(height: height * 0.03),
 
-                          // Pie Chart
                           SizedBox(
                             height: height * 0.35,
                             child: PieChart(
@@ -322,7 +326,6 @@ class AnalyticsScreen extends StatelessWidget {
 
                           SizedBox(height: height * 0.03),
 
-                          // Legend
                           _buildLegend(controller),
                         ],
                       ),
@@ -483,6 +486,91 @@ class AnalyticsScreen extends StatelessWidget {
           ),
         ),
 
+      ],
+    );
+  }
+
+  Future<void> _pickDate(
+    BuildContext context,
+    AnalyticsController controller,
+  ) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: controller.selectedDate.value ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: colorMainTheme,
+              onPrimary: colorWhite,
+              onSurface: colorBlack,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      controller.selectDate(picked);
+    }
+  }
+
+  Widget _buildDatePickerButton(
+    BuildContext context,
+    AnalyticsController controller,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        WantText(
+          text: 'Date',
+          fontSize: width * 0.035,
+          fontWeight: FontWeight.w600,
+          textColor: colorBlack,
+        ),
+        SizedBox(height: height * 0.005),
+        InkWell(
+          onTap: () => _pickDate(context, controller),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(
+              horizontal: width * 0.03,
+              vertical: height * 0.015,
+            ),
+            decoration: BoxDecoration(
+              border: Border.all(color: colorGreyTextFieldBorder),
+              borderRadius: BorderRadius.circular(8),
+              color: colorWhite,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                WantText(
+                  text: controller.selectedDate.value != null
+                      ? DateFormat(
+                          'dd MMM yyyy',
+                        ).format(controller.selectedDate.value!)
+                      : 'Select Date',
+                  fontSize: width * 0.035,
+                  textColor: controller.selectedDate.value != null
+                      ? colorBlack
+                      : colorGreyText,
+                  fontWeight: controller.selectedDate.value != null
+                      ? FontWeight.w500
+                      : FontWeight.w400,
+                ),
+                Icon(
+                  Icons.calendar_today,
+                  color: colorMainTheme,
+                  size: width * 0.05,
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
