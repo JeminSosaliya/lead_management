@@ -49,16 +49,23 @@ class AddTechnicianScreen extends StatelessWidget {
               SizedBox(height: height * 0.02),
 
               Expanded(
-                child: ListView.builder(
-                  itemCount: 5, // placeholder shimmer count
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: height * 0.015, right: width * 0.04, left: width * 0.04),
-                      child: CustomShimmer(height: height * 0.08,)
-                    );
-                  },
+                child: Column(
+                  children: [
+                    ListView.builder(
+
+                      itemCount: 5, // placeholder shimmer count
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: height * 0.015, right: width * 0.04, left: width * 0.04),
+                          child: CustomShimmer(height: height * 0.08,)
+                        );
+                      },
+                    ),
+
+                  ],
                 ),
               ),
+
             ],
           );
         }
@@ -137,44 +144,53 @@ class AddTechnicianScreen extends StatelessWidget {
                         ],
                       ),
                     )
-                  : ListView.builder(
-                      itemCount: controller.technicianTypes.length,
-                      itemBuilder: (context, index) {
-                        final technicianType = controller.technicianTypes[index];
-                        return CustomCard(
-                          verticalPadding: height * 0.004,
-                          child: ListTile(
-                            minVerticalPadding: 0,
-                            contentPadding: EdgeInsets.zero,
-                            leading: CircleAvatar(
-                              radius: width * 0.05,
-                              backgroundColor: colorMainTheme,
-                              child: WantText(
-                                text: '${index + 1}',
-                                fontSize: width * 0.035,
-                                fontWeight: FontWeight.w600,
-                                textColor: colorWhite,
-                              ),
-                            ),
-                            title: WantText(
-                              text: technicianType,
-                              fontSize: width * 0.035,
-                              fontWeight: FontWeight.w500,
-                              textColor: colorBlack,
-                            ),
-                            trailing: GestureDetector(
-                              onTap: () => controller.showDeleteDialog(technicianType),
-                              child: Icon(
-                                Icons.delete,
-                                color: colorRedCalendar,
-                                size: width * 0.05,
-                              ),
-                            ),
+                  : Column(
+                    children: [
+                      Expanded(
+                        child: ListView.builder(
+                          padding: EdgeInsets.only(bottom: width * 0.15),
+                            itemCount: controller.technicianTypes.length,
+                            itemBuilder: (context, index) {
+                              final technicianType = controller.technicianTypes[index];
+                              return CustomCard(
+                                verticalPadding: height * 0.004,
+                                child: ListTile(
+                                  minVerticalPadding: 0,
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: CircleAvatar(
+                                    radius: width * 0.05,
+                                    backgroundColor: colorMainTheme,
+                                    child: WantText(
+                                      text: '${index + 1}',
+                                      fontSize: width * 0.035,
+                                      fontWeight: FontWeight.w600,
+                                      textColor: colorWhite,
+                                    ),
+                                  ),
+                                  title: WantText(
+                                    text: technicianType,
+                                    fontSize: width * 0.035,
+                                    fontWeight: FontWeight.w500,
+                                    textColor: colorBlack,
+                                  ),
+                                  trailing: GestureDetector(
+                                    onTap: () => controller.showDeleteDialog(technicianType),
+                                    child: Icon(
+                                      Icons.delete,
+                                      color: colorRedCalendar,
+                                      size: width * 0.05,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
+                      ),
+
+                    ],
+                  ),
             ),
+
           ],
         );
       }),

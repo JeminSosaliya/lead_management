@@ -161,11 +161,6 @@ class LeadDetailsScreen extends StatelessWidget {
                       hintText: 'Company Name',
                       controller: controller.companyController,
                       prefixIcon: Icon(Icons.business, color: colorGrey),
-                      validator: (value) {
-                        if (value == null || value.isEmpty)
-                          return 'Please enter the company name';
-                        return null;
-                      },
                     ),
                     SizedBox(height: height * 0.023),
                     CustomTextFormField(
@@ -229,12 +224,11 @@ class LeadDetailsScreen extends StatelessWidget {
                       ),
                     SizedBox(height: height * 0.023),
                     SearchableCSCDropdown(
-                      title: 'Reassign To Employee',
+                      title: 'Reassign To',
                       items: controller.employees
                           .map((e) => e['name'] as String)
                           .toList(),
-                      hintText:
-                          controller.selectedEmployeeName ?? 'Select Employee',
+                      hintText: controller.selectedEmployeeName ?? 'Select User',
                       iconData1: Icons.arrow_drop_down,
                       iconData2: Icons.arrow_drop_up,
                       onChanged: (value) {
@@ -246,7 +240,7 @@ class LeadDetailsScreen extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(top: 4, left: 4),
                         child: Text(
-                          'Please select an employee',
+                          'Please select a user',
                           style: TextStyle(color: colorRedError, fontSize: 12),
                         ),
                       ),

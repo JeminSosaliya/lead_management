@@ -59,6 +59,7 @@
     ];
     String? selectedEmployee;
     String? selectedEmployeeName;
+    String? selectedEmployeeType;
     String? selectedTechnician;
     String? selectedSource;
     double? selectedLatitude;
@@ -91,26 +92,45 @@
         String currentUserId = ListConst.currentUserProfileData.uid.toString();
         String currentUserRole = ListConst.currentUserProfileData.type ?? '';
 
-        QuerySnapshot snap = await fireStore
+         QuerySnapshot employeesSnap = await fireStore
             .collection('users')
             .where('type', isEqualTo: 'employee')
             .where('isActive', isEqualTo: true)
             .get();
-        employees = snap.docs.map((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          return {
-            'uid': doc.id,
-            'name': data['name'] ?? '',
-          };
-        }).toList();
 
+        QuerySnapshot adminsSnap = await fireStore
+            .collection('users')
+            .where('type', isEqualTo: 'admin')
+            .where('isActive', isEqualTo: true)
+            .get();
+
+        employees = [
+          ...employeesSnap.docs.map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            return {
+              'uid': doc.id,
+              'name': data['name'] ?? '',
+              'type': 'employee',
+            };
+          }),
+          ...adminsSnap.docs.map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            return {
+              'uid': doc.id,
+              'name': data['name'] ?? '',
+              'type': 'admin',
+            };
+          }),
+        ];
+
+        // Remove current user from list if they're an employee
         if (currentUserRole == 'employee') {
           employees = employees.where((e) => e['uid'] != currentUserId).toList();
         }
 
         update();
       } catch (e) {
-        print("Error fetching employees: $e");
+        print("Error fetching employees and admins: $e");
       }
     }
     Future<void> fetchTechnicianTypes() async {
@@ -144,6 +164,7 @@
         referralNumberController.text = lead?.referralNumber ?? '';
         selectedSource = lead?.source;
         selectedTechnician = lead?.technician;
+        selectedEmployeeType = lead?.assignedToRole;
         selectedLatitude = lead?.latitude;
         selectedLongitude = lead?.longitude;
         locationAddress = lead?.locationAddress;
@@ -163,6 +184,7 @@
         final employee = employees.firstWhere((e) => e['name'] == value);
         selectedEmployee = employee['uid'];
         selectedEmployeeName = value;
+        selectedEmployeeType = employee['type']; // Store the user type
         showEmployeeError = false;
       }
       update();
@@ -299,8 +321,7 @@
             assignedTo: selectedEmployee ?? lead!.assignedTo,
             assignedToName: selectedEmployeeName ?? lead!.assignedToName,
             addedByName: lead!.addedByName,
-            assignedToRole: 'employee',
-            addedBy: lead!.addedBy,
+            assignedToRole: selectedEmployeeType ?? lead!.assignedToRole,            addedBy: lead!.addedBy,
             addedByEmail: lead!.addedByEmail,
             addedByRole: lead!.addedByRole,
             technician: selectedTechnician,
@@ -355,8 +376,6 @@
           errorMessage = 'Client number must be exactly 10 digits';
         } else if (emailController.text.isNotEmpty && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(emailController.text)) {
           errorMessage = 'Invalid email format';
-        } else if (companyController.text.trim().isEmpty) {
-          errorMessage = 'Company name is required';
         } else if (descriptionController.text.trim().isEmpty) {
           errorMessage = 'Description/Notes is required';
         } else if (referralNumberController.text.isNotEmpty && (referralNumberController.text.length != 10 || !RegExp(r'^\d{10}$').hasMatch(referralNumberController.text))) {

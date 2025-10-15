@@ -19,7 +19,7 @@ class AddLeadController extends GetxController {
   bool isSubmitting = false;
 
   String? selectedEmployee;
-  String?  selectedEmployeeName;
+  String? selectedEmployeeName;
   String? selectedEmployeeType;
   String? selectedTechnician;
   String? selectedSource;
@@ -35,8 +35,7 @@ class AddLeadController extends GetxController {
   double? selectedLongitude;
   String? locationAddress;
 
-  TextEditingController addressController =
-      TextEditingController();
+  TextEditingController addressController = TextEditingController();
   final calendarController = Get.put(GoogleCalendarController());
 
   @override
@@ -81,11 +80,16 @@ class AddLeadController extends GetxController {
     }
   }
 
-  void setSelectedEmployee(String? value, {String? employeeName, String? userType ,String? email}) {
+  void setSelectedEmployee(
+    String? value, {
+    String? employeeName,
+    String? userType,
+    String? email,
+  }) {
     selectedEmployee = value;
     selectedEmployeeName = employeeName;
     selectedEmployeeType = userType;
-    selectedEmployeeEmail  =  email;
+    selectedEmployeeEmail = email;
 
     showEmployeeError = false;
     update();
@@ -254,9 +258,9 @@ class AddLeadController extends GetxController {
     }
   }
 
-
   Future<void> submitForm() async {
-    String currentUserRole = ListConst.currentUserProfileData.type ?? 'employee';
+    String currentUserRole =
+        ListConst.currentUserProfileData.type ?? 'employee';
 
     showSourceError = selectedSource == null;
     if (currentUserRole == 'admin') {
@@ -266,7 +270,9 @@ class AddLeadController extends GetxController {
     }
     update();
 
-    log('Form valid: ${formKey.currentState!.validate()}, Show Employee Error: $showEmployeeError, Show Source Error: $showSourceError');
+    log(
+      'Form valid: ${formKey.currentState!.validate()}, Show Employee Error: $showEmployeeError, Show Source Error: $showSourceError',
+    );
 
     formKey.currentState!.validate();
 
@@ -281,8 +287,9 @@ class AddLeadController extends GetxController {
         !RegExp(r'^\d{10}$').hasMatch(clientPhoneController.text)) {
       errorMessage = 'Client number must be exactly 10 digits';
     } else if (emailController.text.isNotEmpty &&
-        !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-            .hasMatch(emailController.text)) {
+        !RegExp(
+          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+        ).hasMatch(emailController.text)) {
       errorMessage = 'Invalid email format';
     } else if (descriptionController.text.trim().isEmpty) {
       errorMessage = 'Description/Notes is required';
@@ -294,6 +301,8 @@ class AddLeadController extends GetxController {
       errorMessage = 'Please select a source';
     } else if (showEmployeeError) {
       errorMessage = 'Please select an employee';
+    } else if (followUpController.text.trim().isEmpty || nextFollowUp == null) {
+      errorMessage = 'Please select initial follow-up date & time';
     }
 
     if (errorMessage != null) {
@@ -305,7 +314,7 @@ class AddLeadController extends GetxController {
       return;
     }
 
-  Get.dialog(
+    Get.dialog(
       Center(
         child: Container(
           padding: const EdgeInsets.all(20),
@@ -315,12 +324,16 @@ class AddLeadController extends GetxController {
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children:  [
-              CircularProgressIndicator(color: colorMainTheme,),
+            children: [
+              CircularProgressIndicator(color: colorMainTheme),
               SizedBox(height: 15),
               Text(
                 'Adding Lead...',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600,color:colorMainTheme),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: colorMainTheme,
+                ),
               ),
             ],
           ),
@@ -379,7 +392,10 @@ class AddLeadController extends GetxController {
                     SizedBox(height: 15),
                     Text(
                       'Adding to Google Calendar...',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
@@ -395,7 +411,7 @@ class AddLeadController extends GetxController {
             endTime: DateTime.now().add(const Duration(minutes: 4)),
             employeeEmails: [selectedEmployeeEmail ?? ''],
           );
-log('seleceted employee email $selectedEmployeeEmail');
+          log('seleceted employee email $selectedEmployeeEmail');
           Get.back(); // close calendar loading
         }
       } catch (e) {
@@ -425,5 +441,3 @@ log('seleceted employee email $selectedEmployeeEmail');
     }
   }
 }
-
-

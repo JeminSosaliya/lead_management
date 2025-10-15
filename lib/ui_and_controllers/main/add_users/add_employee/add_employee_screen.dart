@@ -299,6 +299,8 @@ class AddEmployeeScreen extends StatelessWidget {
                 borderColor: colorMainTheme,
                 textColor: colorMainTheme,
               ),
+              SizedBox(height: height * 0.048),
+
             ],
           ),
         ),
