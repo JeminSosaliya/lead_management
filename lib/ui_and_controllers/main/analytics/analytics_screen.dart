@@ -9,7 +9,6 @@ import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_shimmer.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
-import 'package:shimmer/shimmer.dart';
 
 class AnalyticsScreen extends StatelessWidget {
   const AnalyticsScreen({super.key});
@@ -224,6 +223,32 @@ class AnalyticsScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       textColor: colorWhite,
                     ),
+                    SizedBox(height: height * 0.01),
+                    if (controller.totalLeads > 0)
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          controller.exportFilteredLeadsToExcel();
+                        },
+                        icon: Icon(Icons.download, color: colorWhite),
+                        label: Text(
+                          "Export to Excel",
+                          style: TextStyle(
+                            color: colorWhite,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colorCustomButton,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 3,
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -541,7 +566,8 @@ class AnalyticsScreen extends StatelessWidget {
   Widget _buildLegend(AnalyticsController controller) {
     return Column(
       children: [
-        if (controller.newCount.value > 0) _buildLegendItem('New', colorBlue),
+        if (controller.newCount.value > 0)
+          _buildLegendItem('New Leads', colorBlue),
         if (controller.inProgressCount.value > 0)
           _buildLegendItem('In Progress', colorOrange),
         if (controller.completedCount.value > 0)

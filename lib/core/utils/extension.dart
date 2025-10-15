@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
@@ -6,7 +10,12 @@ import 'package:lead_management/core/constant/app_color.dart';
 import 'package:intl/intl.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
+import '../../model/lead_add_model.dart';
+import '../../ui_and_controllers/main/analytics/analytics_controller.dart';
 import '../constant/app_const.dart';
 
 
@@ -20,6 +29,8 @@ extension StringExtension on String {
       args: [args1],
     );
   }
+
+
 
   bool get isEmailValid => RegExp(
       r'^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$')

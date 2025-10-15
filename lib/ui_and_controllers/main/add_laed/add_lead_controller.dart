@@ -1,16 +1,15 @@
 import 'dart:developer';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/list_const.dart';
 import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/model/lead_add_model.dart';
-import 'package:lead_management/model/profile_model.dart';
 import 'package:lead_management/ui_and_controllers/main/home/home_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/location_picker_screen.dart';
-import 'package:lead_management/ui_and_controllers/widgets/dropdown.dart';
 
 import '../../auth/goggle_login/google_calendar_controller.dart';
 
@@ -407,8 +406,8 @@ class AddLeadController extends GetxController {
           await calendarController.addEvent(
             title: nameController.text.trim(),
             description: descriptionController.text.trim(),
-            startTime: DateTime.now().add(const Duration(minutes: 2)),
-            endTime: DateTime.now().add(const Duration(minutes: 4)),
+            startTime: DateTime.now().add(const Duration(minutes: 10)),
+            endTime: DateTime.now().add(const Duration(minutes: 12)),
             employeeEmails: [selectedEmployeeEmail ?? ''],
           );
           log('seleceted employee email $selectedEmployeeEmail');
