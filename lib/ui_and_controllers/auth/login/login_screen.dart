@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lead_management/core/constant/app_assets.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/utils/extension.dart';
@@ -39,22 +40,24 @@ class LoginScreen extends StatelessWidget {
                 Center(
                   child: Column(
                     children: [
-                      Container(
-                        width: width * 0.25,
-                        height: width * 0.25,
-                        decoration: BoxDecoration(
-                          color: colorMainTheme,
-                          borderRadius: BorderRadius.circular(width * 0.125),
-                        ),
-                        child: Icon(
-                          Icons.person,
-                          size: width * 0.12,
-                          color: colorWhite,
-                        ),
-                      ),
+                      // Container(
+                      //   width: width * 0.25,
+                      //   height: width * 0.25,
+                      //   decoration: BoxDecoration(
+                      //     color: colorMainTheme,
+                      //     borderRadius: BorderRadius.circular(width * 0.125),
+                      //   ),
+                      //   child: Icon(
+                      //     Icons.person,
+                      //     size: width * 0.12,
+                      //     color: colorWhite,
+                      //   ),
+                      // ),
+                      Image.asset(AppAssets.logoTwo, height: height * 0.12),
+
                       SizedBox(height: height * 0.02),
                       WantText(
-                        text: "Welcome Back",
+                        text: "Welcome To Rexino",
                         fontSize: width * 0.06,
                         fontWeight: FontWeight.bold,
                         textColor: colorBlack,

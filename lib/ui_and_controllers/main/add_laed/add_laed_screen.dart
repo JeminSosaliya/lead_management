@@ -37,22 +37,22 @@ class AddLeadScreen extends StatelessWidget {
           appBar: CustomAppBar(
             title: isOwner ? 'Add New Lead' : 'Add My Lead',
             showBackButton: true,
-            // actions: [
-            //   GestureDetector(
-            //     onTap: controller.isSubmitting
-            //   ? null
-            //   : () => controller.submitForm(),
-            //     child: Padding(
-            //       padding:  EdgeInsets.only(right: width*0.046),
-            //       child: WantText(
-            //         text: "Add Lead",
-            //         fontSize: width * 0.041,
-            //         textColor: colorWhite,
-            //         fontWeight: FontWeight.w600,
-            //       ),
-            //     ),
-            //   ),
-            // ],
+            actions: [
+              GestureDetector(
+                onTap: controller.isSubmitting
+              ? null
+              : () => controller.submitForm(),
+                child: Padding(
+                  padding:  EdgeInsets.only(right: width*0.046),
+                  child: WantText(
+                    text: "Add Lead",
+                    fontSize: width * 0.041,
+                    textColor: colorWhite,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
           body: GetBuilder<AddLeadController>(
             builder: (AddLeadController controller) {
@@ -259,6 +259,7 @@ class AddLeadScreen extends StatelessWidget {
                                         selectedUser["uid"],
                                         employeeName: value,
                                         userType: selectedUser["type"],
+                                        email: selectedUser["email"]
                                       );
                                     }
                                   },
@@ -359,6 +360,11 @@ class AddLeadScreen extends StatelessWidget {
                           hintText: 'Initial Follow-up Date & Time',
                           controller: controller.followUpController,
                           readOnly: true,
+                          validator: (value) {
+                            if (value == null || value.isEmpty)
+                              return 'Please enter initial follow-up date & time';
+                            return null;
+                          },
                           onTap: () async {
                             DateTime now = DateTime.now();
                             DateTime? date = await showDatePicker(
@@ -428,6 +434,8 @@ class AddLeadScreen extends StatelessWidget {
                           label: isOwner ? 'Add Lead' : 'Add My Lead',
                           boarderRadius: 8,
                         ),
+                        SizedBox(height: height * 0.045),
+
                       ],
                     ),
                   ),

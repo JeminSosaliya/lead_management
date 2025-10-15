@@ -18,7 +18,7 @@ class AddLeadController extends GetxController {
   bool isSubmitting = false;
 
   String? selectedEmployee;
-  String?  selectedEmployeeName;
+  String? selectedEmployeeName;
   String? selectedEmployeeType;
   String? selectedTechnician;
   String? selectedSource;
@@ -79,11 +79,16 @@ class AddLeadController extends GetxController {
     }
   }
 
-  void setSelectedEmployee(String? value, {String? employeeName, String? userType ,String? email}) {
+  void setSelectedEmployee(
+    String? value, {
+    String? employeeName,
+    String? userType,
+    String? email,
+  }) {
     selectedEmployee = value;
     selectedEmployeeName = employeeName;
     selectedEmployeeType = userType;
-    selectedEmployeeEmail  =  email;
+    selectedEmployeeEmail = email;
 
     showEmployeeError = false;
     update();
@@ -252,7 +257,6 @@ class AddLeadController extends GetxController {
     }
   }
 
-
   Future<void> submitForm() async {
     String currentUserRole =
         ListConst.currentUserProfileData.type ?? 'employee';
@@ -296,6 +300,8 @@ class AddLeadController extends GetxController {
       errorMessage = 'Please select a source';
     } else if (showEmployeeError) {
       errorMessage = 'Please select an employee';
+    } else if (followUpController.text.trim().isEmpty || nextFollowUp == null) {
+      errorMessage = 'Please select initial follow-up date & time';
     }
 
     if (errorMessage != null) {
@@ -404,7 +410,7 @@ class AddLeadController extends GetxController {
             endTime: DateTime.now().add(const Duration(minutes: 12)),
             employeeEmails: [selectedEmployeeEmail ?? ''],
           );
-          log('selected employee email $selectedEmployeeEmail');
+          log('seleceted employee email $selectedEmployeeEmail');
           Get.back(); // close calendar loading
         }
       } catch (e) {
@@ -434,5 +440,3 @@ class AddLeadController extends GetxController {
     }
   }
 }
-
-

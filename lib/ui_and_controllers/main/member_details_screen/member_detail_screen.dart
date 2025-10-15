@@ -236,9 +236,12 @@ class MemberDetailScreen extends StatelessWidget {
                           ? colorRedCalendar
                           : colorGreen,
                     ),
+
                 ],
               ),
             ),
+            SizedBox(height: height * 0.048),
+
           ],
         ),
       ),

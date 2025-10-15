@@ -397,6 +397,8 @@ class AnalyticsScreen extends StatelessWidget {
                         );
                       },
                     ),
+                    SizedBox(height: height * 0.048),
+
                   ],
                 ),
             ],
@@ -480,6 +482,7 @@ class AnalyticsScreen extends StatelessWidget {
             onChanged: onChanged,
           ),
         ),
+
       ],
     );
   }

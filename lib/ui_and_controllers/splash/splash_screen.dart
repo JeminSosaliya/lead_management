@@ -72,7 +72,15 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: Image.asset(AppAssets.splash, height: height * 0.18)),
+      body: Center(child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(AppAssets.logoTwo, height: height * 0.12),
+          SizedBox(height: height * 0.02),
+          Image.asset(AppAssets.splash, height: height * 0.18),
+        ],
+      )),
     );
   }
 }
