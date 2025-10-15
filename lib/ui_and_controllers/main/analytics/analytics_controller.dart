@@ -5,6 +5,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/model/lead_add_model.dart';
 import 'package:open_filex/open_filex.dart';
@@ -34,11 +35,12 @@ class AnalyticsController extends GetxController {
   final completedCount = 0.obs;
   final cancelledCount = 0.obs;
 
-  // Stage lists
   final newList = <Lead>[].obs;
   final inProgressList = <Lead>[].obs;
   final completedList = <Lead>[].obs;
   final cancelledList = <Lead>[].obs;
+
+  final selectedDate = Rxn<DateTime>();
 
   @override
   void onInit() {
@@ -51,6 +53,21 @@ class AnalyticsController extends GetxController {
   List<Lead> get filteredLeads {
     var leads = allLeads.toList();
 
+    // Date filter
+    if (selectedDate.value != null) {
+      final startOfDay = DateTime(
+        selectedDate.value!.year,
+        selectedDate.value!.month,
+        selectedDate.value!.day,
+      );
+      final endOfDay = startOfDay.add(Duration(days: 1));
+
+      leads = leads.where((lead) {
+        final leadDate = lead.createdAt.toDate();
+        return leadDate.isAfter(startOfDay) && leadDate.isBefore(endOfDay);
+      }).toList();
+      print('After date filter: ${leads.length} leads');
+    }
 
     if (selectedEmployeeId.value != null) {
       leads = leads
@@ -67,9 +84,6 @@ class AnalyticsController extends GetxController {
     }
 
     print('Final filtered leads: ${leads.length}');
-    // for(var lead in leads){
-    //   log('leads is ${lead.stage} and ${lead.clientName}');
-    // }
     return leads;
   }
 
@@ -141,10 +155,10 @@ class AnalyticsController extends GetxController {
           .map((doc) => Lead.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
 
-
-
       for (var lead in allLeads) {
-        log('Lead: ${lead.clientName}, Stage: ${lead.stage}, AssignedTo: ${lead.assignedTo}, Technician: ${lead.technician}');
+        log(
+          'Lead: ${lead.clientName}, Stage: ${lead.stage}, AssignedTo: ${lead.assignedTo}, Technician: ${lead.technician}',
+        );
       }
 
       calculateStatistics();
@@ -152,6 +166,12 @@ class AnalyticsController extends GetxController {
       print("Error loading analytics: $e");
     }
     isLoading.value = false;
+  }
+
+  void selectDate(DateTime? date) {
+    print('Selecting date: $date');
+    selectedDate.value = date;
+    calculateStatistics();
   }
 
   void selectEmployee(String? id, String? name) {
@@ -174,13 +194,11 @@ class AnalyticsController extends GetxController {
     print('=== CALCULATING STATISTICS ===');
     print('Filtered leads count: ${leads.length}');
 
-    // Reset counts
     newCount.value = 0;
     inProgressCount.value = 0;
     completedCount.value = 0;
     cancelledCount.value = 0;
 
-    // Calculate counts
     for (var lead in leads) {
       switch (lead.stage) {
         case 'notContacted':
@@ -198,8 +216,9 @@ class AnalyticsController extends GetxController {
       }
     }
 
-    // Update lists
-    newList.value = leads.where((l) => l.stage == 'new').toList();
+    newList.value = leads
+        .where((l) => l.stage == 'notContacted')
+        .toList(); // ✅ Changed 'new' to 'notContacted'
     inProgressList.value = leads.where((l) => l.stage == 'inProgress').toList();
     completedList.value = leads.where((l) => l.stage == 'completed').toList();
     cancelledList.value = leads.where((l) => l.stage == 'cancelled').toList();
@@ -214,9 +233,15 @@ class AnalyticsController extends GetxController {
     // Print percentages
     print('=== PERCENTAGES ===');
     print('New: ${getPercentage(newCount.value).toStringAsFixed(1)}%');
-    print('In Progress: ${getPercentage(inProgressCount.value).toStringAsFixed(1)}%');
-    print('Completed: ${getPercentage(completedCount.value).toStringAsFixed(1)}%');
-    print('Cancelled: ${getPercentage(cancelledCount.value).toStringAsFixed(1)}%');
+    print(
+      'In Progress: ${getPercentage(inProgressCount.value).toStringAsFixed(1)}%',
+    );
+    print(
+      'Completed: ${getPercentage(completedCount.value).toStringAsFixed(1)}%',
+    );
+    print(
+      'Cancelled: ${getPercentage(cancelledCount.value).toStringAsFixed(1)}%',
+    );
   }
 
   int get totalLeads => filteredLeads.length;
@@ -233,6 +258,7 @@ class AnalyticsController extends GetxController {
     selectedEmployeeName.value = null;
     selectedTechnicianId.value = null;
     selectedTechnicianName.value = null;
+    selectedDate.value = null;
     calculateStatistics();
   }
 
@@ -247,6 +273,11 @@ class AnalyticsController extends GetxController {
 
   String get filterDescription {
     final filters = <String>[];
+    if (selectedDate.value != null) {
+      filters.add(
+        'Date: ${DateFormat('dd MMM yyyy').format(selectedDate.value!)}',
+      );
+    }
     if (selectedEmployeeName.value != null) {
       filters.add('Employee: ${selectedEmployeeName.value}');
     }
@@ -256,14 +287,13 @@ class AnalyticsController extends GetxController {
     return filters.isEmpty ? 'All Leads' : filters.join(' + ');
   }
 
-  // Rest of your existing methods (exportFilteredLeadsToExcel, etc.) remain the same...
   Future<void> exportFilteredLeadsToExcel() async {
     try {
       bool granted = await _requestStoragePermission();
       if (!granted) return;
 
       final excel = Excel.createExcel();
-      final sheet = excel['Leads'];
+      final sheet = excel['Sheet1'];
 
       sheet.appendRow([
         TextCellValue('Index'),
@@ -340,7 +370,7 @@ class AnalyticsController extends GetxController {
             textColor: Colors.white,
             backgroundColor: Colors.red,
             message:
-            'Permission Required,Please enable storage permission from settings to export Excel.',
+                'Permission Required,Please enable storage permission from settings to export Excel.',
           );
           return false;
         }
@@ -360,7 +390,7 @@ class AnalyticsController extends GetxController {
             textColor: Colors.white,
             backgroundColor: Colors.red,
             message:
-            'Permission Required,Please enable storage permission from settings to export Excel.',
+                'Permission Required,Please enable storage permission from settings to export Excel.',
           );
 
           return false;
