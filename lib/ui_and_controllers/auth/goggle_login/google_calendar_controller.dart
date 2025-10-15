@@ -156,7 +156,7 @@ class GoogleCalendarController extends GetxController {
         reminders: EventReminders(
           useDefault: false,
           overrides: [
-            EventReminder(method: 'popup', minutes: 1),
+            EventReminder(method: 'popup', minutes: 2),
           ],
         ),
       );

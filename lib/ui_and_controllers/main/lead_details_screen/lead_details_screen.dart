@@ -378,8 +378,8 @@ class LeadDetailsScreen extends StatelessWidget {
                               fontWeight: FontWeight.w400,
                               textColor: colorDarkGreyText,
                             ),
-                            if(hasValue(lead.clientEmail))
-                            SizedBox(height: height * 0.008),
+                            if (hasValue(lead.clientEmail))
+                              SizedBox(height: height * 0.008),
 
                             Row(
                               children: [
@@ -394,7 +394,82 @@ class LeadDetailsScreen extends StatelessWidget {
                     ],
                   ),
                 ),
+
                 SizedBox(height: height * 0.01),
+                if (hasValue(lead.callNote) ||
+                    lead.initialFollowUp != null ||
+                    lead.nextFollowUp != null) ...[
+                  // SizedBox(height: height * 0.01),
+                  Container(
+                    width: double.infinity,
+                    margin: EdgeInsets.only(
+                      top: height * 0.016,
+                      left: width * 0.041,
+                      right: width * 0.041,
+                    ),
+                    padding: EdgeInsets.all(width * 0.03),
+                    decoration: BoxDecoration(
+                      color: colorWhite,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: colorMainTheme.withOpacity(0.3),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: colorBoxShadow,
+                          blurRadius: 6,
+                          offset: Offset(4, 3),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (lead.initialFollowUp != null) ...[
+                          WantText(
+                            text: "Initial Follow-up",
+                            fontSize: width * 0.035,
+                            fontWeight: FontWeight.w500,
+                            textColor: colorBlack,
+                          ),
+                          WantText(
+                            text: formatTimestamp(lead.initialFollowUp),
+                            fontSize: width * 0.031,
+                          ),
+                        ],
+
+                        if (lead.nextFollowUp != null) ...[
+                          SizedBox(height: height * 0.01),
+                          WantText(
+                            text: "Next Follow-up",
+                            fontSize: width * 0.035,
+                            fontWeight: FontWeight.w500,
+                            textColor: colorBlack,
+                          ),
+                          WantText(
+                            text: formatTimestamp(lead.nextFollowUp),
+                            fontSize: width * 0.031,
+                          ),
+                        ],
+
+                        if (hasValue(lead.callNote)) ...[
+                          SizedBox(height: height * 0.01),
+                          WantText(
+                            text: "Reason",
+                            fontSize: width * 0.041,
+                            fontWeight: FontWeight.w500,
+                            textColor: colorRed,
+                          ),
+                          WantText(
+                            text: lead.callNote!,
+                            fontSize: width * 0.035,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
                 CustomCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -420,17 +495,6 @@ class LeadDetailsScreen extends StatelessWidget {
                       if (hasValue(lead.address))
                         _infoCard(title: "Address", value: lead.address!),
 
-                      if (lead.initialFollowUp != null)
-                        _infoCard(
-                          title: "Initial Follow-up",
-                          value: formatTimestamp(lead.initialFollowUp),
-                        ),
-
-                      if (lead.nextFollowUp != null)
-                        _infoCard(
-                          title: "Next Follow-up",
-                          value: formatTimestamp(lead.nextFollowUp),
-                        ),
                       _infoCard(
                         title: "Client Contact Number",
                         value: lead.clientPhone,
@@ -460,15 +524,8 @@ class LeadDetailsScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: colorMainTheme.withOpacity(0.3),
-                                width: 1.5,
+                                width: .5,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: colorBoxShadow,
-                                  blurRadius: 6,
-                                  offset: Offset(4, 3),
-                                ),
-                              ],
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -583,27 +640,12 @@ class LeadDetailsScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                if (hasValue(lead.callNote)) ...[
-                  // SizedBox(height: height * 0.01),
-                  CustomCard(
-                      child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      WantText(
-                        text: "Reason",
-                        fontSize: width * 0.045,
-                        fontWeight: FontWeight.w500,
-                        textColor: colorBlack,
-                      ),
-                      WantText(text: lead.callNote!),
-                    ],
-                  ))
-                ],
+
                 SizedBox(height: height * 0.01),
 
                 if (isEditable)
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: width * 0.041),
+                    padding: EdgeInsets.symmetric(horizontal: width * 0.041,vertical: height * 0.01),
                     child: CustomButton(
                       Width: width,
                       onTap: controller.callLead,
@@ -616,7 +658,7 @@ class LeadDetailsScreen extends StatelessWidget {
                     padding: EdgeInsets.symmetric(horizontal: width * 0.041),
                     child: Column(
                       children: [
-                        SizedBox(height: height * 0.03),
+                        SizedBox(height: height * 0.02),
                         WantText(
                           text: 'Update Lead',
                           fontSize: width * 0.045,
@@ -717,6 +759,7 @@ class LeadDetailsScreen extends StatelessWidget {
                                       },
                                 label: 'Update Lead',
                               ),
+                              SizedBox(height: height * 0.03),
                             ],
                           ),
                         ),

@@ -400,8 +400,8 @@ class AddLeadController extends GetxController {
           await calendarController.addEvent(
             title: nameController.text.trim(),
             description: descriptionController.text.trim(),
-            startTime: DateTime.now().add(const Duration(minutes: 2)),
-            endTime: DateTime.now().add(const Duration(minutes: 4)),
+            startTime: DateTime.now().add(const Duration(minutes: 10)),
+            endTime: DateTime.now().add(const Duration(minutes: 12)),
             employeeEmails: [selectedEmployeeEmail ?? ''],
           );
           log('selected employee email $selectedEmployeeEmail');
