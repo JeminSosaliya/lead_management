@@ -217,7 +217,6 @@ class GoogleCalendarController extends GetxController {
   }
 
 
-  /// 🔄 Retry insert event if token expired
   Future<Event?> _tryInsertEvent(Event event) async {
     try {
       return await calendarApi!.events.insert(
