@@ -307,17 +307,17 @@ class GoogleCalendarController extends GetxController {
       return updatedEvent.id != null;
     } catch (e) {
       if (e is DetailedApiRequestError && e.status == 404) {
-        Get.context?.showAppSnackBar(
-          message: '❌ Event not found (maybe deleted)',
-          backgroundColor: colorRed,
-          textColor: colorWhite,
-        );
+        // Get.context?.showAppSnackBar(
+        //   message: '❌ Event not found (maybe deleted)',
+        //   backgroundColor: colorRed,
+        //   textColor: colorWhite,
+        // );
       } else {
-        Get.context?.showAppSnackBar(
-          message: '💥 Failed to update event: $e',
-          backgroundColor: colorRed,
-          textColor: colorWhite,
-        );
+        // Get.context?.showAppSnackBar(
+        //   message: '💥 Failed to update event: $e',
+        //   backgroundColor: colorRed,
+        //   textColor: colorWhite,
+        // );
       }
       log('💥 Update event failed: $e');
       return false;
