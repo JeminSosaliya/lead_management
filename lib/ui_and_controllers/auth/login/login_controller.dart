@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lead_management/core/constant/app_color.dart';
@@ -62,7 +64,10 @@ class LoginController extends GetxController {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('current_user_id', userCredential.user!.uid);
 
+      await _storeFcmToken(userCredential.user!.uid);
+
       final userStatusService = Get.put(UserStatusService());
+
       await userStatusService.startListening();
 
       Get.context!.showAppSnackBar(
@@ -112,6 +117,24 @@ class LoginController extends GetxController {
       );
     } finally {
       _isLoading.value = false;
+    }
+  }
+  Future<void> _storeFcmToken(String userId) async {
+
+    try {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .update({
+          'fcmToken': fcmToken,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+        print("✅ FCM token stored for user: $userId");
+      }
+    } catch (e) {
+      print("❌ Error storing FCM token: $e");
     }
   }
   @override
