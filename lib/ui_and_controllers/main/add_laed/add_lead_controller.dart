@@ -287,9 +287,9 @@ class AddLeadController extends GetxController {
             body: body,
           );
           if (notificationSent) {
-            print('Notification sent successfully to $assignedToName');
+            log('Notification sent successfully to $assignedToName');
           } else {
-            print('Failed to send notification');
+            log('Failed to send notification');
           }
         } else {
           print('No FCM token found for user: $assignedToName');
@@ -544,39 +544,63 @@ class AddLeadController extends GetxController {
     required String title,
     required String body,
   }) async {
-    if (deviceToken.isEmpty) return false;
-    final credentials = await _getAccessToken();
-    final accessToken = credentials.accessToken.data;
-    final serviceAccountPath = dotenv.env['PATH_TO_SECRET'];
-    final serviceAccountJson = await rootBundle.loadString(serviceAccountPath!);
-    final projectId = jsonDecode(serviceAccountJson)['project_id'];
+    try {
+      if (deviceToken.isEmpty) {
+        print('[FCM] Device token is empty.');
+        return false;
+      }
 
-    final url = Uri.parse(
-      'https://fcm.googleapis.com/v1/projects/$projectId/messages:send',
-    );
+      print('[FCM] Getting access token...');
+      final credentials = await _getAccessToken();
+      final accessToken = credentials.accessToken.data;
+      print('[FCM] Access token obtained:');
 
-    final data = {
-      'message': {
-        'token': deviceToken,
-        'notification': {'title': title, 'body': body},
-      },
-    };
+      final serviceAccountPath = dotenv.env['PATH_TO_SECRET'];
+      if (serviceAccountPath == null) {
+        print('[FCM] PATH_TO_SECRET not set in .env');
+        return false;
+      }
 
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
-      body: jsonEncode(data),
-    );
+      print('[FCM] Loading service account JSON from $serviceAccountPath...');
+      final serviceAccountJson = await rootBundle.loadString(serviceAccountPath);
+      final projectId = jsonDecode(serviceAccountJson)['project_id'];
+      print('[FCM] Project ID: ');
 
-    if (response.statusCode == 200) {
-      print('Notification sent successfully!');
-      return true;
-    } else {
-      print('Failed to send notification: ${response.body}');
+      final url = Uri.parse('https://fcm.googleapis.com/v1/projects/$projectId/messages:send');
+      print('[FCM] FCM send URL: ');
+
+      final data = {
+        'message': {
+          'token': deviceToken,
+          'notification': {'title': title, 'body': body},
+        },
+      };
+      print('[FCM] Payload: ${jsonEncode(data)}');
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(data),
+      );
+
+      print('[FCM] Response status: ${response.statusCode}');
+      print('[FCM] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        print('[FCM] Notification sent successfully!');
+        return true;
+      } else {
+        print('[FCM] Failed to send notification.');
+        return false;
+      }
+    } catch (e, st) {
+      print('[FCM] Exception while sending notification: $e');
+      print(st);
       return false;
     }
   }
+
 }
