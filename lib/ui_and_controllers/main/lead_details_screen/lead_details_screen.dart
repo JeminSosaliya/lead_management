@@ -103,6 +103,7 @@ class LeadDetailsScreen extends StatelessWidget {
                       labelText: "Client Name",
                       hintText: 'Enter client Name*',
                       controller: controller.nameController,
+                      textCapitalization: TextCapitalization.words,
                       prefixIcon: Icon(Icons.person, color: colorGrey),
                       validator: (value) {
                         if (value == null || value.isEmpty)
@@ -160,6 +161,7 @@ class LeadDetailsScreen extends StatelessWidget {
                       labelText: "Company Name",
                       hintText: 'Company Name',
                       controller: controller.companyController,
+                      textCapitalization: TextCapitalization.words,
                       prefixIcon: Icon(Icons.business, color: colorGrey),
                     ),
                     SizedBox(height: height * 0.023),
@@ -167,6 +169,7 @@ class LeadDetailsScreen extends StatelessWidget {
                       labelText: "Address (Optional)",
                       hintText: 'Please enter the address',
                       controller: controller.addressController,
+                      textCapitalization: TextCapitalization.words,
                       maxLines: 2,
                       prefixIcon: Icon(Icons.home, color: colorGrey),
                     ),
@@ -175,6 +178,7 @@ class LeadDetailsScreen extends StatelessWidget {
                       labelText: "Description/Notes",
                       hintText: 'Enter description/Notes',
                       controller: controller.descriptionController,
+                      textCapitalization: TextCapitalization.words,
                       maxLines: 3,
                       prefixIcon: Icon(Icons.note, color: colorGrey),
                       validator: (value) {
@@ -188,6 +192,7 @@ class LeadDetailsScreen extends StatelessWidget {
                       labelText: "Referral Name",
                       hintText: 'Enter referral Name',
                       controller: controller.referralNameController,
+                      textCapitalization: TextCapitalization.words,
                       prefixIcon: Icon(Icons.person, color: colorGrey),
                     ),
                     SizedBox(height: height * 0.023),
@@ -228,7 +233,8 @@ class LeadDetailsScreen extends StatelessWidget {
                       items: controller.employees
                           .map((e) => e['name'] as String)
                           .toList(),
-                      hintText: controller.selectedEmployeeName ?? 'Select User',
+                      hintText:
+                          controller.selectedEmployeeName ?? 'Select User',
                       iconData1: Icons.arrow_drop_down,
                       iconData2: Icons.arrow_drop_up,
                       onChanged: (value) {
@@ -431,7 +437,7 @@ class LeadDetailsScreen extends StatelessWidget {
                             text: formatTimestamp(lead.initialFollowUp),
                             fontSize: width * 0.031,
                             fontWeight: FontWeight.w500,
-                            textColor: colorGreenOne
+                            textColor: colorGreenOne,
                           ),
                         ],
 
@@ -645,7 +651,10 @@ class LeadDetailsScreen extends StatelessWidget {
 
                 if (isEditable)
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: width * 0.041,vertical: height * 0.01),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: width * 0.041,
+                      vertical: height * 0.01,
+                    ),
                     child: CustomButton(
                       Width: width,
                       onTap: controller.callLead,
@@ -799,7 +808,6 @@ class LeadDetailsScreen extends StatelessWidget {
                     ),
                   ),
                 SizedBox(height: height * 0.048),
-
               ],
             ),
           );

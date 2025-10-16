@@ -69,7 +69,7 @@ class AddEmployeeScreen extends StatelessWidget {
               CustomTextFormField(
                 controller: controller.nameController,
                 labelText: "Full Name",
-                hintText: "Enter employee's full name",
+                hintText: "Enter employee full name",
                 keyboardType: TextInputType.name,
                 prefixIcon: Icon(
                   Icons.person,
@@ -93,14 +93,17 @@ class AddEmployeeScreen extends StatelessWidget {
               CustomTextFormField(
                 controller: controller.numberController,
                 labelText: "Phone Number",
-                hintText: "Enter employee's phone number",
+                hintText: "Enter employee phone number",
                 keyboardType: TextInputType.phone,
                 prefixIcon: Icon(
                   Icons.phone,
                   color: colorGreyText,
                   size: width * 0.05,
                 ),
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter the phone number';
@@ -120,7 +123,7 @@ class AddEmployeeScreen extends StatelessWidget {
               CustomTextFormField(
                 controller: controller.emailController,
                 labelText: "Email Address",
-                hintText: "Enter employee's email address",
+                hintText: "Enter employee email address",
                 keyboardType: TextInputType.emailAddress,
                 prefixIcon: Icon(
                   Icons.email,
@@ -150,7 +153,7 @@ class AddEmployeeScreen extends StatelessWidget {
                 () => CustomTextFormField(
                   controller: controller.passwordController,
                   labelText: "Password",
-                  hintText: "Enter employee's password",
+                  hintText: "Enter employee password",
                   obscureText: controller.obscurePassword,
                   prefixIcon: Icon(
                     Icons.lock,
@@ -185,7 +188,7 @@ class AddEmployeeScreen extends StatelessWidget {
                 () => CustomTextFormField(
                   controller: controller.confirmPasswordController,
                   labelText: "Confirm Password",
-                  hintText: "Confirm employee's password",
+                  hintText: "Confirm employee password",
                   obscureText: controller.obscureConfirmPassword,
                   prefixIcon: Icon(
                     Icons.lock_outline,
@@ -219,7 +222,7 @@ class AddEmployeeScreen extends StatelessWidget {
               CustomTextFormField(
                 controller: controller.addressController,
                 labelText: "Address",
-                hintText: "Enter employee's address",
+                hintText: "Enter employee address",
                 keyboardType: TextInputType.multiline,
                 maxLines: 3,
                 prefixIcon: Icon(
@@ -241,7 +244,7 @@ class AddEmployeeScreen extends StatelessWidget {
               CustomTextFormField(
                 controller: controller.designationController,
                 labelText: "Designation",
-                hintText: "Enter employee's designation/position",
+                hintText: "Enter employee designation/position",
                 keyboardType: TextInputType.text,
                 prefixIcon: Icon(
                   Icons.work,
@@ -265,7 +268,7 @@ class AddEmployeeScreen extends StatelessWidget {
               CustomTextFormField(
                 controller: controller.referenceController,
                 labelText: "Reference Person",
-                hintText: "Enter reference person's name",
+                hintText: "Enter reference person name",
                 keyboardType: TextInputType.text,
                 prefixIcon: Icon(
                   Icons.person_pin,
@@ -300,7 +303,6 @@ class AddEmployeeScreen extends StatelessWidget {
                 textColor: colorMainTheme,
               ),
               SizedBox(height: height * 0.048),
-
             ],
           ),
         ),

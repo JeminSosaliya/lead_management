@@ -75,6 +75,7 @@ class AddLeadScreen extends StatelessWidget {
                           hintText: 'Enter client Name',
                           controller: controller.nameController,
                           prefixIcon: Icon(Icons.person, color: colorGrey),
+                          textCapitalization: TextCapitalization.words,
 
                           validator: (value) {
                             if (value == null || value.isEmpty)
@@ -173,6 +174,7 @@ class AddLeadScreen extends StatelessWidget {
                         CustomTextFormField(
                           labelText: "Company Name",
                           hintText: 'Company Name',
+                          textCapitalization: TextCapitalization.words,
                           controller: controller.companyController,
                           prefixIcon: Icon(Icons.business, color: colorGrey),
                         ),
@@ -181,6 +183,7 @@ class AddLeadScreen extends StatelessWidget {
                           labelText: "Address (Optional)",
                           hintText: 'Please enter the address',
                           controller: controller.addressController,
+                          textCapitalization: TextCapitalization.words,
                           maxLines: 2,
                           prefixIcon: Icon(Icons.home, color: colorGrey),
                         ),
@@ -192,6 +195,7 @@ class AddLeadScreen extends StatelessWidget {
                           controller: controller.descriptionController,
                           maxLines: 3,
                           prefixIcon: Icon(Icons.note, color: colorGrey),
+                          textCapitalization: TextCapitalization.words,
                           validator: (value) {
                             if (value == null || value.isEmpty)
                               return 'Please enter the note';
@@ -339,6 +343,7 @@ class AddLeadScreen extends StatelessWidget {
                           labelText: "Referral Name",
                           hintText: 'Enter referral Name',
                           controller: controller.referralNameController,
+                          textCapitalization: TextCapitalization.words,
                           prefixIcon: Icon(Icons.person, color: colorGrey),
                         ),
                         SizedBox(height: height * 0.023),
@@ -432,7 +437,12 @@ class AddLeadScreen extends StatelessWidget {
                           onTap: controller.isSubmitting
                               ? null
                               : () => controller.submitForm(),
-                          label: isOwner ? 'Add Lead' : 'Add My Lead',
+                          label: controller.isSubmitting
+                              ? (isOwner ? 'Adding Lead...' : 'Adding My Lead...')
+                              : (isOwner ? 'Add Lead' : 'Add My Lead'),
+                          backgroundColor: controller.isSubmitting
+                              ? colorGreyText
+                              : colorMainTheme,
                           boarderRadius: 8,
                         ),
                         SizedBox(height: height * 0.045),

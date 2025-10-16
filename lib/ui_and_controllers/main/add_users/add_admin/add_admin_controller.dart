@@ -13,7 +13,7 @@ class AddAdminController extends GetxController {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController(); // Add confirm password controller
   final _addressController = TextEditingController();
-  
+
   final _isLoading = false.obs;
   final _obscurePassword = true.obs;
   final _obscureConfirmPassword = true.obs; // Add confirm password visibility
@@ -48,51 +48,41 @@ class AddAdminController extends GetxController {
     _isLoading.value = true;
 
     try {
-      // Step 1: Create user account with Firebase Auth
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      // Step 2: Update user display name
       await userCredential.user?.updateDisplayName(_nameController.text.trim());
 
-      // Step 3: Save add_admin details to Firestore
       await _firestore.collection('users').doc(userCredential.user!.uid).set({
         'uid': userCredential.user!.uid,
         'name': _nameController.text.trim(),
         'email': _emailController.text.trim(),
         'phone': _numberController.text.trim(),
         'address': _addressController.text.trim(),
-        'password': _passwordController.text.trim(), // Add password storage
-        'type': 'admin', // Manually set as admin
+        'password': _passwordController.text.trim(),
+        'type': 'admin',
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
         'isActive': true,
-        'createdBy': _auth.currentUser?.uid, // Admin who created this admin
+        'createdBy': _auth.currentUser?.uid,
       });
 
-      // Step 4: Sign out the newly created add_admin (since we want current add_admin to stay logged in)
       await _auth.signOut();
 
-      // Step 5: Sign back in as current add_admin
-      // Note: You might want to store add_admin credentials temporarily or use a different approach
-      // For now, we'll just show success message
-      
+
       Get.context!.showAppSnackBar(
         message: "Admin created successfully!",
         backgroundColor: colorGreen,
       );
-      
-      // Clear form
+
       _clearForm();
-      
-      // Navigate back to home screen
       Get.back();
-      
+
     } on FirebaseAuthException catch (e) {
       String errorMessage = "Error creating add_admin account.";
-      
+
       switch (e.code) {
         case 'weak-password':
           errorMessage = "Password is too weak.";
@@ -109,7 +99,7 @@ class AddAdminController extends GetxController {
         default:
           errorMessage = "Error creating account: ${e.message}";
       }
-      
+
       Get.context!.showAppSnackBar(
         message: errorMessage,
         backgroundColor: colorRedCalendar,
@@ -130,7 +120,7 @@ class AddAdminController extends GetxController {
     _numberController.clear();
     _emailController.clear();
     _passwordController.clear();
-    _confirmPasswordController.clear(); // Add confirm password clear
+    _confirmPasswordController.clear();
     _addressController.clear();
   }
 
@@ -140,8 +130,8 @@ class AddAdminController extends GetxController {
     _numberController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _confirmPasswordController.dispose(); // Add confirm password dispose
+    _confirmPasswordController.dispose();
     _addressController.dispose();
     super.onClose();
   }
-} 
+}

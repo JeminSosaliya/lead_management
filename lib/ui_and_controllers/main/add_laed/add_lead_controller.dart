@@ -84,7 +84,8 @@ class AddLeadController extends GetxController {
     }
   }
 
-  void setSelectedEmployee(String? value, {
+  void setSelectedEmployee(
+    String? value, {
     String? employeeName,
     String? userType,
     String? email,
@@ -93,7 +94,6 @@ class AddLeadController extends GetxController {
     selectedEmployeeName = employeeName;
     selectedEmployeeType = userType;
     selectedEmployeeEmail = email;
-
     showEmployeeError = false;
     update();
   }
@@ -110,7 +110,6 @@ class AddLeadController extends GetxController {
   }
 
   Future<void> pickLocation() async {
-    // Check location permissions
     LocationPermission permission = await Geolocator.checkPermission();
 
     if (permission == LocationPermission.denied) {
@@ -128,7 +127,7 @@ class AddLeadController extends GetxController {
     if (permission == LocationPermission.deniedForever) {
       Get.context?.showAppSnackBar(
         message:
-        "Location permission is permanently denied. Please enable it in settings",
+            "Location permission is permanently denied. Please enable it in settings",
         backgroundColor: colorRedCalendar,
         textColor: colorWhite,
       );
@@ -146,19 +145,17 @@ class AddLeadController extends GetxController {
     }
 
     final result = await Get.to(
-          () =>
-          LocationPickerScreen(
-            initialLatitude: selectedLatitude,
-            initialLongitude: selectedLongitude,
-          ),
+      () => LocationPickerScreen(
+        initialLatitude: selectedLatitude,
+        initialLongitude: selectedLongitude,
+      ),
     );
 
     if (result != null && result is Map<String, dynamic>) {
       selectedLatitude = result['latitude'];
       selectedLongitude = result['longitude'];
       locationAddress =
-      'Lat: ${selectedLatitude!.toStringAsFixed(6)}, Lng: ${selectedLongitude!
-          .toStringAsFixed(6)}';
+          'Lat: ${selectedLatitude!.toStringAsFixed(6)}, Lng: ${selectedLongitude!.toStringAsFixed(6)}';
       update();
     }
   }
@@ -177,10 +174,7 @@ class AddLeadController extends GetxController {
     update();
 
     try {
-      String leadId = fireStore
-          .collection('leads')
-          .doc()
-          .id;
+      String leadId = fireStore.collection('leads').doc().id;
       String currentUserId = ListConst.currentUserProfileData.uid.toString();
       String currentUserRole = ListConst.currentUserProfileData.type ?? '';
       String currentUserEmail = ListConst.currentUserProfileData.email ?? '';
@@ -188,10 +182,12 @@ class AddLeadController extends GetxController {
 
       print("👤 Current User ID: $currentUserId");
       print("🎭 Current User Role: $currentUserRole");
+
       String assignedToEmployee;
       String addedByName;
       String assignedToRole;
       String assignedToName;
+
       if (currentUserRole == 'admin') {
         if (selectedEmployee == null) {
           Get.context?.showAppSnackBar(
@@ -241,9 +237,7 @@ class AddLeadController extends GetxController {
         latitude: selectedLatitude,
         longitude: selectedLongitude,
         locationAddress: locationAddress,
-        address: addressController.text
-            .trim()
-            .isEmpty
+        address: addressController.text.trim().isEmpty
             ? null
             : addressController.text.trim(),
         createdAt: Timestamp.now(),
@@ -268,7 +262,6 @@ class AddLeadController extends GetxController {
       isSubmitting = false;
       update();
       print("Error adding lead: $e");
-
       return false;
     }
   }
@@ -300,11 +293,7 @@ class AddLeadController extends GetxController {
           );
           if (notificationSent) {
             print('Notification sent successfully to $assignedToName');
-          } else {
-            print('Failed to send notification');
           }
-        } else {
-          print('No FCM token found for user: $assignedToName');
         }
       }
     } catch (e) {
@@ -312,46 +301,40 @@ class AddLeadController extends GetxController {
     }
   }
 
-  // Future<void> _sendLeadAssignmentNotification({
-  //   required String assignedToUserId,
-  //   required String assignedToName,
-  //   required String leadClientName,
-  //   required String addedByName,
-  // }) async {
-  //   try {
-  //     DocumentSnapshot userDoc = await fireStore
-  //         .collection('users')
-  //         .doc(assignedToUserId)
-  //         .get();
-  //
-  //     if (userDoc.exists) {
-  //       Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-  //       List<dynamic> fcmTokens = userData['fcmTokens'] ?? [];
-  //
-  //       if (fcmTokens.isNotEmpty) {
-  //         String deviceToken = fcmTokens.first.toString();
-  //
-  //         String title = "New Lead Assigned";
-  //         String body = "$leadClientName assigned to you by $addedByName";
-  //
-  //         bool notificationSent = await sendPushNotification(
-  //           deviceToken: deviceToken,
-  //           title: title,
-  //           body: body,
-  //         );
-  //         if (notificationSent) {
-  //           print('Notification sent successfully to $assignedToName');
-  //         } else {
-  //           print('Failed to send notification');
-  //         }
-  //       } else {
-  //         print('No FCM token found for user: $assignedToName');
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print('Error sending notification: $e');
-  //   }
-  // }
+  Future<void> _addGoogleCalendarEvent() async {
+    try {
+      final calendarController = Get.find<GoogleCalendarController>();
+      if (calendarController.isLoggedIn) {
+        List<String> validEmails = [];
+
+        if (selectedEmployeeEmail != null &&
+            selectedEmployeeEmail!.isNotEmpty &&
+            RegExp(
+              r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+            ).hasMatch(selectedEmployeeEmail!)) {
+          validEmails.add(selectedEmployeeEmail!);
+          log('Valid employee email: $selectedEmployeeEmail');
+        } else {
+          log('Invalid/Empty employee email: $selectedEmployeeEmail');
+        }
+
+        await calendarController.addEvent(
+          title: nameController.text.trim(),
+          description: descriptionController.text.trim(),
+          startTime: DateTime.now().add(const Duration(minutes: 10)),
+          endTime: DateTime.now().add(const Duration(minutes: 12)),
+          employeeEmails: validEmails.isNotEmpty ? validEmails : [],
+        );
+
+        log(
+          'Google Calendar added SUCCESSFULLY with ${validEmails.length} attendees',
+        );
+      }
+    } catch (e) {
+      print('Google Calendar failed silently: $e');
+      log('Error details: $e');
+    }
+  }
 
   Future<void> submitForm() async {
     String currentUserRole =
@@ -366,21 +349,16 @@ class AddLeadController extends GetxController {
     update();
 
     log(
-      'Form valid: ${formKey.currentState!
-          .validate()}, Show Employee Error: $showEmployeeError, Show Source Error: $showSourceError',
+      'Form valid: ${formKey.currentState!.validate()}, Show Employee Error: $showEmployeeError, Show Source Error: $showSourceError',
     );
 
     formKey.currentState!.validate();
 
     String? errorMessage;
 
-    if (nameController.text
-        .trim()
-        .isEmpty) {
+    if (nameController.text.trim().isEmpty) {
       errorMessage = 'Client name is required';
-    } else if (clientPhoneController.text
-        .trim()
-        .isEmpty) {
+    } else if (clientPhoneController.text.trim().isEmpty) {
       errorMessage = 'Client number is required';
     } else if (clientPhoneController.text.length != 10 ||
         !RegExp(r'^\d{10}$').hasMatch(clientPhoneController.text)) {
@@ -390,9 +368,7 @@ class AddLeadController extends GetxController {
           r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
         ).hasMatch(emailController.text)) {
       errorMessage = 'Invalid email format';
-    } else if (descriptionController.text
-        .trim()
-        .isEmpty) {
+    } else if (descriptionController.text.trim().isEmpty) {
       errorMessage = 'Description/Notes is required';
     } else if (referralNumberController.text.isNotEmpty &&
         (referralNumberController.text.length != 10 ||
@@ -402,9 +378,7 @@ class AddLeadController extends GetxController {
       errorMessage = 'Please select a source';
     } else if (showEmployeeError) {
       errorMessage = 'Please select an employee';
-    } else if (followUpController.text
-        .trim()
-        .isEmpty || nextFollowUp == null) {
+    } else if (followUpController.text.trim().isEmpty || nextFollowUp == null) {
       errorMessage = 'Please select initial follow-up date & time';
     }
 
@@ -417,68 +391,27 @@ class AddLeadController extends GetxController {
       return;
     }
 
-    Get.dialog(
-      Center(
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: colorWhite,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(color: colorMainTheme),
-              SizedBox(height: 15),
-              Text(
-                'Adding Lead...',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: colorMainTheme,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      barrierDismissible: false,
-    );
-
     bool success = await addLead(
       clientName: nameController.text.trim(),
       clientPhone: clientPhoneController.text.trim(),
-      clientEmail: emailController.text
-          .trim()
-          .isEmpty
+      clientEmail: emailController.text.trim().isEmpty
           ? null
           : emailController.text.trim(),
-      companyName: companyController.text
-          .trim()
-          .isEmpty
+      companyName: companyController.text.trim().isEmpty
           ? null
           : companyController.text.trim(),
-      description: descriptionController.text
-          .trim()
-          .isEmpty
-          ? null
-          : descriptionController.text.trim(),
-      referralName: referralNameController.text
-          .trim()
-          .isEmpty
+      description: descriptionController.text.trim(),
+      referralName: referralNameController.text.trim().isEmpty
           ? null
           : referralNameController.text.trim(),
-      referralNumber: referralNumberController.text
-          .trim()
-          .isEmpty
+      referralNumber: referralNumberController.text.trim().isEmpty
           ? null
           : referralNumberController.text.trim(),
       nextFollowUp: nextFollowUp,
     );
 
-    Get.back();
-
     if (success) {
+      _clearForm();
       Get.back();
       Get.context?.showAppSnackBar(
         message: "Lead added successfully",
@@ -486,55 +419,9 @@ class AddLeadController extends GetxController {
         textColor: colorWhite,
       );
 
-      try {
-        final calendarController = Get.find<GoogleCalendarController>();
-
-        if (calendarController.isLoggedIn) {
-          Get.dialog(
-            Center(
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: colorWhite,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 15),
-                    Text(
-                      'Adding to Google Calendar...',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            barrierDismissible: false,
-          );
-
-          await calendarController.addEvent(
-            title: nameController.text.trim(),
-            description: descriptionController.text.trim(),
-            startTime: DateTime.now().add(const Duration(minutes: 10)),
-            endTime: DateTime.now().add(const Duration(minutes: 12)),
-            employeeEmails: [selectedEmployeeEmail ?? ''],
-          );
-          log('seleceted employee email $selectedEmployeeEmail');
-          Get.back();
-        }
-      } catch (e) {
-        print('Failed to add Google Calendar event: $e');
-        Get.context?.showAppSnackBar(
-          message: 'Event could not be added to calendar',
-          backgroundColor: colorRedCalendar,
-          textColor: colorWhite,
-        );
-      }
+      Future.delayed(Duration(milliseconds: 500), () {
+        _addGoogleCalendarEvent();
+      });
 
       String role = ListConst.currentUserProfileData.type ?? '';
       if (role == 'employee' || role == 'admin') {
@@ -553,18 +440,35 @@ class AddLeadController extends GetxController {
     }
   }
 
+  void _clearForm() {
+    nameController.clear();
+    clientPhoneController.clear();
+    emailController.clear();
+    companyController.clear();
+    descriptionController.clear();
+    followUpController.clear();
+    referralNameController.clear();
+    referralNumberController.clear();
+    addressController.clear();
+    selectedSource = null;
+    selectedEmployee = null;
+    selectedEmployeeName = null;
+    nextFollowUp = null;
+    showEmployeeError = false;
+    showSourceError = false;
+    update();
+  }
+
   Future<AccessCredentials> _getAccessToken() async {
     final serviceAccountPath = dotenv.env['PATH_TO_SECRET'];
-
     String serviceAccountJson = await rootBundle.loadString(
       serviceAccountPath!,
     );
     final serviceAccount = ServiceAccountCredentials.fromJson(
-      serviceAccountJson,
+      jsonDecode(serviceAccountJson),
     );
 
     final scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
-
     final client = await clientViaServiceAccount(serviceAccount, scopes);
     return client.credentials;
   }
@@ -601,12 +505,20 @@ class AddLeadController extends GetxController {
       body: jsonEncode(data),
     );
 
-    if (response.statusCode == 200) {
-      print('Notification sent successfully!');
-      return true;
-    } else {
-      print('Failed to send notification: ${response.body}');
-      return false;
-    }
+    return response.statusCode == 200;
+  }
+
+  @override
+  void onClose() {
+    nameController.dispose();
+    clientPhoneController.dispose();
+    emailController.dispose();
+    companyController.dispose();
+    descriptionController.dispose();
+    followUpController.dispose();
+    referralNameController.dispose();
+    referralNumberController.dispose();
+    addressController.dispose();
+    super.onClose();
   }
 }

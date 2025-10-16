@@ -64,11 +64,10 @@ class AddAdminScreen extends StatelessWidget {
 
               SizedBox(height: height * 0.03),
 
-              // Name Field
               CustomTextFormField(
                 controller: controller.nameController,
                 labelText: "Full Name",
-                hintText: "Enter add_admin's full name",
+                hintText: "Enter add admin full name",
                 keyboardType: TextInputType.name,
                 prefixIcon: Icon(
                   Icons.person,
@@ -78,7 +77,7 @@ class AddAdminScreen extends StatelessWidget {
                 textCapitalization: TextCapitalization.words,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return "Please enter the add_admin's name";
+                    return "Please enter the add admin name";
                   }
                   if (value.length < 2) {
                     return "Name must be at least 2 characters";
@@ -89,18 +88,20 @@ class AddAdminScreen extends StatelessWidget {
 
               SizedBox(height: height * 0.02),
 
-              // Number Field
               CustomTextFormField(
                 controller: controller.numberController,
                 labelText: "Phone Number",
-                hintText: "Enter add_admin's phone number",
+                hintText: "Enter add admin phone number",
                 keyboardType: TextInputType.phone,
                 prefixIcon: Icon(
                   Icons.phone,
                   color: colorGreyText,
                   size: width * 0.05,
                 ),
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter the phone number';
@@ -117,7 +118,6 @@ class AddAdminScreen extends StatelessWidget {
 
               SizedBox(height: height * 0.02),
 
-              // Email Field
               CustomTextFormField(
                 controller: controller.emailController,
                 labelText: "Email Address",
@@ -147,12 +147,11 @@ class AddAdminScreen extends StatelessWidget {
 
               SizedBox(height: height * 0.02),
 
-              // Password Field
               Obx(
                 () => CustomTextFormField(
                   controller: controller.passwordController,
                   labelText: "Password",
-                  hintText: "Enter admin's password",
+                  hintText: "Enter admin password",
                   obscureText: controller.obscurePassword,
                   prefixIcon: Icon(
                     Icons.lock,
@@ -187,7 +186,7 @@ class AddAdminScreen extends StatelessWidget {
                 () => CustomTextFormField(
                   controller: controller.confirmPasswordController,
                   labelText: "Confirm Password",
-                  hintText: "Confirm admin's password",
+                  hintText: "Confirm admin password",
                   obscureText: controller.obscureConfirmPassword,
                   prefixIcon: Icon(
                     Icons.lock_outline,
@@ -222,7 +221,7 @@ class AddAdminScreen extends StatelessWidget {
               CustomTextFormField(
                 controller: controller.addressController,
                 labelText: "Address",
-                hintText: "Enter add_admin's address",
+                hintText: "Enter add admin address",
                 keyboardType: TextInputType.multiline,
                 maxLines: 3,
                 prefixIcon: Icon(
