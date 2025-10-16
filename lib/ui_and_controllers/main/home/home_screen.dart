@@ -1,8 +1,11 @@
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/Get.dart';
+import 'package:lead_management/core/constant/app_assets.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/constant/list_const.dart';
@@ -18,6 +21,7 @@ import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_shimmer.dart';
 import 'package:lead_management/ui_and_controllers/widgets/rich_text.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -54,348 +58,402 @@ class HomeScreen extends StatelessWidget {
 
     return GetBuilder<HomeController>(
       builder: (controller) {
-        return DefaultTabController(
-          length: 6,
-          initialIndex: 1,
-          child: Scaffold(
-            backgroundColor: colorWhite,
-            drawer: Drawer(
+        return PopScope(
+          canPop: false,
+          onPopInvoked: (bool didPop) async {
+            if (didPop) return;
+
+            context.showAppDialog(
+              title: 'Are you sure you want to exit the app?',
+              buttonOneTitle: 'No',
+              buttonTwoTitle: 'Yes',
+              onTapOneButton: () {
+                Get.back();
+              },
+              onTapTwoButton: () {
+                Get.back();
+                if (GetPlatform.isAndroid) {
+                  SystemNavigator.pop();
+                }
+              },
+            );
+          },
+          child: DefaultTabController(
+            length: 6,
+            initialIndex: 1,
+            child: Scaffold(
               backgroundColor: colorWhite,
-              child: Column(
-                children: [
-                  Container(
-                    color: colorMainTheme,
-                    width: width,
-                    padding: EdgeInsets.only(
-                      bottom: height * 0.05,
-                      top: height * 0.08,
-                      left: width * 0.05,
+              drawer: Drawer(
+                backgroundColor: colorWhite,
+
+                child: Column(
+                  children: [
+                    Container(
+                      color: colorMainTheme,
+                      width: width,
+                      padding: EdgeInsets.only(
+                        bottom: height * 0.05,
+                        top: height * 0.08,
+                        left: width * 0.05,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          WantText(
+                            text:
+                                "Welcome ${ListConst.currentUserProfileData.name}",
+                            fontSize: width * 0.046,
+                            fontWeight: FontWeight.bold,
+                            textColor: colorWhite,
+                          ),
+                          WantText(
+                            text: ListConst.currentUserProfileData.email
+                                .toString(),
+                            fontSize: width * 0.035,
+                            textColor: colorWhite.withValues(alpha: 0.8),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        WantText(
-                          text:
-                              "Welcome ${ListConst.currentUserProfileData.name}",
-                          fontSize: width * 0.046,
-                          fontWeight: FontWeight.bold,
-                          textColor: colorWhite,
-                        ),
-                        WantText(
-                          text: ListConst.currentUserProfileData.email
-                              .toString(),
-                          fontSize: width * 0.035,
-                          textColor: colorWhite.withValues(alpha: 0.8),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView(
-                      scrollDirection: Axis.vertical,
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: EdgeInsets.zero,
-                      children: [
-                        if (controller.isAdmin)
-                          ListTile(
-                            leading: const Icon(
-                              Icons.admin_panel_settings,
-                              color: colorMainTheme,
-                            ),
-                            title: WantText(
-                              text: "Add Admin",
-                              textColor: colorBlack,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            onTap: () {
-                              Navigator.pop(context);
-                              Get.toNamed(AppRoutes.addAdmin);
-                            },
-                          ),
-                        if (controller.isAdmin)
-                          ListTile(
-                            leading: const Icon(
-                              Icons.person_add,
-                              color: colorMainTheme,
-                            ),
-                            title: WantText(
-                              text: "Add Employee",
-                              textColor: colorBlack,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            onTap: () {
-                              Navigator.pop(context);
-                              Get.toNamed(AppRoutes.addEmployee);
-                            },
-                          ),
-                        if (controller.isAdmin)
-                          ListTile(
-                            leading: const Icon(
-                              Icons.engineering,
-                              color: colorMainTheme,
-                            ),
-                            title: WantText(
-                              text: "Add Technician",
-                              textColor: colorBlack,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            onTap: () {
-                              Navigator.pop(context);
-                              Get.toNamed(AppRoutes.addTechnician);
-                            },
-                          ),
-                        if (controller.isAdmin)
-                          Obx(() {
-                            if (_profileController.isLoading) {
-                              return ListTile(
-                                leading: SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      colorMainTheme,
-                                    ),
-                                  ),
-                                ),
-                                title: WantText(
-                                  text: "Loading...",
-                                  textColor: colorGreyText,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              );
-                            }
-                            return ListTile(
+                    Expanded(
+                      child: ListView(
+                        scrollDirection: Axis.vertical,
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: EdgeInsets.zero,
+                        children: [
+                          if (controller.isAdmin)
+                            ListTile(
                               leading: const Icon(
-                                Icons.people,
+                                Icons.admin_panel_settings,
                                 color: colorMainTheme,
                               ),
                               title: WantText(
-                                text: "Members",
+                                text: "Add Admin",
                                 textColor: colorBlack,
                                 fontWeight: FontWeight.w500,
                               ),
                               onTap: () {
                                 Navigator.pop(context);
-                                Get.toNamed(AppRoutes.members);
+                                Get.toNamed(AppRoutes.addAdmin);
                               },
-                            );
-                          }),
-                        if (controller.isAdmin)
+                            ),
+                          if (controller.isAdmin)
+                            ListTile(
+                              leading: const Icon(
+                                Icons.person_add,
+                                color: colorMainTheme,
+                              ),
+                              title: WantText(
+                                text: "Add Employee",
+                                textColor: colorBlack,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              onTap: () {
+                                Navigator.pop(context);
+                                Get.toNamed(AppRoutes.addEmployee);
+                              },
+                            ),
+                          if (controller.isAdmin)
+                            ListTile(
+                              leading: const Icon(
+                                Icons.engineering,
+                                color: colorMainTheme,
+                              ),
+                              title: WantText(
+                                text: "Add Technician",
+                                textColor: colorBlack,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              onTap: () {
+                                Navigator.pop(context);
+                                Get.toNamed(AppRoutes.addTechnician);
+                              },
+                            ),
+                          if (controller.isAdmin)
+                            Obx(() {
+                              if (_profileController.isLoading) {
+                                return ListTile(
+                                  leading: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        colorMainTheme,
+                                      ),
+                                    ),
+                                  ),
+                                  title: WantText(
+                                    text: "Loading...",
+                                    textColor: colorGreyText,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                );
+                              }
+                              return ListTile(
+                                leading: const Icon(
+                                  Icons.people,
+                                  color: colorMainTheme,
+                                ),
+                                title: WantText(
+                                  text: "Members",
+                                  textColor: colorBlack,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  Get.toNamed(AppRoutes.members);
+                                },
+                              );
+                            }),
+                          if (controller.isAdmin)
+                            ListTile(
+                              leading: Icon(
+                                Icons.analytics,
+                                color: colorMainTheme,
+                              ),
+                              title: WantText(
+                                text: "Analytics",
+                                textColor: colorBlack,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              onTap: () {
+                                Get.back();
+                                Get.toNamed(AppRoutes.analytics);
+                              },
+                            ),
                           ListTile(
-                            leading: Icon(
-                              Icons.analytics,
+                            leading: const Icon(
+                              Icons.person,
                               color: colorMainTheme,
                             ),
                             title: WantText(
-                              text: "Analytics",
+                              text: "Profile",
                               textColor: colorBlack,
                               fontWeight: FontWeight.w500,
                             ),
                             onTap: () {
-                              Get.back();
-                              Get.toNamed(AppRoutes.analytics);
+                              Navigator.pop(context);
+                              Get.toNamed(AppRoutes.profile);
                             },
                           ),
-                        ListTile(
-                          leading: const Icon(
-                            Icons.person,
-                            color: colorMainTheme,
-                          ),
-                          title: WantText(
-                            text: "Profile",
-                            textColor: colorBlack,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          onTap: () {
-                            Navigator.pop(context);
-                            Get.toNamed(AppRoutes.profile);
-                          },
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: width * 0.041,
-                      vertical: height * 0.025,
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: width * 0.041,
+                        vertical: height * 0.025,
+                      ),
+                      child: CustomButton(
+                        Width: width,
+                        onTap: () {
+                          log("Logout tapped");
+                          context.showAppDialog(
+                            title: 'Are you sure you want to logout?',
+                            buttonOneTitle: 'Cancel',
+                            buttonTwoTitle: 'Logout',
+                            onTapOneButton: () {
+                              log('Cancel logout');
+                              Get.back();
+                            },
+                            onTapTwoButton: () async {
+                              log("logout");
+                              Get.back();
+                              await _logout();
+                            },
+                          );
+                        },
+                        label: "Logout",
+                        backgroundColor: colorRedCalendar,
+                        borderColor: colorRedCalendar,
+                      ),
                     ),
-                    child: CustomButton(
-                      Width: width,
-                      onTap: () {
-                        log("Logout tapped");
-                        context.showAppDialog(
-                          title: 'Are you sure you want to logout?',
-                          buttonOneTitle: 'Cancel',
-                          buttonTwoTitle: 'Logout',
-                          onTapOneButton: () {
-                            log('Cancel logout');
-                            Get.back();
-                          },
-                          onTapTwoButton: () async {
-                            log("logout");
-                            Get.back();
-                            await _logout();
-                          },
-                        );
-                      },
-                      label: "Logout",
-                      backgroundColor: colorRedCalendar,
-                      borderColor: colorRedCalendar,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            appBar: AppBar(
-              backgroundColor: colorMainTheme,
-              iconTheme: IconThemeData(color: colorWhite),
-
-              flexibleSpace: SafeArea(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    left: width * 0.15,
-                    right: width * 0.008,
-                    top: height * 0.005,
-                  ),
-                  child: controller.isSearching
-                      ? Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: controller.searchController,
-                                autofocus: true,
-                                style: TextStyle(
-                                  color: colorWhite,
-                                  fontSize: width * 0.041,
-                                ),
-                                decoration: InputDecoration(
-                                  hintText: controller.isAdmin
-                                      ? 'Search by employee name...'
-                                      : 'Search by client name or phone...',
-                                  hintStyle: TextStyle(color: colorWhite70),
-                                  border: InputBorder.none,
-                                ),
-                              ),
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.close, color: colorWhite),
-                              onPressed: controller.stopSearch,
-                            ),
-                          ],
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: WantText(
-                                text: controller.isAdmin
-                                    ? 'Lead Management - Owner'
-                                    : 'My Leads',
-                                fontSize: width * 0.048,
-                                fontWeight: FontWeight.w600,
-                                textColor: colorWhite,
-                              ),
-                            ),
-                            SizedBox(width: width * 0.01),
-                            Row(
-                              children: [
-                                GestureDetector(
-                                  onTap: controller.startSearch,
-                                  child: Icon(Icons.search, color: colorWhite),
-                                ),
-
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.filter_list,
-                                    color: controller.filtersApplied
-                                        ? colorAmber
-                                        : colorWhite,
-                                  ),
-                                  onPressed: () => _showFilterBottomSheet(
-                                    context,
-                                    controller,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                    // SizedBox(height: height * 0.048),
+                  ],
                 ),
               ),
-              bottom: TabBar(
-                isScrollable: true,
-                tabAlignment: TabAlignment.start,
-                labelColor: colorWhite,
-                unselectedLabelColor: colorWhite70,
-                indicatorColor: colorWhite,
-                tabs: [
-                  Tab(text: 'All'),
-                  Tab(text: 'Today'),
-                  Tab(text: 'Not Contacted'),
-                  Tab(text: 'In Progress'),
-                  Tab(text: 'Completed'),
-                  Tab(text: 'Cancelled'),
-                ],
-              ),
-            ),
-            body: controller.isLoading
-                ? ListView.builder(
-                    itemCount: 5,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: EdgeInsets.only(
-                          top: height * 0.015,
-                          right: width * 0.041,
-                          left: width * 0.041,
-                        ),
-                        child: CustomShimmer(height: height * 0.12),
-                      );
-                    },
-                  )
-                : controller.leads.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+              appBar: AppBar(
+                backgroundColor: colorMainTheme,
+                automaticallyImplyLeading: false,
+                flexibleSpace: SafeArea(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: width * 0.03,
+                      right: width * 0.008,
+                      top: height * 0.005,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Icon(Icons.assignment, size: 64, color: colorGrey),
-                        SizedBox(height: 16),
-                        WantText(
-                          text: controller.isAdmin
-                              ? 'No leads found'
-                              : 'No leads assigned to you yet',
-                          fontSize: width * 0.041,
-                          fontWeight: FontWeight.w500,
-                          textColor: colorGrey,
+                        Builder(
+                          builder: (context) => GestureDetector(
+                            onTap: () {
+                              Scaffold.of(context).openDrawer();
+                            },
+                            child: Image.asset(
+                              AppAssets.logoTwo,
+                              height: height * 0.04,
+                            ),
+                          ),
                         ),
-                        SizedBox(height: 8),
-                        WantText(
-                          text: controller.isAdmin
-                              ? 'Add a new lead'
-                              : 'Add a new lead or wait for owner to assign you one',
-                          fontSize: width * 0.035,
-                          fontWeight: FontWeight.w400,
-                          textColor: colorGrey,
-                          textAlign: TextAlign.center,
+
+                        SizedBox(width: width * 0.03),
+
+                        Expanded(
+                          child: controller.isSearching
+                              ? Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextField(
+                                        controller: controller.searchController,
+                                        autofocus: true,
+                                        style: TextStyle(
+                                          color: colorWhite,
+                                          fontSize: width * 0.041,
+                                        ),
+                                        decoration: InputDecoration(
+                                          hintText: controller.isAdmin
+                                              ? 'Search by employee name...'
+                                              : 'Search by client name or phone...',
+                                          hintStyle: TextStyle(
+                                            color: colorWhite70,
+                                          ),
+                                          border: InputBorder.none,
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.close,
+                                        color: colorWhite,
+                                      ),
+                                      onPressed: controller.stopSearch,
+                                    ),
+                                  ],
+                                )
+                              : Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: WantText(
+                                        text: controller.isAdmin
+                                            ? 'Lead Management - Owner'
+                                            : 'My Leads',
+                                        fontSize: width * 0.048,
+                                        fontWeight: FontWeight.w600,
+                                        textColor: colorWhite,
+                                      ),
+                                    ),
+                                    SizedBox(width: width * 0.01),
+                                    Row(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: controller.startSearch,
+                                          child: Icon(
+                                            Icons.search,
+                                            color: colorWhite,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.filter_list,
+                                            color: controller.filtersApplied
+                                                ? colorAmber
+                                                : colorWhite,
+                                          ),
+                                          onPressed: () =>
+                                              _showFilterBottomSheet(
+                                                context,
+                                                controller,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                         ),
                       ],
                     ),
-                  )
-                : TabBarView(
-                    children: [
-                      _buildLeadList('all', controller),
-                      _buildLeadList('today', controller),
-                      _buildLeadList('notContacted', controller),
-                      _buildLeadList('inProgress', controller),
-                      _buildLeadList('completed', controller),
-                      _buildLeadList('cancelled', controller),
-                    ],
                   ),
-            floatingActionButton: FloatingActionButton(
-              backgroundColor: colorMainTheme,
-              onPressed: () => Get.toNamed(AppRoutes.addLeadScreen),
-              shape: const CircleBorder(),
-              child: Icon(Icons.add, color: colorWhite),
+                ),
+                bottom: TabBar(
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.start,
+                  labelColor: colorWhite,
+                  unselectedLabelColor: colorWhite70,
+                  indicatorColor: colorWhite,
+                  tabs: const [
+                    Tab(text: 'All'),
+                    Tab(text: 'Today'),
+                    Tab(text: 'Not Contacted'),
+                    Tab(text: 'In Progress'),
+                    Tab(text: 'Completed'),
+                    Tab(text: 'Cancelled'),
+                  ],
+                ),
+              ),
+
+              body: controller.isLoading
+                  ? ListView.builder(
+                      itemCount: 5,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            top: height * 0.015,
+                            right: width * 0.041,
+                            left: width * 0.041,
+                          ),
+                          child: CustomShimmer(height: height * 0.12),
+                        );
+                      },
+                    )
+                  : controller.leads.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.assignment, size: 64, color: colorGrey),
+                          SizedBox(height: 16),
+                          WantText(
+                            text: controller.isAdmin
+                                ? 'No leads found'
+                                : 'No leads assigned to you yet',
+                            fontSize: width * 0.041,
+                            fontWeight: FontWeight.w500,
+                            textColor: colorGrey,
+                          ),
+                          SizedBox(height: 8),
+                          WantText(
+                            text: controller.isAdmin
+                                ? 'Add a new lead'
+                                : 'Add a new lead or wait for owner to assign you one',
+                            fontSize: width * 0.035,
+                            fontWeight: FontWeight.w400,
+                            textColor: colorGrey,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    )
+                  : TabBarView(
+                      children: [
+                        _buildLeadList('all', controller),
+                        _buildLeadList('today', controller),
+                        _buildLeadList('notContacted', controller),
+                        _buildLeadList('inProgress', controller),
+                        _buildLeadList('completed', controller),
+                        _buildLeadList('cancelled', controller),
+                      ],
+                    ),
+
+              floatingActionButton: FloatingActionButton(
+                backgroundColor: colorMainTheme,
+                onPressed: () => Get.toNamed(AppRoutes.addLeadScreen),
+                shape: const CircleBorder(),
+                child: Icon(Icons.add, color: colorWhite),
+              ),
             ),
           ),
         );
@@ -447,7 +505,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                   SizedBox(height: height * 0.02),
 
-                  // Employee Filter (Admin only)
                   if (controller.isAdmin)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -460,9 +517,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         SizedBox(height: height * 0.01),
 
-                        // Check if there are active employees
                         if (activeEmployees.isEmpty)
-                          // Show message when no employees available
                           Container(
                             padding: EdgeInsets.all(width * 0.041),
                             decoration: BoxDecoration(
@@ -493,7 +548,6 @@ class HomeScreen extends StatelessWidget {
                             ),
                           )
                         else
-                          // Show dropdown when employees exist
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             decoration: BoxDecoration(
@@ -550,12 +604,11 @@ class HomeScreen extends StatelessWidget {
                       ],
                     ),
 
-                  // Technician Filter
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       WantText(
-                        text: 'Technician',
+                        text: 'Category',
                         fontSize: width * 0.041,
                         fontWeight: FontWeight.w500,
                         textColor: colorBlack,
@@ -563,14 +616,12 @@ class HomeScreen extends StatelessWidget {
                       SizedBox(height: height * 0.01),
 
                       if (controller.isTechnicianListLoading)
-                        // Show loading
                         const Center(
                           child: CircularProgressIndicator(
                             color: colorMainTheme,
                           ),
                         )
                       else if (controller.technicianListError != null)
-                        // Show error
                         Container(
                           padding: EdgeInsets.all(width * 0.041),
                           decoration: BoxDecoration(
@@ -601,7 +652,6 @@ class HomeScreen extends StatelessWidget {
                           ),
                         )
                       else if (controller.technicianTypes.isEmpty)
-                        // Show message when no technicians available
                         Container(
                           padding: EdgeInsets.all(width * 0.041),
                           decoration: BoxDecoration(
@@ -622,7 +672,7 @@ class HomeScreen extends StatelessWidget {
                               SizedBox(width: width * 0.03),
                               Expanded(
                                 child: WantText(
-                                  text: 'No technicians available',
+                                  text: 'No Category available',
                                   fontSize: width * 0.035,
                                   textColor: Colors.orange.shade900,
                                   fontWeight: FontWeight.w500,
@@ -632,7 +682,6 @@ class HomeScreen extends StatelessWidget {
                           ),
                         )
                       else
-                        // Show dropdown when technicians exist
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           decoration: BoxDecoration(
@@ -642,7 +691,7 @@ class HomeScreen extends StatelessWidget {
                           child: DropdownButton<String>(
                             value: tempTechnician,
                             hint: WantText(
-                              text: 'Select Technician',
+                              text: 'Select Category',
                               fontSize: width * 0.035,
                               textColor: colorGreyText,
                             ),
@@ -671,7 +720,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                   SizedBox(height: height * 0.03),
 
-                  // Action Buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -731,7 +779,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: height * 0.02),
+                  SizedBox(height: height * 0.048),
                 ],
               ),
             );
@@ -771,12 +819,13 @@ class HomeScreen extends StatelessWidget {
         ),
       );
     }
-
     return ListView.builder(
-      padding: EdgeInsets.only(bottom: height * 0.019),
+      padding: EdgeInsets.only(bottom: width * 0.15),
       itemCount: leads.length,
       itemBuilder: (context, index) {
         Lead lead = leads[index];
+        bool isUpdated = _isLeadUpdated(lead);
+
         return GestureDetector(
           onTap: () {
             Get.toNamed(
@@ -787,82 +836,150 @@ class HomeScreen extends StatelessWidget {
           child: CustomCard(
             horizontalPadding: 0,
             verticalPadding: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Column(
               children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(width: width * 0.03),
-                    Center(
-                      child: CircleAvatar(
-                        backgroundColor: colorMainTheme,
-                        radius: width * 0.06,
-                        child: WantText(
-                          text: lead.clientName[0].toUpperCase(),
-                          fontSize: width * 0.046,
-                          fontWeight: FontWeight.w600,
-                          textColor: colorWhite,
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: width * 0.035,
+                          vertical: height * 0.014,
                         ),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: height * 0.012,
-                        horizontal: width * 0.03,
-                      ),
-                      child: SizedBox(
-                        width: width * 0.45,
-                        child: Column(
+                        child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            WantText(
-                              text: lead.clientName,
-                              fontSize: width * 0.041,
-                              fontWeight: FontWeight.w600,
-                              textColor: colorBlack,
+                            CircleAvatar(
+                              backgroundColor: colorMainTheme,
+                              radius: width * 0.06,
+                              child: WantText(
+                                text: lead.clientName[0].toUpperCase(),
+                                fontSize: width * 0.046,
+                                fontWeight: FontWeight.w600,
+                                textColor: colorWhite,
+                              ),
                             ),
-                            CustomRichText(
-                              title: 'Assigned To: ',
-                              value: lead.assignedToName,
-                            ),
-                            SizedBox(height: height * 0.005),
-                            CustomRichText(
-                              title: 'Added By: ',
-                              value: lead.addedByName,
-                            ),
-                            SizedBox(height: height * 0.005),
-                            WantText(
-                              text: '📞 ${lead.clientPhone}',
-                              fontSize: width * 0.031,
-                              fontWeight: FontWeight.w400,
-                              textColor: colorDarkGreyText,
+                            SizedBox(width: width * 0.04),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  WantText(
+                                    text: lead.clientName,
+                                    fontSize: width * 0.041,
+                                    fontWeight: FontWeight.w600,
+                                    textColor: colorBlack,
+                                  ),
+                                  SizedBox(height: height * 0.003),
+                                  WantText(
+                                    text: '📞 ${lead.clientPhone}',
+                                    fontSize: width * 0.031,
+                                    fontWeight: FontWeight.w400,
+                                    textColor: colorDarkGreyText,
+                                  ),
+                                  SizedBox(height: height * 0.003),
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: IntrinsicWidth(
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Flexible(
+                                            child: WantText(
+                                              text: lead.addedByName,
+                                              fontSize: width * 0.035,
+                                              fontWeight: FontWeight.w500,
+                                              textColor: colorDarkGreyText,
+                                              textOverflow:
+                                                  TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                            ),
+                                          ),
+                                          WantText(
+                                            text: ' --> ',
+                                            fontSize: width * 0.035,
+                                            fontWeight: FontWeight.w500,
+                                            textColor: colorDarkGreyText,
+                                          ),
+                                          Flexible(
+                                            child: WantText(
+                                              text: lead.assignedToName,
+                                              fontSize: width * 0.035,
+                                              fontWeight: FontWeight.w500,
+                                              textColor: colorDarkGreyText,
+                                              textOverflow:
+                                                  TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ),
+
+                    Container(
+                      alignment: Alignment.center,
+                      width: width * 0.25,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: width * 0.015,
+                        vertical: height * 0.002,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(lead.callStatus),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(12),
+                          topRight: Radius.circular(12),
+                        ),
+                      ),
+                      child: WantText(
+                        text: _formatStatus(lead.callStatus),
+                        fontSize: width * 0.030,
+                        fontWeight: FontWeight.w500,
+                        textColor: colorWhite,
+                      ),
+                    ),
                   ],
                 ),
-                Container(
-                  alignment: Alignment.center,
-                  width: width * 0.25,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: width * 0.015,
-                    vertical: height * 0.002,
+
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: width * 0.041,
+                    bottom: height * 0.014,
                   ),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(lead.callStatus),
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(12),
-                      topRight: Radius.circular(12),
-                    ),
-                  ),
-                  child: WantText(
-                    text: _formatStatus(lead.callStatus),
-                    fontSize: width * 0.030,
-                    fontWeight: FontWeight.w500,
-                    textColor: colorWhite,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: WantText(
+                          text: isUpdated
+                              ? _formatDateTime(lead.createdAt)
+                              : 'Created: ${_formatDateTime(lead.createdAt)}',
+                          fontSize: width * 0.035,
+                          fontWeight: FontWeight.w500,
+                          textColor: colorCustomButton,
+                        ),
+                      ),
+
+                      if (isUpdated)
+                        Expanded(
+                          child: WantText(
+                            text: _formatDateTime(lead.updatedAt),
+                            fontSize: width * 0.035,
+                            fontWeight: FontWeight.w500,
+                            textColor: colorOrangeDark,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ],
@@ -871,6 +988,27 @@ class HomeScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  String _formatDateTime(Timestamp timestamp) {
+    try {
+      DateTime dateTime = timestamp.toDate();
+      return DateFormat('dd MMM yyyy, hh:mm a').format(dateTime);
+    } catch (e) {
+      return 'N/A';
+    }
+  }
+
+  bool _isLeadUpdated(Lead lead) {
+    try {
+      return lead.updatedAt
+              .toDate()
+              .difference(lead.createdAt.toDate())
+              .inSeconds >
+          5;
+    } catch (e) {
+      return false;
+    }
   }
 
   String _formatStatus(String status) {

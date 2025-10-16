@@ -1,6 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lead_management/core/constant/app_color.dart';
@@ -64,8 +62,6 @@ class LoginController extends GetxController {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('current_user_id', userCredential.user!.uid);
 
-      // ✅ START LISTENING TO USER STATUS CHANGES
-
       final userStatusService = Get.put(UserStatusService());
       await userStatusService.startListening();
 
@@ -76,13 +72,8 @@ class LoginController extends GetxController {
       Get.offAllNamed(
         ListConst.currentUserProfileData.type == 'admin'
             ? AppRoutes.adminLogin
-            : AppRoutes.adminLogin,
+            : AppRoutes.home
       );
-      // Get.offAllNamed(
-      //   ListConst.currentUserProfileData.type == 'admin'
-      //       ? AppRoutes.ownerHomeScreen
-      //       : AppRoutes.employeeHomeScreen,
-      // );
     } on FirebaseAuthException catch (e) {
       print("Firebase Auth Error: ${e.code} - ${e.message}");
       String errorMessage = "Login failed. Please try again.";

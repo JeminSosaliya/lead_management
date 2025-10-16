@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/utils/firebase_options.dart';
@@ -32,7 +33,7 @@ void main() async {
   NotificationUtils().init();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   Get.put(GoogleCalendarController(), permanent: true);
-
+  await dotenv.load(fileName: '.env');
   // Attempt silent login for admin
   final calendarController = Get.find<GoogleCalendarController>();
   await calendarController.autoLogin();

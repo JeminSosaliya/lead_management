@@ -21,7 +21,7 @@ class MemberListScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: colorWhite,
       appBar: CustomAppBar(
-        title: "Technician Types",
+        title: "Members",
         actions: [
           IconButton(
             icon: Icon(Icons.refresh, color: colorWhite),
@@ -120,6 +120,8 @@ class MemberListScreen extends StatelessWidget {
               }
 
               return ListView.builder(
+                padding: EdgeInsets.only(bottom: width * 0.15),
+
                 itemCount: controller.currentList.length,
                 itemBuilder: (context, index) {
                   final member = controller.currentList[index];

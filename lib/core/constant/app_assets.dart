@@ -6,4 +6,5 @@ class AppAssets {
   static const whatsapp = '${iconBasePath}whatsapp.png';
   static const splash = '${iconBasePath}splash.png';
   static const logo = '${iconBasePath}logo.png';
+  static const logoTwo = '${iconBasePath}logo_second.png';
 }

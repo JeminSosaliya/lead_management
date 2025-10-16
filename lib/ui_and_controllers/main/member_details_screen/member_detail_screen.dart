@@ -7,6 +7,7 @@ import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/ui_and_controllers/main/member_list_screen/member_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/rich_text.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
@@ -136,20 +137,9 @@ class MemberDetailScreen extends StatelessWidget {
 
             SizedBox(height: height * 0.035),
 
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(width * 0.05),
-              decoration: BoxDecoration(
-                color: colorWhite,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: colorBoxShadow,
-                    blurRadius: 7,
-                    offset: Offset(4, 3),
-                  ),
-                ],
-              ),
+            CustomCard(
+              leftMargin: 0,
+              rightMargin: 0,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -210,20 +200,10 @@ class MemberDetailScreen extends StatelessWidget {
 
             SizedBox(height: height * 0.03),
 
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(width * 0.05),
-              decoration: BoxDecoration(
-                color: colorWhite,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: colorBoxShadow,
-                    blurRadius: 7,
-                    offset: Offset(4, 3),
-                  ),
-                ],
-              ),
+            CustomCard(
+              rightMargin: 0,
+              leftMargin: 0,
+              topMargin: 0,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -256,9 +236,12 @@ class MemberDetailScreen extends StatelessWidget {
                           ? colorRedCalendar
                           : colorGreen,
                     ),
+
                 ],
               ),
             ),
+            SizedBox(height: height * 0.048),
+
           ],
         ),
       ),

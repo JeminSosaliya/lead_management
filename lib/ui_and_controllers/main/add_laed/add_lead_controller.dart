@@ -2,8 +2,11 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:googleapis_auth/auth_io.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/list_const.dart';
 import 'package:lead_management/core/utils/extension.dart';
@@ -12,13 +15,15 @@ import 'package:lead_management/ui_and_controllers/main/home/home_controller.dar
 import 'package:lead_management/ui_and_controllers/widgets/location_picker_screen.dart';
 
 import '../../auth/goggle_login/google_calendar_controller.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class AddLeadController extends GetxController {
   bool isLoading = false;
   bool isSubmitting = false;
 
   String? selectedEmployee;
-  String?  selectedEmployeeName;
+  String? selectedEmployeeName;
   String? selectedEmployeeType;
   String? selectedTechnician;
   String? selectedSource;
@@ -79,11 +84,16 @@ class AddLeadController extends GetxController {
     }
   }
 
-  void setSelectedEmployee(String? value, {String? employeeName, String? userType ,String? email}) {
+  void setSelectedEmployee(
+    String? value, {
+    String? employeeName,
+    String? userType,
+    String? email,
+  }) {
     selectedEmployee = value;
     selectedEmployeeName = employeeName;
     selectedEmployeeType = userType;
-    selectedEmployeeEmail  =  email;
+    selectedEmployeeEmail = email;
 
     showEmployeeError = false;
     update();
@@ -206,7 +216,8 @@ class AddLeadController extends GetxController {
         }
         addedByName = currentUserName;
       }
-
+///ghgfhghhghgjhgjhgjjjjhkghg
+      ///yuyuyghuyuhu
       Lead newLead = Lead(
         leadId: leadId,
         clientName: clientName,
@@ -239,6 +250,12 @@ class AddLeadController extends GetxController {
       );
 
       await fireStore.collection('leads').doc(leadId).set(newLead.toMap());
+      await _sendLeadAssignmentNotification(
+        assignedToUserId: assignedToEmployee,
+        assignedToName: assignedToName,
+        leadClientName: clientName,
+        addedByName: addedByName,
+      );
 
       isSubmitting = false;
       update();
@@ -252,6 +269,46 @@ class AddLeadController extends GetxController {
     }
   }
 
+  Future<void> _sendLeadAssignmentNotification({
+    required String assignedToUserId,
+    required String assignedToName,
+    required String leadClientName,
+    required String addedByName,
+  }) async {
+    try {
+      DocumentSnapshot userDoc = await fireStore
+          .collection('users')
+          .doc(assignedToUserId)
+          .get();
+
+      if (userDoc.exists) {
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+        List<dynamic> fcmTokens = userData['fcmTokens'] ?? [];
+
+        if (fcmTokens.isNotEmpty) {
+          String deviceToken = fcmTokens.first.toString();
+
+          String title = "New Lead Assigned";
+          String body = "$leadClientName assigned to you by $addedByName";
+
+          bool notificationSent = await sendPushNotification(
+            deviceToken: deviceToken,
+            title: title,
+            body: body,
+          );
+          if (notificationSent) {
+            print('Notification sent successfully to $assignedToName');
+          } else {
+            print('Failed to send notification');
+          }
+        } else {
+          print('No FCM token found for user: $assignedToName');
+        }
+      }
+    } catch (e) {
+      print('Error sending notification: $e');
+    }
+  }
 
   Future<void> submitForm() async {
     String currentUserRole =
@@ -296,6 +353,8 @@ class AddLeadController extends GetxController {
       errorMessage = 'Please select a source';
     } else if (showEmployeeError) {
       errorMessage = 'Please select an employee';
+    } else if (followUpController.text.trim().isEmpty || nextFollowUp == null) {
+      errorMessage = 'Please select initial follow-up date & time';
     }
 
     if (errorMessage != null) {
@@ -400,11 +459,11 @@ class AddLeadController extends GetxController {
           await calendarController.addEvent(
             title: nameController.text.trim(),
             description: descriptionController.text.trim(),
-            startTime: DateTime.now().add(const Duration(minutes: 2)),
-            endTime: DateTime.now().add(const Duration(minutes: 4)),
+            startTime: DateTime.now().add(const Duration(minutes: 10)),
+            endTime: DateTime.now().add(const Duration(minutes: 12)),
             employeeEmails: [selectedEmployeeEmail ?? ''],
           );
-          log('selected employee email $selectedEmployeeEmail');
+          log('seleceted employee email $selectedEmployeeEmail');
           Get.back(); // close calendar loading
         }
       } catch (e) {
@@ -433,6 +492,62 @@ class AddLeadController extends GetxController {
       );
     }
   }
+
+  Future<AccessCredentials> _getAccessToken() async {
+    final serviceAccountPath = dotenv.env['PATH_TO_SECRET'];
+
+    String serviceAccountJson = await rootBundle.loadString(
+      serviceAccountPath!,
+    );
+//new branch
+    final serviceAccount = ServiceAccountCredentials.fromJson(
+      serviceAccountJson,
+    );
+
+    final scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
+
+    final client = await clientViaServiceAccount(serviceAccount, scopes);
+    return client.credentials;
+  }
+
+  Future<bool> sendPushNotification({
+    required String deviceToken,
+    required String title,
+    required String body,
+  }) async {
+    if (deviceToken.isEmpty) return false;
+    final credentials = await _getAccessToken();
+    final accessToken = credentials.accessToken.data;
+    final serviceAccountPath = dotenv.env['PATH_TO_SECRET'];
+    final serviceAccountJson = await rootBundle.loadString(serviceAccountPath!);
+    final projectId = jsonDecode(serviceAccountJson)['project_id'];
+
+    final url = Uri.parse(
+      'https://fcm.googleapis.com/v1/projects/$projectId/messages:send',
+    );
+
+    final data = {
+      'message': {
+        'token': deviceToken,
+        'notification': {'title': title, 'body': body},
+      },
+    };
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+      body: jsonEncode(data),
+    );
+
+    if (response.statusCode == 200) {
+      print('✅ Notification sent successfully!');
+      return true;
+    } else {
+      print('❌ Failed to send notification: ${response.body}');
+      return false;
+    }
+  }
 }
-
-
