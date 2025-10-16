@@ -295,28 +295,10 @@ class AddLeadController extends GetxController {
             title: title,
             body: body,
           );
-          // var data = {
-          //   'to': deviceToken,
-          //   'priority': 'high',
-          //   'notification': {
-          //     'title': title,
-          //     'body': body,
-          //   },
-          // };
-          //
-          // var response = await http.post(
-          //   Uri.parse('https://fcm.googleapis.com/fcm/send'),
-          //   headers: {
-          //     'Content-Type': 'application/json; charset=UTF-8',
-          //     'Authorization': 'leadmanagement-18b4',
-          //   },
-          //   body: jsonEncode(data),
-          // );
-
           if (notificationSent) {
             print('Notification sent successfully to $assignedToName');
           } else {
-            print('Failed to send notification: }');
+            print('Failed to send notification');
           }
         } else {
           print('No FCM token found for user: $assignedToName');
