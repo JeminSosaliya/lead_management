@@ -136,6 +136,7 @@ class AddLeadController extends GetxController {
       return;
     }
 
+    // Check if location services are enabled
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       Get.context?.showAppSnackBar(
@@ -248,12 +249,6 @@ class AddLeadController extends GetxController {
       );
 
       await fireStore.collection('leads').doc(leadId).set(newLead.toMap());
-      await _sendLeadAssignmentNotification(
-        assignedToUserId: assignedToEmployee,
-        assignedToName: assignedToName,
-        leadClientName: clientName,
-        addedByName: addedByName,
-      );
 
       isSubmitting = false;
       update();
@@ -365,6 +360,7 @@ class AddLeadController extends GetxController {
 
     String? errorMessage;
 
+    // 🔍 Validation
     if (nameController.text.trim().isEmpty) {
       errorMessage = 'Client name is required';
     } else if (clientPhoneController.text.trim().isEmpty) {
@@ -468,7 +464,7 @@ class AddLeadController extends GetxController {
               child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: colorWhite,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -509,6 +505,7 @@ class AddLeadController extends GetxController {
         );
       }
 
+      // 🔄 Reload leads on home
       String role = ListConst.currentUserProfileData.type ?? '';
       if (role == 'employee' || role == 'admin') {
         try {
