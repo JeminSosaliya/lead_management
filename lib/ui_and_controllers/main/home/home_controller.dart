@@ -67,7 +67,7 @@ class HomeController extends GetxController {
   }
 
   void setupEmployeeListener() {
-    log('🔔 Setting up real-time employee listener');
+    log('Setting up real-time employee listener');
     _employeeSubscription = fireStore
         .collection('users')
         .where('type', whereIn: ['employee', 'technician'])
@@ -83,11 +83,11 @@ class HomeController extends GetxController {
                 'type': data['type'] ?? 'employee',
               };
             }).toList();
-            log('✅ Employees updated: ${employees.length} users found');
+            log('Employees updated: ${employees.length} users found');
             update();
           },
           onError: (error) {
-            log('❌ Error listening to employees: $error');
+            log(' Error listening to employees: $error');
           },
           cancelOnError: false,
         );
@@ -98,7 +98,7 @@ class HomeController extends GetxController {
       isTechnicianListLoading = true;
       technicianListError = null;
       update();
-      log('🔔 Setting up real-time technician types listener');
+      log('Setting up real-time technician types listener');
       _technicianSubscription = fireStore
           .collection('technicians')
           .doc('technician_list')
@@ -108,10 +108,10 @@ class HomeController extends GetxController {
               if (doc.exists) {
                 List<dynamic> types = doc.get('technicianList') ?? [];
                 technicianTypes = types.map((e) => e.toString()).toList();
-                log('✅ Technician types updated: $technicianTypes');
+                log('Technician types updated: $technicianTypes');
                 technicianListError = null;
               } else {
-                log('⚠️ Technician list document does not exist');
+                log('Technician list document does not exist');
                 technicianTypes = [];
                 technicianListError = 'Technician list not found';
               }
@@ -119,7 +119,7 @@ class HomeController extends GetxController {
               update();
             },
             onError: (error) {
-              log('❌ Error listening to technician types: $error');
+              log('Error listening to technician types: $error');
               technicianTypes = [];
               technicianListError = 'Failed to load technicians: $error';
               isTechnicianListLoading = false;
@@ -128,7 +128,7 @@ class HomeController extends GetxController {
             cancelOnError: false,
           );
     } catch (e) {
-      log("❌ Error setting up technician listener: $e");
+      log("Error setting up technician listener: $e");
       update();
     }
   }
@@ -179,7 +179,7 @@ class HomeController extends GetxController {
 
             leads.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
-            log('✅ Leads updated (Admin): ${leads.length} leads fetched');
+            log('Leads updated (Admin): ${leads.length} leads fetched');
             isLoading = false;
             update();
           });
@@ -196,7 +196,7 @@ class HomeController extends GetxController {
                 .map((doc) => Lead.fromMap(doc.data() as Map<String, dynamic>))
                 .toList();
 
-            log('✅ Assigned leads: ${assignedLeads.length}');
+            log('Assigned leads: ${assignedLeads.length}');
             _mergeEmployeeLeads(assignedLeads, createdLeads);
           });
 
@@ -209,31 +209,27 @@ class HomeController extends GetxController {
                 .map((doc) => Lead.fromMap(doc.data() as Map<String, dynamic>))
                 .toList();
 
-            log('✅ Created leads: ${createdLeads.length}');
+            log('Created leads: ${createdLeads.length}');
             _mergeEmployeeLeads(assignedLeads, createdLeads);
           });
     }
   }
 
   void _mergeEmployeeLeads(List<Lead> assignedLeads, List<Lead> createdLeads) {
-    // Use a Map to automatically handle duplicates (same leadId)
     final Map<String, Lead> leadsMap = {};
 
-    // Add assigned leads
     for (var lead in assignedLeads) {
       leadsMap[lead.leadId] = lead;
     }
 
-    // Add created leads (duplicates automatically handled)
     for (var lead in createdLeads) {
       leadsMap[lead.leadId] = lead;
     }
 
-    // Convert back to list and sort
     leads = leadsMap.values.toList();
     leads.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
-    log('✅ Total unique leads (Employee): ${leads.length}');
+    log('Total unique leads (Employee): ${leads.length}');
     isLoading = false;
     update();
   }
@@ -247,14 +243,12 @@ class HomeController extends GetxController {
       String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
       if (isAdmin) {
-        // Admin sees all leads
         QuerySnapshot querySnapshot = await fireStore.collection('leads').get();
         leads = querySnapshot.docs.map((doc) {
           final data = doc.data() as Map<String, dynamic>;
           return Lead.fromMap(data);
         }).toList();
       } else {
-        // ✅ Employee sees BOTH assigned AND created leads
         final assignedSnapshot = await fireStore
             .collection('leads')
             .where('assignedTo', isEqualTo: currentUserId)
@@ -265,7 +259,6 @@ class HomeController extends GetxController {
             .where('addedBy', isEqualTo: currentUserId)
             .get();
 
-        // Merge and deduplicate using Map
         final Map<String, Lead> leadsMap = {};
 
         for (var doc in assignedSnapshot.docs) {

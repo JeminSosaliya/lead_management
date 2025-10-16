@@ -40,19 +40,6 @@ class LoginScreen extends StatelessWidget {
                 Center(
                   child: Column(
                     children: [
-                      // Container(
-                      //   width: width * 0.25,
-                      //   height: width * 0.25,
-                      //   decoration: BoxDecoration(
-                      //     color: colorMainTheme,
-                      //     borderRadius: BorderRadius.circular(width * 0.125),
-                      //   ),
-                      //   child: Icon(
-                      //     Icons.person,
-                      //     size: width * 0.12,
-                      //     color: colorWhite,
-                      //   ),
-                      // ),
                       Image.asset(AppAssets.logoTwo, height: height * 0.12),
 
                       SizedBox(height: height * 0.02),
