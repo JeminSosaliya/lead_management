@@ -12,6 +12,7 @@ import 'package:lead_management/routes/route_manager.dart';
 import 'package:lead_management/ui_and_controllers/auth/goggle_login/google_calendar_controller.dart';
 
 import 'core/utils/shred_pref.dart';
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -56,6 +57,7 @@ class MyApp extends StatelessWidget {
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
     return GetMaterialApp(
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'Lead Management',
       getPages: AppRoutes.pages,
