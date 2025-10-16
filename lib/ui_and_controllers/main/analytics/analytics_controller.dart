@@ -392,13 +392,10 @@ class AnalyticsController extends GetxController {
             message:
                 'Permission Required,Please enable storage permission from settings to export Excel.',
           );
-
           return false;
         }
-
         if (status.isGranted) break;
       }
-
       return status.isGranted;
     }
 
