@@ -514,11 +514,9 @@ class AddLeadController extends GetxController {
     final serviceAccountPath = dotenv.env['PATH_TO_SECRET'];
 
     String serviceAccountJson = await rootBundle.loadString(
-      serviceAccountPath!,git add .
-
+      serviceAccountPath!,
     );
-    git remote add origin  https://github.com/JeminSosaliya/lead_management.git
-
+//new branch
     final serviceAccount = ServiceAccountCredentials.fromJson(
       serviceAccountJson,
     );
