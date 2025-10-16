@@ -7,14 +7,12 @@ import 'package:lead_management/core/utils/extension.dart';
 import '../../../core/constant/app_color.dart';
 import '../../../routes/route_manager.dart';
 
-/// 🌟 Google Calendar Controller (Admin Only)
 class GoogleCalendarController extends GetxController {
   bool isLoading = false;
   String errorMessage = '';
   GoogleSignInAccount? currentUser;
   CalendarApi? calendarApi;
 
-  /// 🔐 Google Sign-In setup
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: [
       'https://www.googleapis.com/auth/calendar',
@@ -22,42 +20,37 @@ class GoogleCalendarController extends GetxController {
     ],
   );
 
-  /// 🔄 Silent login attempt
   Future<void> autoLogin() async {
     try {
       isLoading = true;
       update();
-
       final account = await _googleSignIn.signInSilently();
       if (account != null) {
         currentUser = account;
         final authHeaders = await account.authHeaders;
         calendarApi = CalendarApi(_GoogleAuthClient(authHeaders));
-        print('🔑 Admin silently logged in: ${account.email}');
+        log('🔑 Admin silently logged in: ${account.email}');
       } else {
-        print('⚠️ No previous login, user must login manually');
+        log('⚠️ No previous login, user must login manually');
       }
     } catch (e) {
-      print('💥 Auto-login failed: $e');
+      log('💥 Auto-login failed: $e');
     } finally {
       isLoading = false;
       update();
     }
   }
 
-  /// 👤 Admin Login
   Future<void> loginAdmin() async {
     try {
       isLoading = true;
       errorMessage = '';
       update();
 
-      print('🔑 Attempting to sign in as admin...');
       final account = await _googleSignIn.signIn();
       if (account == null) {
-        print('🚫 Login cancelled by user.');
         Get.context?.showAppSnackBar(
-          message: "Login Cancelled', 'You cancelled the sign-in process",
+          message: "Login Cancelled",
           backgroundColor: colorRed,
           textColor: colorWhite,
         );
@@ -68,9 +61,8 @@ class GoogleCalendarController extends GetxController {
       final authHeaders = await account.authHeaders;
       calendarApi = CalendarApi(_GoogleAuthClient(authHeaders));
 
-      print('✅ Admin signed in: ${account.email}');
       Get.context?.showAppSnackBar(
-        message: "✅ Login Successful', 'Welcome, ${account.email}",
+        message: "✅ Login Successful: ${account.email}",
         backgroundColor: colorGreen,
         textColor: colorWhite,
       );
@@ -82,41 +74,48 @@ class GoogleCalendarController extends GetxController {
         backgroundColor: colorRed,
         textColor: colorWhite,
       );
-      print(errorMessage);
+      log(errorMessage);
     } finally {
       isLoading = false;
       update();
     }
   }
 
-  /// 🚪 Admin Logout
   Future<void> logoutAdmin() async {
     try {
-      print('🚪 Logging out admin...');
       await _googleSignIn.signOut();
       currentUser = null;
       calendarApi = null;
       errorMessage = '';
       Get.context?.showAppSnackBar(
-        message: '👋 Logged Out, Admin successfully logged out',
+        message: '👋 Logged Out Successfully',
         backgroundColor: colorGreen,
         textColor: colorWhite,
       );
-      print('✅ Admin logged out successfully.');
       update();
     } catch (e) {
       errorMessage = '❌ Logout error: $e';
       Get.context?.showAppSnackBar(
         message: 'Logout Failed $errorMessage',
-        backgroundColor: colorGreen,
+        backgroundColor: colorRed,
         textColor: colorWhite,
       );
-      print(errorMessage);
       update();
     }
   }
 
-  Future<bool> addEvent({
+  /// 🔑 Handle re-login if token expired
+  Future<void> handleGoogleReLogin() async {
+    Get.context?.showAppSnackBar(
+      message: "⚠️ Google token expired. Please login again.",
+      backgroundColor: colorRed,
+      textColor: colorWhite,
+    );
+    await logoutAdmin();
+    await loginAdmin();
+  }
+
+  Future<String?> addEvent({
     required String title,
     required String description,
     required DateTime startTime,
@@ -125,28 +124,19 @@ class GoogleCalendarController extends GetxController {
   }) async {
     if (calendarApi == null) {
       Get.context?.showAppSnackBar(
-        message: "⚠️ Not Logged In', 'Please login as Admin first",
+        message: "⚠️ Not Logged In, Please login as Admin first",
         backgroundColor: colorRed,
         textColor: colorWhite,
       );
-      log('🚫 Attempted to add event without logging in.');
-      update();
-      return false;
+      return null;
     }
 
     try {
       isLoading = true;
       update();
 
-      log('🧩 Preparing event...');
-      log('📌 Title: $title');
-      log('📝 Description: $description');
-      log('⏰ Start Time: $startTime');
-      log('⏰ End Time: $endTime');
-      log('👥 Attendees: ${employeeEmails.join(', ')}');
-
-      final attendees = employeeEmails.map((e) => EventAttendee(email: e)).toList();
-
+      final attendees =
+      employeeEmails.map((e) => EventAttendee(email: e)).toList();
       final event = Event(
         summary: title,
         description: description,
@@ -155,50 +145,70 @@ class GoogleCalendarController extends GetxController {
         attendees: attendees,
         reminders: EventReminders(
           useDefault: false,
-          overrides: [
-            EventReminder(method: 'popup', minutes: 2),
-          ],
+          overrides: [EventReminder(method: 'popup', minutes: 5)],
         ),
       );
 
-      final inserted = await calendarApi!.events.insert(
-        sendNotifications: true,
-        event,
-        'primary',
-        sendUpdates: 'all',
-      );
-
-      if (inserted.id != null) {
-        Get.context?.showAppSnackBar(
-          message: "Event Added, Event $title added successfully",
-          backgroundColor: colorGreen,
-          textColor: colorWhite,
-        );
-        log('✅ Event added successfully with ID: ${inserted.id}');
-
-        for (var emp in employeeEmails) {
-          log('📧 Invite sent to: $emp');
-        }
-
-        return true;
-      } else {
-
-        Get.context?.showAppSnackBar(
-          message: "❌ Add Failed', 'Event could not be added",
-          backgroundColor: colorRed,
-          textColor: colorWhite,
-        );
-        log('⚠️ Failed to insert event.');
-        return false;
-      }
+      final inserted = await _tryInsertEvent(event);
+      if (inserted != null) return inserted.id;
+      return null;
     } catch (e) {
-      errorMessage = '💥 Add event error: $e';
+      log('💥 Add event failed: $e');
+      return null;
+    } finally {
+      isLoading = false;
+      update();
+    }
+  }
+  Future<bool> deleteEvent(String eventId) async {
+    if (calendarApi == null) {
       Get.context?.showAppSnackBar(
-        message: "Error'$errorMessage",
+        message: "⚠️ Not logged in. Please login as Admin first",
         backgroundColor: colorRed,
         textColor: colorWhite,
       );
-      log('💥 Error details: $errorMessage');
+      return false;
+    }
+
+    try {
+      isLoading = true;
+      update();
+
+      log('🗑️ Deleting event: $eventId');
+
+      await calendarApi!.events.delete(
+        'primary',    // your calendar ID
+        eventId,      // ID of the event to delete
+        sendUpdates: 'all', // notify all attendees via email
+      );
+
+      Get.context?.showAppSnackBar(
+        message: '✅ Event deleted successfully',
+        backgroundColor: colorGreen,
+        textColor: colorWhite,
+      );
+      log('✅ Event deleted successfully: $eventId');
+      return true;
+    } catch (e) {
+      log('💥 Delete event error: $e');
+
+      if (e is DetailedApiRequestError && e.status == 401) {
+        log('⚠️ Token expired or invalid. Need to re-login.');
+        await handleGoogleReLogin(); // call your re-login flow
+      } else if (e is DetailedApiRequestError && e.status == 404) {
+        Get.context?.showAppSnackBar(
+          message: '❌ Event not found (maybe already deleted)',
+          backgroundColor: colorRed,
+          textColor: colorWhite,
+        );
+      } else {
+        Get.context?.showAppSnackBar(
+          message: '❌ Failed to delete event: $e',
+          backgroundColor: colorRed,
+          textColor: colorWhite,
+        );
+      }
+
       return false;
     } finally {
       isLoading = false;
@@ -206,11 +216,142 @@ class GoogleCalendarController extends GetxController {
     }
   }
 
+
+  Future<Event?> _tryInsertEvent(Event event) async {
+    try {
+      return await calendarApi!.events.insert(
+        sendNotifications: true,
+        event,
+        'primary',
+        sendUpdates: 'all',
+      );
+    } catch (e) {
+      if (e.toString().contains('401')) {
+        log("⚠️ Token expired, re-login needed");
+        await handleGoogleReLogin();
+        return await calendarApi!.events.insert(
+          sendNotifications: true,
+          event,
+          'primary',
+          sendUpdates: 'all',
+        );
+      }
+      rethrow;
+    }
+  }
+
+  Future<bool> updateEvent({
+    required String eventId,
+    required String title,
+    required String description,
+    required DateTime startTime,
+    required DateTime endTime,
+    required List<String> oldEmployeeEmails,
+    required List<String> newEmployeeEmails,
+  }) async {
+    if (calendarApi == null) {
+      log('⚠️ Not logged in to Google Calendar');
+      Get.context?.showAppSnackBar(
+        message: "⚠️ Not logged in. Please login as Admin.",
+        backgroundColor: colorRed,
+        textColor: colorWhite,
+      );
+      return false;
+    }
+
+    try {
+      final event = await calendarApi!.events.get('primary', eventId);
+
+      event.summary = title;
+      event.description = description;
+      event.start = EventDateTime(dateTime: startTime, timeZone: 'Asia/Kolkata');
+      event.end = EventDateTime(dateTime: endTime, timeZone: 'Asia/Kolkata');
+
+      final addedEmails = newEmployeeEmails.where((e) => !oldEmployeeEmails.contains(e)).toList();
+      final removedEmails = oldEmployeeEmails.where((e) => !newEmployeeEmails.contains(e)).toList();
+
+      event.attendees = newEmployeeEmails.map((e) => EventAttendee(email: e)).toList();
+
+      event.reminders = EventReminders(
+        useDefault: false,
+        overrides: [EventReminder(method: 'popup', minutes: 5)],
+      );
+
+      Event updatedEvent;
+      try {
+        updatedEvent = await calendarApi!.events.update(
+          event,
+          'primary',
+          eventId,
+          sendUpdates: 'all',
+        );
+      } catch (e) {
+        if (e.toString().contains('401')) {
+          log("⚠️ Token expired, re-login needed");
+          await handleGoogleReLogin();
+          updatedEvent = await calendarApi!.events.update(
+            event,
+            'primary',
+            eventId,
+            sendUpdates: 'all',
+          );
+        } else {
+          rethrow;
+        }
+      }
+
+      log('✅ Event updated successfully: ${updatedEvent.id}');
+      if (addedEmails.isNotEmpty) log('📧 Added attendees: ${addedEmails.join(", ")}');
+      if (removedEmails.isNotEmpty) log('📧 Removed attendees: ${removedEmails.join(", ")}');
+
+      return updatedEvent.id != null;
+    } catch (e) {
+      if (e is DetailedApiRequestError && e.status == 404) {
+        // Get.context?.showAppSnackBar(
+        //   message: '❌ Event not found (maybe deleted)',
+        //   backgroundColor: colorRed,
+        //   textColor: colorWhite,
+        // );
+      } else {
+        // Get.context?.showAppSnackBar(
+        //   message: '💥 Failed to update event: $e',
+        //   backgroundColor: colorRed,
+        //   textColor: colorWhite,
+        // );
+      }
+      log('💥 Update event failed: $e');
+      return false;
+    }
+  }
+
+
+  Future<Event> _tryUpdateEvent(Event event, String eventId) async {
+    try {
+      return await calendarApi!.events.update(
+        event,
+        'primary',
+        eventId,
+        sendUpdates: 'all',
+      );
+    } catch (e) {
+      if (e.toString().contains('401')) {
+        log("⚠️ Token expired, re-login needed");
+        await handleGoogleReLogin();
+        return await calendarApi!.events.update(
+          event,
+          'primary',
+          eventId,
+          sendUpdates: 'all',
+        );
+      }
+      rethrow;
+    }
+  }
+
   bool get isLoggedIn => currentUser != null && calendarApi != null;
   String? get adminEmail => currentUser?.email;
 }
 
-/// 🌐 Google Auth Client (for authorized HTTP requests)
 class _GoogleAuthClient extends http.BaseClient {
   final Map<String, String> _headers;
   final http.Client _client = http.Client();
@@ -220,13 +361,9 @@ class _GoogleAuthClient extends http.BaseClient {
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) {
     request.headers.addAll(_headers);
-    print('🌐 Sending request: ${request.url}');
     return _client.send(request);
   }
 
   @override
-  void close() {
-    print('🧹 Closing HTTP client...');
-    _client.close();
-  }
+  void close() => _client.close();
 }

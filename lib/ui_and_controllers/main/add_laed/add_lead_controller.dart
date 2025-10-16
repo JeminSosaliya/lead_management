@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,7 +12,6 @@ import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/model/lead_add_model.dart';
 import 'package:lead_management/ui_and_controllers/main/home/home_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/location_picker_screen.dart';
-
 import '../../auth/goggle_login/google_calendar_controller.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -94,6 +92,7 @@ class AddLeadController extends GetxController {
     selectedEmployeeName = employeeName;
     selectedEmployeeType = userType;
     selectedEmployeeEmail = email;
+
     showEmployeeError = false;
     update();
   }
@@ -110,6 +109,7 @@ class AddLeadController extends GetxController {
   }
 
   Future<void> pickLocation() async {
+    // Check location permissions
     LocationPermission permission = await Geolocator.checkPermission();
 
     if (permission == LocationPermission.denied) {
@@ -169,6 +169,7 @@ class AddLeadController extends GetxController {
     String? referralName,
     String? description,
     DateTime? nextFollowUp,
+    String? goggleEventId,
   }) async {
     isSubmitting = true;
     update();
@@ -245,6 +246,7 @@ class AddLeadController extends GetxController {
         initialFollowUp: nextFollowUp != null
             ? Timestamp.fromDate(nextFollowUp)
             : null,
+        eventId: goggleEventId
       );
 
       await fireStore.collection('leads').doc(leadId).set(newLead.toMap());
@@ -262,6 +264,7 @@ class AddLeadController extends GetxController {
       isSubmitting = false;
       update();
       print("Error adding lead: $e");
+
       return false;
     }
   }
@@ -301,51 +304,53 @@ class AddLeadController extends GetxController {
     }
   }
 
-  Future<void> _addGoogleCalendarEvent() async {
-    try {
-      final calendarController = Get.find<GoogleCalendarController>();
-      if (calendarController.isLoggedIn) {
-        List<String> validEmails = [];
-
-        if (selectedEmployeeEmail != null &&
-            selectedEmployeeEmail!.isNotEmpty &&
-            RegExp(
-              r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-            ).hasMatch(selectedEmployeeEmail!)) {
-          validEmails.add(selectedEmployeeEmail!);
-          log('Valid employee email: $selectedEmployeeEmail');
-        } else {
-          log('Invalid/Empty employee email: $selectedEmployeeEmail');
-        }
-
-        await calendarController.addEvent(
-          title: nameController.text.trim(),
-          description: descriptionController.text.trim(),
-          startTime: DateTime.now().add(const Duration(minutes: 10)),
-          endTime: DateTime.now().add(const Duration(minutes: 12)),
-          employeeEmails: validEmails.isNotEmpty ? validEmails : [],
-        );
-
-        log(
-          'Google Calendar added SUCCESSFULLY with ${validEmails.length} attendees',
-        );
-      }
-    } catch (e) {
-      print('Google Calendar failed silently: $e');
-      log('Error details: $e');
-    }
-  }
+  // Future<void> _sendLeadAssignmentNotification({
+  //   required String assignedToUserId,
+  //   required String assignedToName,
+  //   required String leadClientName,
+  //   required String addedByName,
+  // }) async {
+  //   try {
+  //     DocumentSnapshot userDoc = await fireStore
+  //         .collection('users')
+  //         .doc(assignedToUserId)
+  //         .get();
+  //
+  //     if (userDoc.exists) {
+  //       Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+  //       List<dynamic> fcmTokens = userData['fcmTokens'] ?? [];
+  //
+  //       if (fcmTokens.isNotEmpty) {
+  //         String deviceToken = fcmTokens.first.toString();
+  //
+  //         String title = "New Lead Assigned";
+  //         String body = "$leadClientName assigned to you by $addedByName";
+  //
+  //         bool notificationSent = await sendPushNotification(
+  //           deviceToken: deviceToken,
+  //           title: title,
+  //           body: body,
+  //         );
+  //         if (notificationSent) {
+  //           print('Notification sent successfully to $assignedToName');
+  //         } else {
+  //           print('Failed to send notification');
+  //         }
+  //       } else {
+  //         print('No FCM token found for user: $assignedToName');
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print('Error sending notification: $e');
+  //   }
+  // }
 
   Future<void> submitForm() async {
-    String currentUserRole =
-        ListConst.currentUserProfileData.type ?? 'employee';
+    String currentUserRole = ListConst.currentUserProfileData.type ?? 'employee';
 
+    // Step 1️⃣ — Basic validations
     showSourceError = selectedSource == null;
-    if (currentUserRole == 'admin') {
-      showEmployeeError = selectedEmployee == null;
-    } else {
-      showEmployeeError = false;
-    }
+    showEmployeeError = currentUserRole == 'admin' ? selectedEmployee == null : false;
     update();
 
     log(
@@ -364,9 +369,8 @@ class AddLeadController extends GetxController {
         !RegExp(r'^\d{10}$').hasMatch(clientPhoneController.text)) {
       errorMessage = 'Client number must be exactly 10 digits';
     } else if (emailController.text.isNotEmpty &&
-        !RegExp(
-          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-        ).hasMatch(emailController.text)) {
+        !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+            .hasMatch(emailController.text)) {
       errorMessage = 'Invalid email format';
     } else if (descriptionController.text.trim().isEmpty) {
       errorMessage = 'Description/Notes is required';
@@ -391,6 +395,101 @@ class AddLeadController extends GetxController {
       return;
     }
 
+    String? googleEventId;
+
+    try {
+      final calendarController = Get.find<GoogleCalendarController>();
+
+      if (calendarController.isLoggedIn) {
+        Get.dialog(
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: colorWhite,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 15),
+                  Text(
+                    'Adding to Google Calendar...',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          barrierDismissible: false,
+        );
+
+        googleEventId = await calendarController.addEvent(
+          title: nameController.text.trim(),
+          description: descriptionController.text.trim(),
+          startTime: nextFollowUp ??DateTime.now().add(const Duration(minutes: 5)),
+          endTime: nextFollowUp?.add(Duration(minutes: 5)) ?? DateTime.now().add(const Duration(days: 1)),
+          employeeEmails: [selectedEmployeeEmail ?? ''],
+        );
+
+        Get.back();
+
+        if (googleEventId == null) {
+          Get.context?.showAppSnackBar(
+            message: 'Event could not be added to Google Calendar',
+            backgroundColor: colorRedCalendar,
+            textColor: colorWhite,
+          );
+          return; // stop process if event fails
+        }
+
+        log('✅ Google Calendar event added successfully. Event ID: $googleEventId');
+      } else {
+        log('⚠️ Skipping Google Calendar (Not logged in)');
+      }
+    } catch (e) {
+      log('💥 Failed to add Google Calendar event: $e');
+      Get.context?.showAppSnackBar(
+        message: 'Event could not be added to Google Calendar',
+        backgroundColor: colorRedCalendar,
+        textColor: colorWhite,
+      );
+      return;
+    }
+
+    // Step 3️⃣ — Add lead to Firebase now
+    Get.dialog(
+      Center(
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: colorWhite,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(color: colorMainTheme),
+              const SizedBox(height: 15),
+              Text(
+                'Adding Lead...',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: colorMainTheme,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+
     bool success = await addLead(
       clientName: nameController.text.trim(),
       clientPhone: clientPhoneController.text.trim(),
@@ -400,15 +499,22 @@ class AddLeadController extends GetxController {
       companyName: companyController.text.trim().isEmpty
           ? null
           : companyController.text.trim(),
-      description: descriptionController.text.trim(),
+      description: descriptionController.text.trim().isEmpty
+          ? null
+          : descriptionController.text.trim(),
       referralName: referralNameController.text.trim().isEmpty
           ? null
           : referralNameController.text.trim(),
-      referralNumber: referralNumberController.text.trim().isEmpty
+      referralNumber: referralNumberController.text
+          .trim()
+          .isEmpty
           ? null
           : referralNumberController.text.trim(),
       nextFollowUp: nextFollowUp,
+      goggleEventId: googleEventId
     );
+
+    Get.back();
 
     if (success) {
       _clearForm();
@@ -419,10 +525,9 @@ class AddLeadController extends GetxController {
         textColor: colorWhite,
       );
 
-      Future.delayed(Duration(milliseconds: 500), () {
-        _addGoogleCalendarEvent();
-      });
+      log('🎯 Lead added successfully to Firebase with event ID: $googleEventId and mail is $selectedEmployeeEmail');
 
+      // reload leads
       String role = ListConst.currentUserProfileData.type ?? '';
       if (role == 'employee' || role == 'admin') {
         try {
@@ -437,6 +542,7 @@ class AddLeadController extends GetxController {
         backgroundColor: colorRedCalendar,
         textColor: colorWhite,
       );
+      log('❌ Failed to add lead to Firebase.');
     }
   }
 
@@ -461,6 +567,7 @@ class AddLeadController extends GetxController {
 
   Future<AccessCredentials> _getAccessToken() async {
     final serviceAccountPath = dotenv.env['PATH_TO_SECRET'];
+
     String serviceAccountJson = await rootBundle.loadString(
       serviceAccountPath!,
     );
@@ -469,6 +576,7 @@ class AddLeadController extends GetxController {
     );
 
     final scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
+
     final client = await clientViaServiceAccount(serviceAccount, scopes);
     return client.credentials;
   }

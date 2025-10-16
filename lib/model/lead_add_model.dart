@@ -1,5 +1,3 @@
-
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Lead {
@@ -31,6 +29,7 @@ class Lead {
   String? callNote;
   Timestamp? initialFollowUp;
   Timestamp? nextFollowUp;
+  String? eventId;
 
   Lead({
     required this.leadId,
@@ -61,6 +60,7 @@ class Lead {
     this.callNote,
     this.initialFollowUp,
     this.nextFollowUp,
+    this.eventId,
   });
 
   factory Lead.fromMap(Map<String, dynamic> map) {
@@ -93,6 +93,7 @@ class Lead {
       callNote: map['callNote'] as String?,
       initialFollowUp: map['initialFollowUp'] as Timestamp?,
       nextFollowUp: map['nextFollowUp'] as Timestamp?,
+      eventId: map['eventId'] ?? '',
     );
   }
 
@@ -126,6 +127,7 @@ class Lead {
       'callNote': callNote,
       'initialFollowUp': initialFollowUp,
       'nextFollowUp': nextFollowUp,
+      'eventId': eventId,
     };
   }
 }
