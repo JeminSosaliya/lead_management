@@ -253,7 +253,7 @@ class HomeController extends GetxController {
             .collection('leads')
             .where('assignedTo', isEqualTo: currentUserId)
             .get();
-///
+
         final createdSnapshot = await fireStore
             .collection('leads')
             .where('addedBy', isEqualTo: currentUserId)
