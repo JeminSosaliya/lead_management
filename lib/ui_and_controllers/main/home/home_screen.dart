@@ -26,9 +26,50 @@ import 'package:intl/intl.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+  // Future<void> _logout() async {
+  //   try {
+  //     log("Logging out user: ${FirebaseAuth.instance.currentUser?.email}");
+  //     try {
+  //       final userStatusService = Get.find<UserStatusService>();
+  //       await userStatusService.stopListening();
+  //     } catch (e) {
+  //       // Service not found, continue with logout
+  //     }
+  //
+  //     await FirebaseAuth.instance.signOut();
+  //     log("Logged out user: ${FirebaseAuth.instance.currentUser?.email}");
+  //     Get.offAllNamed(AppRoutes.login);
+  //     Get.context?.showAppSnackBar(
+  //       message: "Logged out successfully",
+  //       backgroundColor: colorGreen,
+  //     );
+  //   } catch (e) {
+  //     Get.context?.showAppSnackBar(
+  //       message: "Error logging out. Please try again.",
+  //       backgroundColor: colorRedCalendar,
+  //     );
+  //   }
+  // }
   Future<void> _logout() async {
     try {
       log("Logging out user: ${FirebaseAuth.instance.currentUser?.email}");
+
+      // Remove FCM token before logout
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        try {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(currentUser.uid)
+              .update({
+            'fcmToken': null,  // ⬅️ Set to null, don't use arrayRemove
+          });
+          log("✅ FCM token removed for user: ${currentUser.uid}");
+        } catch (e) {
+          log("⚠️ Error removing FCM token: $e");
+        }
+      }
+
       try {
         final userStatusService = Get.find<UserStatusService>();
         await userStatusService.stopListening();
@@ -50,7 +91,6 @@ class HomeScreen extends StatelessWidget {
       );
     }
   }
-
   @override
   Widget build(BuildContext context) {
     Get.put(HomeController());

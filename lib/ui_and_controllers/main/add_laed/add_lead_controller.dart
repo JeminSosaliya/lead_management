@@ -136,7 +136,6 @@ class AddLeadController extends GetxController {
       return;
     }
 
-    // Check if location services are enabled
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       Get.context?.showAppSnackBar(
@@ -216,8 +215,7 @@ class AddLeadController extends GetxController {
         }
         addedByName = currentUserName;
       }
-///ghgfhghhghgjhgjhgjjjjhkghg
-      ///yuyuyghuyuhu
+
       Lead newLead = Lead(
         leadId: leadId,
         clientName: clientName,
@@ -268,7 +266,6 @@ class AddLeadController extends GetxController {
       return false;
     }
   }
-
   Future<void> _sendLeadAssignmentNotification({
     required String assignedToUserId,
     required String assignedToName,
@@ -283,13 +280,11 @@ class AddLeadController extends GetxController {
 
       if (userDoc.exists) {
         Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-        List<dynamic> fcmTokens = userData['fcmTokens'] ?? [];
+        String? deviceToken = userData['fcmToken'];
 
-        if (fcmTokens.isNotEmpty) {
-          String deviceToken = fcmTokens.first.toString();
-
+        if (deviceToken != null && deviceToken.isNotEmpty) {
           String title = "New Lead Assigned";
-          String body = "$leadClientName assigned to you by $addedByName";
+          String body = "$leadClientName assigned to you lead by $addedByName";
 
           bool notificationSent = await sendPushNotification(
             deviceToken: deviceToken,
@@ -309,6 +304,46 @@ class AddLeadController extends GetxController {
       print('Error sending notification: $e');
     }
   }
+  // Future<void> _sendLeadAssignmentNotification({
+  //   required String assignedToUserId,
+  //   required String assignedToName,
+  //   required String leadClientName,
+  //   required String addedByName,
+  // }) async {
+  //   try {
+  //     DocumentSnapshot userDoc = await fireStore
+  //         .collection('users')
+  //         .doc(assignedToUserId)
+  //         .get();
+  //
+  //     if (userDoc.exists) {
+  //       Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+  //       List<dynamic> fcmTokens = userData['fcmTokens'] ?? [];
+  //
+  //       if (fcmTokens.isNotEmpty) {
+  //         String deviceToken = fcmTokens.first.toString();
+  //
+  //         String title = "New Lead Assigned";
+  //         String body = "$leadClientName assigned to you by $addedByName";
+  //
+  //         bool notificationSent = await sendPushNotification(
+  //           deviceToken: deviceToken,
+  //           title: title,
+  //           body: body,
+  //         );
+  //         if (notificationSent) {
+  //           print('Notification sent successfully to $assignedToName');
+  //         } else {
+  //           print('Failed to send notification');
+  //         }
+  //       } else {
+  //         print('No FCM token found for user: $assignedToName');
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print('Error sending notification: $e');
+  //   }
+  // }
 
   Future<void> submitForm() async {
     String currentUserRole =
@@ -330,7 +365,6 @@ class AddLeadController extends GetxController {
 
     String? errorMessage;
 
-    // 🔍 Validation
     if (nameController.text.trim().isEmpty) {
       errorMessage = 'Client name is required';
     } else if (clientPhoneController.text.trim().isEmpty) {
@@ -371,7 +405,7 @@ class AddLeadController extends GetxController {
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorWhite,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
@@ -434,7 +468,7 @@ class AddLeadController extends GetxController {
               child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorWhite,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -464,7 +498,7 @@ class AddLeadController extends GetxController {
             employeeEmails: [selectedEmployeeEmail ?? ''],
           );
           log('seleceted employee email $selectedEmployeeEmail');
-          Get.back(); // close calendar loading
+          Get.back();
         }
       } catch (e) {
         print('Failed to add Google Calendar event: $e');
@@ -475,7 +509,6 @@ class AddLeadController extends GetxController {
         );
       }
 
-      // 🔄 Reload leads on home
       String role = ListConst.currentUserProfileData.type ?? '';
       if (role == 'employee' || role == 'admin') {
         try {
@@ -499,7 +532,6 @@ class AddLeadController extends GetxController {
     String serviceAccountJson = await rootBundle.loadString(
       serviceAccountPath!,
     );
-//new branch
     final serviceAccount = ServiceAccountCredentials.fromJson(
       serviceAccountJson,
     );
@@ -543,10 +575,10 @@ class AddLeadController extends GetxController {
     );
 
     if (response.statusCode == 200) {
-      print('✅ Notification sent successfully!');
+      print('Notification sent successfully!');
       return true;
     } else {
-      print('❌ Failed to send notification: ${response.body}');
+      print('Failed to send notification: ${response.body}');
       return false;
     }
   }

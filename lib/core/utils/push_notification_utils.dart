@@ -76,7 +76,7 @@ class NotificationUtils {
               .collection('users')
               .doc(userId)
               .update({
-            'fcmTokens': FieldValue.arrayUnion([token]),
+            'fcmToken': token,
             'updatedAt': FieldValue.serverTimestamp(),
           });
         }
