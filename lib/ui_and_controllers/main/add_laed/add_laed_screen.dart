@@ -234,6 +234,7 @@ class AddLeadScreen extends StatelessWidget {
                             ];
 
                             return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 SearchableCSCDropdown(
                                   title: 'Assign To',

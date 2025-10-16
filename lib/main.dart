@@ -33,7 +33,7 @@ void main() async {
   NotificationUtils().init();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   Get.put(GoogleCalendarController(), permanent: true);
-  await dotenv.load(fileName: '.env');
+await dotenv.load(fileName: '.env');
   // Attempt silent login for admin
   final calendarController = Get.find<GoogleCalendarController>();
   await calendarController.autoLogin();

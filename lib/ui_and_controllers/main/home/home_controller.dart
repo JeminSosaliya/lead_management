@@ -128,7 +128,6 @@ class HomeController extends GetxController {
             cancelOnError: false,
           );
     } catch (e) {
-      log("Error setting up technician listener: $e");
       update();
     }
   }
@@ -179,7 +178,7 @@ class HomeController extends GetxController {
 
             leads.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
-            log('Leads updated (Admin): ${leads.length} leads fetched');
+            log('✅ Leads updated (Admin): ${leads.length} leads fetched');
             isLoading = false;
             update();
           });
@@ -196,7 +195,7 @@ class HomeController extends GetxController {
                 .map((doc) => Lead.fromMap(doc.data() as Map<String, dynamic>))
                 .toList();
 
-            log('Assigned leads: ${assignedLeads.length}');
+            log('✅ Assigned leads: ${assignedLeads.length}');
             _mergeEmployeeLeads(assignedLeads, createdLeads);
           });
 
@@ -209,27 +208,31 @@ class HomeController extends GetxController {
                 .map((doc) => Lead.fromMap(doc.data() as Map<String, dynamic>))
                 .toList();
 
-            log('Created leads: ${createdLeads.length}');
+            log('✅ Created leads: ${createdLeads.length}');
             _mergeEmployeeLeads(assignedLeads, createdLeads);
           });
     }
   }
 
   void _mergeEmployeeLeads(List<Lead> assignedLeads, List<Lead> createdLeads) {
+    // Use a Map to automatically handle duplicates (same leadId)
     final Map<String, Lead> leadsMap = {};
 
+    // Add assigned leads
     for (var lead in assignedLeads) {
       leadsMap[lead.leadId] = lead;
     }
 
+    // Add created leads (duplicates automatically handled)
     for (var lead in createdLeads) {
       leadsMap[lead.leadId] = lead;
     }
 
+    // Convert back to list and sort
     leads = leadsMap.values.toList();
     leads.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
-    log('Total unique leads (Employee): ${leads.length}');
+    log('✅ Total unique leads (Employee): ${leads.length}');
     isLoading = false;
     update();
   }
@@ -249,16 +252,18 @@ class HomeController extends GetxController {
           return Lead.fromMap(data);
         }).toList();
       } else {
+        // ✅ Employee sees BOTH assigned AND created leads
         final assignedSnapshot = await fireStore
             .collection('leads')
             .where('assignedTo', isEqualTo: currentUserId)
             .get();
-///
+
         final createdSnapshot = await fireStore
             .collection('leads')
             .where('addedBy', isEqualTo: currentUserId)
             .get();
 
+        // Merge and deduplicate using Map
         final Map<String, Lead> leadsMap = {};
 
         for (var doc in assignedSnapshot.docs) {

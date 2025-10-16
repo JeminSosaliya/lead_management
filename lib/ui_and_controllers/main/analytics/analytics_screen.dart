@@ -141,8 +141,8 @@ class AnalyticsScreen extends StatelessWidget {
               SizedBox(height: height * 0.025),
 
               // Active Filters Info
-
-              if (controller.selectedEmployeeId.value != null ||
+              if (controller.selectedDate.value != null ||
+                  controller.selectedEmployeeId.value != null ||
                   controller.selectedTechnicianId.value != null)
                 Container(
                   width: double.infinity,
@@ -189,13 +189,11 @@ class AnalyticsScreen extends StatelessWidget {
                   ),
                 ),
 
-
               if (controller.selectedDate.value != null ||
                   controller.selectedEmployeeId.value != null ||
                   controller.selectedTechnicianId.value != null)
                 SizedBox(height: height * 0.025),
 
-              // Total Leads Card
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.all(width * 0.05),
@@ -214,7 +212,9 @@ class AnalyticsScreen extends StatelessWidget {
                   children: [
                     WantText(
                       text:
-                              controller.selectedTechnicianId.value != null
+                          (controller.selectedDate.value != null ||
+                              controller.selectedEmployeeId.value != null ||
+                              controller.selectedTechnicianId.value != null)
                           ? 'Filtered Leads'
                           : 'Total Leads',
                       fontSize: width * 0.041,
@@ -308,7 +308,6 @@ class AnalyticsScreen extends StatelessWidget {
                           ),
                           SizedBox(height: height * 0.03),
 
-                          // Pie Chart
                           SizedBox(
                             height: height * 0.35,
                             child: PieChart(
@@ -327,7 +326,6 @@ class AnalyticsScreen extends StatelessWidget {
 
                           SizedBox(height: height * 0.03),
 
-                          // Legend
                           _buildLegend(controller),
                         ],
                       ),

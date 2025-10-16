@@ -84,7 +84,8 @@ class AddLeadController extends GetxController {
     }
   }
 
-  void setSelectedEmployee(String? value, {
+  void setSelectedEmployee(
+    String? value, {
     String? employeeName,
     String? userType,
     String? email,
@@ -128,13 +129,14 @@ class AddLeadController extends GetxController {
     if (permission == LocationPermission.deniedForever) {
       Get.context?.showAppSnackBar(
         message:
-        "Location permission is permanently denied. Please enable it in settings",
+            "Location permission is permanently denied. Please enable it in settings",
         backgroundColor: colorRedCalendar,
         textColor: colorWhite,
       );
       return;
     }
 
+    // Check if location services are enabled
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       Get.context?.showAppSnackBar(
@@ -146,19 +148,17 @@ class AddLeadController extends GetxController {
     }
 
     final result = await Get.to(
-          () =>
-          LocationPickerScreen(
-            initialLatitude: selectedLatitude,
-            initialLongitude: selectedLongitude,
-          ),
+      () => LocationPickerScreen(
+        initialLatitude: selectedLatitude,
+        initialLongitude: selectedLongitude,
+      ),
     );
 
     if (result != null && result is Map<String, dynamic>) {
       selectedLatitude = result['latitude'];
       selectedLongitude = result['longitude'];
       locationAddress =
-      'Lat: ${selectedLatitude!.toStringAsFixed(6)}, Lng: ${selectedLongitude!
-          .toStringAsFixed(6)}';
+          'Lat: ${selectedLatitude!.toStringAsFixed(6)}, Lng: ${selectedLongitude!.toStringAsFixed(6)}';
       update();
     }
   }
@@ -177,10 +177,7 @@ class AddLeadController extends GetxController {
     update();
 
     try {
-      String leadId = fireStore
-          .collection('leads')
-          .doc()
-          .id;
+      String leadId = fireStore.collection('leads').doc().id;
       String currentUserId = ListConst.currentUserProfileData.uid.toString();
       String currentUserRole = ListConst.currentUserProfileData.type ?? '';
       String currentUserEmail = ListConst.currentUserProfileData.email ?? '';
@@ -241,9 +238,7 @@ class AddLeadController extends GetxController {
         latitude: selectedLatitude,
         longitude: selectedLongitude,
         locationAddress: locationAddress,
-        address: addressController.text
-            .trim()
-            .isEmpty
+        address: addressController.text.trim().isEmpty
             ? null
             : addressController.text.trim(),
         createdAt: Timestamp.now(),
@@ -254,12 +249,6 @@ class AddLeadController extends GetxController {
       );
 
       await fireStore.collection('leads').doc(leadId).set(newLead.toMap());
-      await _sendLeadAssignmentNotification(
-        assignedToUserId: assignedToEmployee,
-        assignedToName: assignedToName,
-        leadClientName: clientName,
-        addedByName: addedByName,
-      );
 
       isSubmitting = false;
       update();
@@ -272,7 +261,6 @@ class AddLeadController extends GetxController {
       return false;
     }
   }
-
   Future<void> _sendLeadAssignmentNotification({
     required String assignedToUserId,
     required String assignedToName,
@@ -311,7 +299,6 @@ class AddLeadController extends GetxController {
       print('Error sending notification: $e');
     }
   }
-
   // Future<void> _sendLeadAssignmentNotification({
   //   required String assignedToUserId,
   //   required String assignedToName,
@@ -366,21 +353,17 @@ class AddLeadController extends GetxController {
     update();
 
     log(
-      'Form valid: ${formKey.currentState!
-          .validate()}, Show Employee Error: $showEmployeeError, Show Source Error: $showSourceError',
+      'Form valid: ${formKey.currentState!.validate()}, Show Employee Error: $showEmployeeError, Show Source Error: $showSourceError',
     );
 
     formKey.currentState!.validate();
 
     String? errorMessage;
 
-    if (nameController.text
-        .trim()
-        .isEmpty) {
+    // 🔍 Validation
+    if (nameController.text.trim().isEmpty) {
       errorMessage = 'Client name is required';
-    } else if (clientPhoneController.text
-        .trim()
-        .isEmpty) {
+    } else if (clientPhoneController.text.trim().isEmpty) {
       errorMessage = 'Client number is required';
     } else if (clientPhoneController.text.length != 10 ||
         !RegExp(r'^\d{10}$').hasMatch(clientPhoneController.text)) {
@@ -390,9 +373,7 @@ class AddLeadController extends GetxController {
           r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
         ).hasMatch(emailController.text)) {
       errorMessage = 'Invalid email format';
-    } else if (descriptionController.text
-        .trim()
-        .isEmpty) {
+    } else if (descriptionController.text.trim().isEmpty) {
       errorMessage = 'Description/Notes is required';
     } else if (referralNumberController.text.isNotEmpty &&
         (referralNumberController.text.length != 10 ||
@@ -402,9 +383,7 @@ class AddLeadController extends GetxController {
       errorMessage = 'Please select a source';
     } else if (showEmployeeError) {
       errorMessage = 'Please select an employee';
-    } else if (followUpController.text
-        .trim()
-        .isEmpty || nextFollowUp == null) {
+    } else if (followUpController.text.trim().isEmpty || nextFollowUp == null) {
       errorMessage = 'Please select initial follow-up date & time';
     }
 
@@ -448,29 +427,19 @@ class AddLeadController extends GetxController {
     bool success = await addLead(
       clientName: nameController.text.trim(),
       clientPhone: clientPhoneController.text.trim(),
-      clientEmail: emailController.text
-          .trim()
-          .isEmpty
+      clientEmail: emailController.text.trim().isEmpty
           ? null
           : emailController.text.trim(),
-      companyName: companyController.text
-          .trim()
-          .isEmpty
+      companyName: companyController.text.trim().isEmpty
           ? null
           : companyController.text.trim(),
-      description: descriptionController.text
-          .trim()
-          .isEmpty
+      description: descriptionController.text.trim().isEmpty
           ? null
           : descriptionController.text.trim(),
-      referralName: referralNameController.text
-          .trim()
-          .isEmpty
+      referralName: referralNameController.text.trim().isEmpty
           ? null
           : referralNameController.text.trim(),
-      referralNumber: referralNumberController.text
-          .trim()
-          .isEmpty
+      referralNumber: referralNumberController.text.trim().isEmpty
           ? null
           : referralNumberController.text.trim(),
       nextFollowUp: nextFollowUp,
@@ -495,7 +464,7 @@ class AddLeadController extends GetxController {
               child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: colorWhite,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -536,6 +505,7 @@ class AddLeadController extends GetxController {
         );
       }
 
+      // 🔄 Reload leads on home
       String role = ListConst.currentUserProfileData.type ?? '';
       if (role == 'employee' || role == 'admin') {
         try {
