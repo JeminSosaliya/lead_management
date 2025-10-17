@@ -1,9 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:lead_management/core/constant/app_color.dart';
+import 'package:lead_management/core/constant/list_const.dart';
+import 'package:lead_management/core/utils/extension.dart';
 
 class MemberController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
+  bool get isAdmin => ListConst.currentUserProfileData.type == 'admin';
   final _selectedType = 'employee'.obs;
   final _employees = <Map<String, dynamic>>[].obs;
   final _admins = <Map<String, dynamic>>[].obs;
@@ -27,7 +31,14 @@ class MemberController extends GetxController {
     loadEmployees();
     loadAdmins();
   }
-
+  void copyToClipboard(String text) {
+    Clipboard.setData(ClipboardData(text: text));
+    Get.context?.showAppSnackBar(
+      message: 'Phone number copied to clipboard',
+      backgroundColor: colorGreen,
+      textColor: colorWhite,
+    );
+  }
   void setSelectedType(String type) {
     _selectedType.value = type;
   }

@@ -108,7 +108,7 @@ class AddLeadScreen extends StatelessWidget {
                         SizedBox(height: height * 0.023),
 
                         CustomTextFormField(
-                          labelText: "Email",
+                          labelText: "Email (optional)",
                           hintText: 'Enter email',
                           controller: controller.emailController,
                           prefixIcon: Icon(Icons.email, color: colorGrey),

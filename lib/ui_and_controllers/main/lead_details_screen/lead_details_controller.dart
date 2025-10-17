@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -73,6 +74,7 @@ class LeadDetailsController extends GetxController {
   TextEditingController initialFollowUpController = TextEditingController();
 
   LeadDetailsController({required this.leadId});
+  bool get isAdmin => ListConst.currentUserProfileData.type == 'admin';
 
   @override
   void onInit() {
@@ -422,16 +424,13 @@ class LeadDetailsController extends GetxController {
       errorMessage = 'Client name is required';
     } else if (phoneController.text.trim().isEmpty) {
       errorMessage = 'Client number is required';
-    } else if (!RegExp(r'^\d{10}$').hasMatch(phoneController.text)) {
-      errorMessage = 'Client number must be exactly 10 digits';
-    } else if (emailController.text.isNotEmpty &&
+    }else if (emailController.text.isNotEmpty &&
         !RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(emailController.text)) {
       errorMessage = 'Invalid email format';
     } else if (descriptionController.text.trim().isEmpty) {
       errorMessage = 'Description/Notes is required';
-    } else if (referralNumberController.text.isNotEmpty &&
-        !RegExp(r'^\d{10}$').hasMatch(referralNumberController.text)) {
-      errorMessage = 'Referral number must be exactly 10 digits';
+    } else if (referralNumberController.text.isNotEmpty ) {
+      errorMessage = 'Referral number must be more than 9 digits';
     } else if (showSourceError) {
       errorMessage = 'Please select a source';
     } else if (showEmployeeError) {
@@ -586,17 +585,36 @@ class LeadDetailsController extends GetxController {
       return;
     }
 
+    log('📞 Raw CALL NUMBER: $phone');
+
     try {
-      // Clean phone number (remove spaces, dashes, etc.)
+      // 🔹 Clean phone number (remove spaces, dashes, parentheses, etc.)
       String cleanPhone = phone.replaceAll(RegExp(r'[^\d+]'), '');
+
+      // 🔹 Remove country code if present
+      if (cleanPhone.startsWith('+91') && cleanPhone.length == 13) {
+        cleanPhone = cleanPhone.substring(3);
+      } else if (cleanPhone.startsWith('91') && cleanPhone.length == 12) {
+        cleanPhone = cleanPhone.substring(2);
+      }
+
+      log('📞 Cleaned CALL NUMBER: $cleanPhone');
+
+      // 🔹 Validate final number length
+      if (cleanPhone.length != 10 || !RegExp(r'^\d{10}$').hasMatch(cleanPhone)) {
+        Get.context?.showAppSnackBar(
+          message: 'Invalid phone number format',
+          backgroundColor: colorRedCalendar,
+          textColor: colorWhite,
+        );
+        return;
+      }
 
       final Uri url = Uri(scheme: 'tel', path: cleanPhone);
 
-      // Check if the URL can be launched
       bool canLaunch = await canLaunchUrl(url);
 
       if (canLaunch) {
-        // ✅ Add LaunchMode.externalApplication for better compatibility
         bool launched = await launchUrl(
           url,
           mode: LaunchMode.externalApplication,
@@ -612,7 +630,7 @@ class LeadDetailsController extends GetxController {
         throw Exception('Cannot launch phone dialer');
       }
     } catch (e) {
-      log("Error launching call: $e");
+      log("❌ Error launching call: $e");
       Get.context?.showAppSnackBar(
         message: 'Could not launch call.',
         backgroundColor: colorRedCalendar,
@@ -816,7 +834,14 @@ class LeadDetailsController extends GetxController {
       }
     }
   }
-
+  void copyToClipboard(String text) {
+    Clipboard.setData(ClipboardData(text: text));
+    Get.context?.showAppSnackBar(
+      message: 'Phone number copied to clipboard',
+      backgroundColor: colorGreen,
+      textColor: colorWhite,
+    );
+  }
   @override
   void onClose() {
     noteController.dispose();

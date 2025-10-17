@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/Get.dart';
+import 'package:lead_management/controller/permission_controller.dart';
 import 'package:lead_management/core/constant/app_assets.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
@@ -95,6 +96,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     Get.put(HomeController());
     final ProfileController _profileController = Get.put(ProfileController());
+    final PermissionController _permissionController = Get.put(PermissionController());
 
     return GetBuilder<HomeController>(
       builder: (controller) {
@@ -162,21 +164,48 @@ class HomeScreen extends StatelessWidget {
                         padding: EdgeInsets.zero,
                         children: [
                           if (controller.isAdmin)
-                            ListTile(
-                              leading: const Icon(
-                                Icons.admin_panel_settings,
-                                color: colorMainTheme,
-                              ),
-                              title: WantText(
-                                text: "Add Admin",
-                                textColor: colorBlack,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              onTap: () {
-                                Navigator.pop(context);
-                                Get.toNamed(AppRoutes.addAdmin);
-                              },
-                            ),
+                            Obx(() {
+                              if (_permissionController.isLoading) {
+                                return ListTile(
+                                  leading: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        colorMainTheme,
+                                      ),
+                                    ),
+                                  ),
+                                  title: WantText(
+                                    text: "Loading permissions...",
+                                    textColor: colorGreyText,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                );
+                              }
+
+                              if (_permissionController.canCreateAdmin) {
+                                return ListTile(
+                                  leading: const Icon(
+                                    Icons.admin_panel_settings,
+                                    color: colorMainTheme,
+                                  ),
+                                  title: WantText(
+                                    text: "Add Admin",
+                                    textColor: colorBlack,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    Get.toNamed(AppRoutes.addAdmin);
+                                  },
+                                );
+                              }
+
+                              return const SizedBox.shrink();
+                            }),
+
                           if (controller.isAdmin)
                             ListTile(
                               leading: const Icon(

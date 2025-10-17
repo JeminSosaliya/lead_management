@@ -120,15 +120,13 @@ class LeadDetailsScreen extends StatelessWidget {
                       keyboardType: TextInputType.phone,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(10),
+                        LengthLimitingTextInputFormatter(15),
                       ],
                       validator: (value) {
                         if (value == null || value.isEmpty)
                           return 'Enter phone number';
-                        if (value.length != 10)
+                        if (value.length < 10)
                           return 'Phone number must be exactly 10 digits';
-                        if (!RegExp(r'^\d{10}$').hasMatch(value))
-                          return 'Invalid phone number format';
                         return null;
                       },
                     ),
@@ -504,16 +502,34 @@ class LeadDetailsScreen extends StatelessWidget {
                       _infoCard(
                         title: "Client Contact Number",
                         value: lead.clientPhone,
-                        trailing: GestureDetector(
-                          onTap: () {
-                            log('tap on whatsapp');
-                            controller.openWhatsApp(lead.clientPhone);
-                          },
-                          child: Image.asset(
-                            AppAssets.whatsapp,
-                            height: 15,
-                            width: 15,
-                          ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (controller.isAdmin) ...[
+                              GestureDetector(
+                                onTap: () {
+                                  controller.copyToClipboard(lead.clientPhone);
+                                },
+                                child: Icon(
+                                  Icons.copy,
+                                  color: colorMainTheme,
+                                  size: 15,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                            ],
+                            GestureDetector(
+                              onTap: () {
+                                log('tap on whatsapp');
+                                controller.openWhatsApp(lead.clientPhone);
+                              },
+                              child: Image.asset(
+                                AppAssets.whatsapp,
+                                height: 15,
+                                width: 15,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       if (lead.latitude != null && lead.longitude != null)
@@ -640,6 +656,24 @@ class LeadDetailsScreen extends StatelessWidget {
                                 _infoCard(
                                   title: "Referral Number",
                                   value: lead.referralNumber!,
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (controller.isAdmin) ...[
+                                        GestureDetector(
+                                          onTap: () {
+                                            controller.copyToClipboard(lead.referralNumber!);
+                                          },
+                                          child: Icon(
+                                            Icons.copy,
+                                            color: colorMainTheme,
+                                            size: 15,
+                                          ),
+                                        ),
+                                        SizedBox(width: width * 0.005),
+                                      ],
+                                    ],
+                                  ),
                                 ),
                             ],
                           ),

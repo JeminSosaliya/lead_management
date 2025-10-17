@@ -161,6 +161,18 @@ class MemberDetailScreen extends StatelessWidget {
                     icon: Icons.phone,
                     label: "Phone",
                     value: member!['phone'] ?? 'No phone',
+                    trailing: controller.isAdmin && member!['phone'] != null && member!['phone'] != 'No phone'
+                        ? GestureDetector(
+                      onTap: () {
+                        controller.copyToClipboard(member!['phone']);
+                      },
+                      child: Icon(
+                        Icons.copy,
+                        color: colorMainTheme,
+                        size: 18,
+                      ),
+                    )
+                        : null,
                   ),
 
                   _buildInfoRow(
@@ -248,10 +260,11 @@ class MemberDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow({
+  Widget  _buildInfoRow({
     required IconData icon,
     required String label,
     required String value,
+    Widget? trailing,
   }) {
     return Padding(
       padding: EdgeInsets.only(bottom: height * 0.025),
@@ -280,6 +293,10 @@ class MemberDetailScreen extends StatelessWidget {
               ],
             ),
           ),
+          if (trailing != null) ...[
+            SizedBox(width: width * 0.02),
+            trailing,
+          ],
         ],
       ),
     );

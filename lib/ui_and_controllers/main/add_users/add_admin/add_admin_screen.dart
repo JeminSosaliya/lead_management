@@ -106,11 +106,8 @@ class AddAdminScreen extends StatelessWidget {
                   if (value == null || value.isEmpty) {
                     return 'Please enter the phone number';
                   }
-                  if (value.length != 10|| value.length >= 10) {
+                  if (value.length < 10) {
                     return 'Phone number must be exactly 10 digits';
-                  }
-                  if (!RegExp(r'^\d{10}$').hasMatch(value)) {
-                    return 'Invalid phone number format';
                   }
                   return null;
                 },
