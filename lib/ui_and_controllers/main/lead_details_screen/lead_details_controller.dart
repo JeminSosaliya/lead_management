@@ -317,149 +317,133 @@ class LeadDetailsController extends GetxController {
   Future<void> updateLeadDetails() async {
     final calendarController = Get.find<GoogleCalendarController>();
 
-    showSourceError = selectedSource == null;
-    showEmployeeError = selectedEmployee == null;
+
+    if (!(editFormKey.currentState?.validate() ?? false) || showSourceError || showEmployeeError) {
+      _showValidationError();
+      return;
+    }
+
+    isUpdating = true;
     update();
 
-    if (editFormKey.currentState!.validate() &&
-        !showSourceError &&
-        !showEmployeeError) {
-      isUpdating = true;
+    try {
+      Lead updatedLead = Lead(
+        leadId: leadId,
+        clientName: nameController.text.trim(),
+        clientPhone: phoneController.text.trim(),
+        clientEmail: emailController.text.trim().isEmpty ? null : emailController.text.trim(),
+        companyName: companyController.text.trim().isEmpty ? null : companyController.text.trim(),
+        referralName: referralNameController.text.trim().isEmpty ? null : referralNameController.text.trim(),
+        referralNumber: referralNumberController.text.trim().isEmpty ? null : referralNumberController.text.trim(),
+        source: selectedSource,
+        description: descriptionController.text.trim().isEmpty ? null : descriptionController.text.trim(),
+        assignedTo: selectedEmployee ?? lead!.assignedTo,
+        assignedToName: selectedEmployeeName ?? lead!.assignedToName,
+        addedByName: lead!.addedByName,
+        assignedToRole: selectedEmployeeType ?? lead!.assignedToRole,
+        addedBy: lead!.addedBy,
+        addedByEmail: lead!.addedByEmail,
+        addedByRole: lead!.addedByRole,
+        technician: selectedTechnician,
+        latitude: selectedLatitude,
+        longitude: selectedLongitude,
+        locationAddress: locationAddress,
+        address: addressController.text.trim().isEmpty ? null : addressController.text.trim(),
+        createdAt: lead!.createdAt,
+        updatedAt: Timestamp.now(),
+        initialFollowUp: initialFollowUp != null ? Timestamp.fromDate(initialFollowUp!) : lead!.initialFollowUp,
+        stage: lead!.stage,
+        callStatus: lead!.callStatus,
+        eventId: lead!.eventId,
+      );
+
+      if (lead!.eventId != null) {
+        try {
+          final updatedEventId = await calendarController.updateOrCreateEvent(
+            eventId: lead!.eventId!,
+            title: "Lead: ${updatedLead.clientName}",
+            description: updatedLead.description ?? lead!.description ?? '',
+            startTime: initialFollowUp ?? DateTime.now(),
+            endTime: initialFollowUp?.add(const Duration(minutes: 5)) ?? DateTime.now().add(const Duration(days: 1)),
+            oldEmployeeEmails: [employeeOldEmail],
+            newEmployeeEmails: [selectedEmployeeEmail],
+          );
+
+          if (updatedEventId != null && updatedEventId != updatedLead.eventId) {
+            updatedLead.eventId = updatedEventId;
+            log('✅ Event ID updated: $updatedEventId');
+          }
+        } catch (e) {
+          log("⚠️ Google Calendar update failed: $e, email: $selectedEmployeeEmail");
+          Get.context?.showAppSnackBar(
+            message: 'Failed to update Google Calendar event',
+            backgroundColor: colorRedCalendar,
+            textColor: colorWhite,
+          );
+        }
+      }
+
+      await fireStore.collection('leads').doc(leadId).update(updatedLead.toMap());
+
+      Get.context?.showAppSnackBar(
+        message: 'Lead details updated successfully',
+        backgroundColor: colorGreen,
+        textColor: colorWhite,
+      );
+
+      isEditMode = false;
+      await fetchLead();
+
+      final role = ListConst.currentUserProfileData.type ?? '';
+      if (role == 'employee' || role == 'admin') {
+        try {
+          Get.find<HomeController>().loadLeads();
+        } catch (e) {
+          log('⚠️ HomeController not found: $e');
+        }
+      }
+    } catch (e) {
+      log("💥 Error updating lead details: $e");
+      // Get.context?.showAppSnackBar(
+      //   message: 'Failed to update lead details',
+      //   backgroundColor: colorRedCalendar,
+      //   textColor: colorWhite,
+      // );
+    } finally {
+      isUpdating = false;
       update();
+    }
+  }
 
-      try {
-        Lead updatedLead = Lead(
-          leadId: leadId,
-          clientName: nameController.text.trim(),
-          clientPhone: phoneController.text.trim(),
-          clientEmail: emailController.text.trim().isEmpty
-              ? null
-              : emailController.text.trim(),
-          companyName: companyController.text.trim().isEmpty
-              ? null
-              : companyController.text.trim(),
-          referralName: referralNameController.text.trim().isEmpty
-              ? null
-              : referralNameController.text.trim(),
-          referralNumber: referralNumberController.text.trim().isEmpty
-              ? null
-              : referralNumberController.text.trim(),
-          source: selectedSource,
-          description: descriptionController.text.trim().isEmpty
-              ? null
-              : descriptionController.text.trim(),
-          assignedTo: selectedEmployee ?? lead!.assignedTo,
-          assignedToName: selectedEmployeeName ?? lead!.assignedToName,
-          addedByName: lead!.addedByName,
-          assignedToRole: selectedEmployeeType ?? lead!.assignedToRole,
-          addedBy: lead!.addedBy,
-          addedByEmail: lead!.addedByEmail,
-          addedByRole: lead!.addedByRole,
-          technician: selectedTechnician,
-          latitude: selectedLatitude,
-          longitude: selectedLongitude,
-          locationAddress: locationAddress,
-          address: addressController.text.trim().isEmpty
-              ? null
-              : addressController.text.trim(),
-          createdAt: lead!.createdAt,
-          updatedAt: Timestamp.now(),
-          initialFollowUp: initialFollowUp != null
-              ? Timestamp.fromDate(initialFollowUp!)
-              : lead!.initialFollowUp,
-          stage: lead!.stage,
-          callStatus: lead!.callStatus,
-        );
-        if (lead!.eventId != null) {
-          try {
-            log(' updating event: $selectedEmployeeEmail');
-            await calendarController.updateEvent(
-              eventId: lead!.eventId!,
-              title: "Lead: ${updatedLead.clientName}",
-              description: updatedLead.description ?? lead?.description ?? '',
-              startTime: initialFollowUp ?? DateTime.now(),
-              endTime: initialFollowUp?.add(const Duration(minutes: 5)) ??
-                  DateTime.now().add(Duration(days: 1)),
-              oldEmployeeEmails: [employeeOldEmail],
-              newEmployeeEmails: [selectedEmployeeEmail],
-            );
-          } catch (e) {
-            log(
-              "Google Calendar update failed: $e email is $selectedEmployeeEmail",
-            );
-            Get.context?.showAppSnackBar(
-              message: 'Failed to update Google Calendar event',
-              backgroundColor: colorRedCalendar,
-              textColor: colorWhite,
-            );
-          }
-        }
-        await fireStore
-            .collection('leads')
-            .doc(leadId)
-            .update(updatedLead.toMap());
+  void _showValidationError() {
+    String? errorMessage;
 
-        Get.context?.showAppSnackBar(
-          message: 'Lead details updated successfully',
-          backgroundColor: colorGreen,
-          textColor: colorWhite,
-        );
+    if (nameController.text.trim().isEmpty) {
+      errorMessage = 'Client name is required';
+    } else if (phoneController.text.trim().isEmpty) {
+      errorMessage = 'Client number is required';
+    } else if (!RegExp(r'^\d{10}$').hasMatch(phoneController.text)) {
+      errorMessage = 'Client number must be exactly 10 digits';
+    } else if (emailController.text.isNotEmpty &&
+        !RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(emailController.text)) {
+      errorMessage = 'Invalid email format';
+    } else if (descriptionController.text.trim().isEmpty) {
+      errorMessage = 'Description/Notes is required';
+    } else if (referralNumberController.text.isNotEmpty &&
+        !RegExp(r'^\d{10}$').hasMatch(referralNumberController.text)) {
+      errorMessage = 'Referral number must be exactly 10 digits';
+    } else if (showSourceError) {
+      errorMessage = 'Please select a source';
+    } else if (showEmployeeError) {
+      errorMessage = 'Please select an employee';
+    }
 
-        isEditMode = false;
-        await fetchLead();
-
-        String role = ListConst.currentUserProfileData.type ?? '';
-        if (role == 'employee' || role == 'admin') {
-          try {
-            Get.find<HomeController>().loadLeads();
-          } catch (e) {
-            print('HomeController not found: $e');
-          }
-        }
-      } catch (e) {
-        print("Error updating lead details: $e");
-        Get.context?.showAppSnackBar(
-          message: 'Failed to update lead details',
-          backgroundColor: colorRedCalendar,
-          textColor: colorWhite,
-        );
-      } finally {
-        isUpdating = false;
-        update();
-      }
-    } else {
-      String? errorMessage;
-      if (nameController.text.trim().isEmpty) {
-        errorMessage = 'Client name is required';
-      } else if (phoneController.text.trim().isEmpty) {
-        errorMessage = 'Client number is required';
-      } else if (phoneController.text.length != 10 ||
-          !RegExp(r'^\d{10}$').hasMatch(phoneController.text)) {
-        errorMessage = 'Client number must be exactly 10 digits';
-      } else if (emailController.text.isNotEmpty &&
-          !RegExp(
-            r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$',
-          ).hasMatch(emailController.text)) {
-        errorMessage = 'Invalid email format';
-      } else if (descriptionController.text.trim().isEmpty) {
-        errorMessage = 'Description/Notes is required';
-      } else if (referralNumberController.text.isNotEmpty &&
-          (referralNumberController.text.length != 10 ||
-              !RegExp(r'^\d{10}$').hasMatch(referralNumberController.text))) {
-        errorMessage = 'Referral number must be exactly 10 digits';
-      } else if (showSourceError) {
-        errorMessage = 'Please select a source';
-      } else if (showEmployeeError) {
-        errorMessage = 'Please select an employee';
-      }
-
-      if (errorMessage != null) {
-        Get.context?.showAppSnackBar(
-          message: errorMessage,
-          backgroundColor: colorRedCalendar,
-          textColor: colorWhite,
-        );
-      }
+    if (errorMessage != null) {
+      Get.context?.showAppSnackBar(
+        message: errorMessage,
+        backgroundColor: colorRedCalendar,
+        textColor: colorWhite,
+      );
     }
   }
 

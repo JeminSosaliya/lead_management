@@ -240,8 +240,8 @@ class GoogleCalendarController extends GetxController {
     }
   }
 
-  Future<bool> updateEvent({
-    required String eventId,
+  Future<String?> updateOrCreateEvent({
+    required String? eventId, // nullable, in case event does not exist
     required String title,
     required String description,
     required DateTime startTime,
@@ -256,71 +256,82 @@ class GoogleCalendarController extends GetxController {
         backgroundColor: colorRed,
         textColor: colorWhite,
       );
-      return false;
+      return null;
     }
 
-    try {
-      final event = await calendarApi!.events.get('primary', eventId);
-
-      event.summary = title;
-      event.description = description;
-      event.start = EventDateTime(dateTime: startTime, timeZone: 'Asia/Kolkata');
-      event.end = EventDateTime(dateTime: endTime, timeZone: 'Asia/Kolkata');
-
-      final addedEmails = newEmployeeEmails.where((e) => !oldEmployeeEmails.contains(e)).toList();
-      final removedEmails = oldEmployeeEmails.where((e) => !newEmployeeEmails.contains(e)).toList();
-
-      event.attendees = newEmployeeEmails.map((e) => EventAttendee(email: e)).toList();
-
-      event.reminders = EventReminders(
+    Event event = Event(
+      summary: title,
+      description: description,
+      start: EventDateTime(dateTime: startTime, timeZone: 'Asia/Kolkata'),
+      end: EventDateTime(dateTime: endTime, timeZone: 'Asia/Kolkata'),
+      attendees: newEmployeeEmails.map((e) => EventAttendee(email: e)).toList(),
+      reminders: EventReminders(
         useDefault: false,
         overrides: [EventReminder(method: 'popup', minutes: 5)],
-      );
+      ),
+    );
 
+    try {
       Event updatedEvent;
-      try {
-        updatedEvent = await calendarApi!.events.update(
-          event,
-          'primary',
-          eventId,
-          sendUpdates: 'all',
-        );
-      } catch (e) {
-        if (e.toString().contains('401')) {
-          log("⚠️ Token expired, re-login needed");
-          await handleGoogleReLogin();
+
+      if (eventId != null && eventId.isNotEmpty) {
+        try {
+          // Try to fetch the existing event
+          final existingEvent = await calendarApi!.events.get('primary', eventId);
+
+          // Update event details
+          existingEvent.summary = title;
+          existingEvent.description = description;
+          existingEvent.start = EventDateTime(dateTime: startTime, timeZone: 'Asia/Kolkata');
+          existingEvent.end = EventDateTime(dateTime: endTime, timeZone: 'Asia/Kolkata');
+          existingEvent.attendees = newEmployeeEmails.map((e) => EventAttendee(email: e)).toList();
+          existingEvent.reminders = EventReminders(
+            useDefault: false,
+            overrides: [EventReminder(method: 'popup', minutes: 5)],
+          );
+
           updatedEvent = await calendarApi!.events.update(
-            event,
+            existingEvent,
             'primary',
             eventId,
             sendUpdates: 'all',
           );
-        } else {
-          rethrow;
+
+          log('✅ Event updated successfully: ${updatedEvent.id}');
+          return updatedEvent.id;
+        } catch (e) {
+          if (e is DetailedApiRequestError && e.status == 404) {
+            log('⚠️ Event not found, will create a new one');
+            eventId = null; // Force creation below
+          } else if (e.toString().contains('401')) {
+            log("⚠️ Token expired, re-login needed");
+            await handleGoogleReLogin();
+            return await updateOrCreateEvent(
+              eventId: eventId,
+              title: title,
+              description: description,
+              startTime: startTime,
+              endTime: endTime,
+              oldEmployeeEmails: oldEmployeeEmails,
+              newEmployeeEmails: newEmployeeEmails,
+            );
+          } else {
+            rethrow;
+          }
         }
       }
 
-      log('✅ Event updated successfully: ${updatedEvent.id}');
-      if (addedEmails.isNotEmpty) log('📧 Added attendees: ${addedEmails.join(", ")}');
-      if (removedEmails.isNotEmpty) log('📧 Removed attendees: ${removedEmails.join(", ")}');
-
-      return updatedEvent.id != null;
+      updatedEvent = await calendarApi!.events.insert(event, 'primary', sendUpdates: 'all');
+      log('🆕 Event created successfully: ${updatedEvent.id}');
+      return updatedEvent.id;
     } catch (e) {
-      if (e is DetailedApiRequestError && e.status == 404) {
-        // Get.context?.showAppSnackBar(
-        //   message: '❌ Event not found (maybe deleted)',
-        //   backgroundColor: colorRed,
-        //   textColor: colorWhite,
-        // );
-      } else {
-        // Get.context?.showAppSnackBar(
-        //   message: '💥 Failed to update event: $e',
-        //   backgroundColor: colorRed,
-        //   textColor: colorWhite,
-        // );
-      }
-      log('💥 Update event failed: $e');
-      return false;
+      log('💥 Failed to update/create event: $e');
+      Get.context?.showAppSnackBar(
+        message: '💥 Failed to update/create event',
+        backgroundColor: colorRed,
+        textColor: colorWhite,
+      );
+      return null;
     }
   }
 
