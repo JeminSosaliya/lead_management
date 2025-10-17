@@ -74,11 +74,7 @@ class LoginController extends GetxController {
         message: "Login successful!",
         backgroundColor: colorGreen,
       );
-      Get.offAllNamed(
-        ListConst.currentUserProfileData.type == 'admin'
-            ? AppRoutes.adminLogin
-            : AppRoutes.home
-      );
+      Get.offAllNamed(AppRoutes.adminLogin);
     } on FirebaseAuthException catch (e) {
       print("Firebase Auth Error: ${e.code} - ${e.message}");
       String errorMessage = "Login failed. Please try again.";
@@ -119,24 +115,21 @@ class LoginController extends GetxController {
       _isLoading.value = false;
     }
   }
-  Future<void> _storeFcmToken(String userId) async {
 
+  Future<void> _storeFcmToken(String userId) async {
     try {
       final fcmToken = await FirebaseMessaging.instance.getToken();
       if (fcmToken != null) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(userId)
-            .update({
-          'fcmToken': fcmToken,
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
+        await FirebaseFirestore.instance.collection('users').doc(userId).update(
+          {'fcmToken': fcmToken, 'updatedAt': FieldValue.serverTimestamp()},
+        );
         print("✅ FCM token stored for user: $userId");
       }
     } catch (e) {
       print("❌ Error storing FCM token: $e");
     }
   }
+
   @override
   void onClose() {
     _emailController.dispose();
