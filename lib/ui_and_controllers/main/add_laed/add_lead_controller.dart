@@ -365,9 +365,8 @@ class AddLeadController extends GetxController {
       errorMessage = 'Client name is required';
     } else if (clientPhoneController.text.trim().isEmpty) {
       errorMessage = 'Client number is required';
-    } else if (clientPhoneController.text.length != 10 ||
-        !RegExp(r'^\d{10}$').hasMatch(clientPhoneController.text)) {
-      errorMessage = 'Client number must be exactly 10 digits';
+    } else if (clientPhoneController.text.length < 10) {
+      errorMessage = 'Client number must be more than 9 digits';
     } else if (emailController.text.isNotEmpty &&
         !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
             .hasMatch(emailController.text)) {
@@ -375,9 +374,8 @@ class AddLeadController extends GetxController {
     } else if (descriptionController.text.trim().isEmpty) {
       errorMessage = 'Description/Notes is required';
     } else if (referralNumberController.text.isNotEmpty &&
-        (referralNumberController.text.length != 10 ||
-            !RegExp(r'^\d{10}$').hasMatch(referralNumberController.text))) {
-      errorMessage = 'Referral number must be exactly 10 digits';
+        (referralNumberController.text.length < 10)) {
+      errorMessage = 'Referral number must be more than 9 digits';
     } else if (showSourceError) {
       errorMessage = 'Please select a source';
     } else if (showEmployeeError) {
