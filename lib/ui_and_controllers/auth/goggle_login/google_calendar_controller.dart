@@ -24,30 +24,25 @@ class GoogleCalendarController extends GetxController {
     try {
       isLoading = true;
       update();
+
       final account = await _googleSignIn.signInSilently();
       if (account != null) {
         currentUser = account;
         final authHeaders = await account.authHeaders;
         calendarApi = CalendarApi(_GoogleAuthClient(authHeaders));
+
         log('🔑 Admin silently logged in: ${account.email}');
         return true;
       } else {
-        // Get.offAllNamed(AppRoutes.adminLogin);
         log('⚠️ No previous login, user must login manually');
         return false;
       }
     } catch (e) {
-      // Get.offAllNamed(AppRoutes.adminLogin);
-
       log('💥 Auto-login failed: $e');
       return false;
-
     } finally {
       isLoading = false;
-
       update();
-      return false;
-
     }
   }
 

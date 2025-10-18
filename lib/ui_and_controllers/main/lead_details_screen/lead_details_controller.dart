@@ -28,6 +28,10 @@ class LeadDetailsController extends GetxController {
   bool isEditMode = false;
   bool showEmployeeError = false;
   bool showSourceError = false;
+  
+  // Expand/Collapse state management
+  bool isDetailsExpanded = false;
+  
   final formKey = GlobalKey<FormState>();
   final editFormKey = GlobalKey<FormState>();
   final noteController = TextEditingController();
@@ -74,6 +78,7 @@ class LeadDetailsController extends GetxController {
   TextEditingController initialFollowUpController = TextEditingController();
 
   LeadDetailsController({required this.leadId});
+
   bool get isAdmin => ListConst.currentUserProfileData.type == 'admin';
 
   @override
@@ -319,8 +324,9 @@ class LeadDetailsController extends GetxController {
   Future<void> updateLeadDetails() async {
     final calendarController = Get.find<GoogleCalendarController>();
 
-
-    if (!(editFormKey.currentState?.validate() ?? false) || showSourceError || showEmployeeError) {
+    if (!(editFormKey.currentState?.validate() ?? false) ||
+        showSourceError ||
+        showEmployeeError) {
       _showValidationError();
       return;
     }
@@ -333,12 +339,22 @@ class LeadDetailsController extends GetxController {
         leadId: leadId,
         clientName: nameController.text.trim(),
         clientPhone: phoneController.text.trim(),
-        clientEmail: emailController.text.trim().isEmpty ? null : emailController.text.trim(),
-        companyName: companyController.text.trim().isEmpty ? null : companyController.text.trim(),
-        referralName: referralNameController.text.trim().isEmpty ? null : referralNameController.text.trim(),
-        referralNumber: referralNumberController.text.trim().isEmpty ? null : referralNumberController.text.trim(),
+        clientEmail: emailController.text.trim().isEmpty
+            ? null
+            : emailController.text.trim(),
+        companyName: companyController.text.trim().isEmpty
+            ? null
+            : companyController.text.trim(),
+        referralName: referralNameController.text.trim().isEmpty
+            ? null
+            : referralNameController.text.trim(),
+        referralNumber: referralNumberController.text.trim().isEmpty
+            ? null
+            : referralNumberController.text.trim(),
         source: selectedSource,
-        description: descriptionController.text.trim().isEmpty ? null : descriptionController.text.trim(),
+        description: descriptionController.text.trim().isEmpty
+            ? null
+            : descriptionController.text.trim(),
         assignedTo: selectedEmployee ?? lead!.assignedTo,
         assignedToName: selectedEmployeeName ?? lead!.assignedToName,
         addedByName: lead!.addedByName,
@@ -350,10 +366,14 @@ class LeadDetailsController extends GetxController {
         latitude: selectedLatitude,
         longitude: selectedLongitude,
         locationAddress: locationAddress,
-        address: addressController.text.trim().isEmpty ? null : addressController.text.trim(),
+        address: addressController.text.trim().isEmpty
+            ? null
+            : addressController.text.trim(),
         createdAt: lead!.createdAt,
         updatedAt: Timestamp.now(),
-        initialFollowUp: initialFollowUp != null ? Timestamp.fromDate(initialFollowUp!) : lead!.initialFollowUp,
+        initialFollowUp: initialFollowUp != null
+            ? Timestamp.fromDate(initialFollowUp!)
+            : lead!.initialFollowUp,
         stage: lead!.stage,
         callStatus: lead!.callStatus,
         eventId: lead!.eventId,
@@ -366,7 +386,9 @@ class LeadDetailsController extends GetxController {
             title: "Lead: ${updatedLead.clientName}",
             description: updatedLead.description ?? lead!.description ?? '',
             startTime: initialFollowUp ?? DateTime.now(),
-            endTime: initialFollowUp?.add(const Duration(minutes: 5)) ?? DateTime.now().add(const Duration(days: 1)),
+            endTime:
+                initialFollowUp?.add(const Duration(minutes: 5)) ??
+                DateTime.now().add(const Duration(days: 1)),
             oldEmployeeEmails: [employeeOldEmail],
             newEmployeeEmails: [selectedEmployeeEmail],
           );
@@ -376,7 +398,9 @@ class LeadDetailsController extends GetxController {
             log('✅ Event ID updated: $updatedEventId');
           }
         } catch (e) {
-          log("⚠️ Google Calendar update failed: $e, email: $selectedEmployeeEmail");
+          log(
+            "⚠️ Google Calendar update failed: $e, email: $selectedEmployeeEmail",
+          );
           Get.context?.showAppSnackBar(
             message: 'Failed to update Google Calendar event',
             backgroundColor: colorRedCalendar,
@@ -385,7 +409,10 @@ class LeadDetailsController extends GetxController {
         }
       }
 
-      await fireStore.collection('leads').doc(leadId).update(updatedLead.toMap());
+      await fireStore
+          .collection('leads')
+          .doc(leadId)
+          .update(updatedLead.toMap());
 
       Get.context?.showAppSnackBar(
         message: 'Lead details updated successfully',
@@ -424,12 +451,14 @@ class LeadDetailsController extends GetxController {
       errorMessage = 'Client name is required';
     } else if (phoneController.text.trim().isEmpty) {
       errorMessage = 'Client number is required';
-    }else if (emailController.text.isNotEmpty &&
-        !RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(emailController.text)) {
+    } else if (emailController.text.isNotEmpty &&
+        !RegExp(
+          r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$',
+        ).hasMatch(emailController.text)) {
       errorMessage = 'Invalid email format';
     } else if (descriptionController.text.trim().isEmpty) {
       errorMessage = 'Description/Notes is required';
-    } else if (referralNumberController.text.isNotEmpty ) {
+    } else if (referralNumberController.text.isNotEmpty) {
       errorMessage = 'Referral number must be more than 9 digits';
     } else if (showSourceError) {
       errorMessage = 'Please select a source';
@@ -601,7 +630,8 @@ class LeadDetailsController extends GetxController {
       log('📞 Cleaned CALL NUMBER: $cleanPhone');
 
       // 🔹 Validate final number length
-      if (cleanPhone.length != 10 || !RegExp(r'^\d{10}$').hasMatch(cleanPhone)) {
+      if (cleanPhone.length != 10 ||
+          !RegExp(r'^\d{10}$').hasMatch(cleanPhone)) {
         Get.context?.showAppSnackBar(
           message: 'Invalid phone number format',
           backgroundColor: colorRedCalendar,
@@ -777,14 +807,23 @@ class LeadDetailsController extends GetxController {
 
       String newCallStatus = selectedResponse.toLowerCase().replaceAll(' ', '');
       String newStage = selectedStage;
-
+      List<FollowUpLead> updatedList = lead?.followUpLeads ?? [];
+      updatedList.add(
+        FollowUpLead(
+          callNote: noteController.text.trim(),
+          nextFollowUp: nextFollowUpDateTime != null
+              ? Timestamp.fromDate(nextFollowUpDateTime!)
+              : null,
+        ),
+      );
       Map<String, dynamic> updates = {
         'stage': newStage,
         'callStatus': newCallStatus,
-        'callNote': noteController.text.trim(),
-        'nextFollowUp': nextFollowUpDateTime != null
-            ? Timestamp.fromDate(nextFollowUpDateTime!)
-            : null,
+        'followUpLeads': updatedList.map((e) => e.toMap()).toList(),
+        // 'callNote': noteController.text.trim(),
+        // 'nextFollowUp': nextFollowUpDateTime != null
+        //     ? Timestamp.fromDate(nextFollowUpDateTime!)
+        //     : null,
         'updatedAt': Timestamp.now(),
       };
 
@@ -834,6 +873,7 @@ class LeadDetailsController extends GetxController {
       }
     }
   }
+
   void copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
     Get.context?.showAppSnackBar(
@@ -842,6 +882,13 @@ class LeadDetailsController extends GetxController {
       textColor: colorWhite,
     );
   }
+
+  // Expand/Collapse method
+  void toggleDetails() {
+    isDetailsExpanded = !isDetailsExpanded;
+    update();
+  }
+
   @override
   void onClose() {
     noteController.dispose();

@@ -302,8 +302,8 @@ class HomeController extends GetxController {
         hasFollowUpToday = true;
       }
     }
-    if (lead.nextFollowUp != null) {
-      DateTime next = lead.nextFollowUp!.toDate();
+    if ((lead.followUpLeads?.isNotEmpty??false) &&lead.followUpLeads?.last.nextFollowUp != null) {
+      DateTime next = lead.followUpLeads!.last.nextFollowUp!.toDate();
       if (next.isAfter(todayStart) && next.isBefore(todayEnd)) {
         hasFollowUpToday = true;
       }

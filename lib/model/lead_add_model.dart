@@ -26,10 +26,13 @@ class Lead {
   Timestamp updatedAt;
   String stage;
   String callStatus;
-  String? callNote;
+
+  // String? callNote;
   Timestamp? initialFollowUp;
-  Timestamp? nextFollowUp;
+
+  // Timestamp? nextFollowUp;
   String? eventId;
+  List<FollowUpLead>? followUpLeads;
 
   Lead({
     required this.leadId,
@@ -57,10 +60,11 @@ class Lead {
     required this.updatedAt,
     this.stage = 'notContacted',
     this.callStatus = 'notContacted',
-    this.callNote,
+    // this.callNote,
     this.initialFollowUp,
-    this.nextFollowUp,
+    // this.nextFollowUp,
     this.eventId,
+    this.followUpLeads,
   });
 
   factory Lead.fromMap(Map<String, dynamic> map) {
@@ -90,10 +94,17 @@ class Lead {
       updatedAt: map['updatedAt'] as Timestamp,
       stage: map['stage'] as String? ?? 'notContacted',
       callStatus: map['callStatus'] as String? ?? 'notContacted',
-      callNote: map['callNote'] as String?,
+      // callNote: map['callNote'] as String?,
       initialFollowUp: map['initialFollowUp'] as Timestamp?,
-      nextFollowUp: map['nextFollowUp'] as Timestamp?,
+      // nextFollowUp: map['nextFollowUp'] as Timestamp?,
       eventId: map['eventId'] ?? '',
+      followUpLeads: map['followUpLeads'] != null
+          ? List<FollowUpLead>.from(
+              (map['followUpLeads'] as List<dynamic>).map(
+                (e) => FollowUpLead.fromMap(e as Map<String, dynamic>),
+              ),
+            )
+          : [],
     );
   }
 
@@ -124,10 +135,30 @@ class Lead {
       'updatedAt': updatedAt,
       'stage': stage,
       'callStatus': callStatus,
-      'callNote': callNote,
+      // 'callNote': callNote,
       'initialFollowUp': initialFollowUp,
-      'nextFollowUp': nextFollowUp,
+      // 'nextFollowUp': nextFollowUp,
       'eventId': eventId,
+      'followUpLeads':
+          followUpLeads?.map((followUp) => followUp.toMap()).toList() ?? [],
     };
+  }
+}
+
+class FollowUpLead {
+  String? callNote;
+  Timestamp? nextFollowUp;
+
+  FollowUpLead({this.callNote, this.nextFollowUp});
+
+  factory FollowUpLead.fromMap(Map<String, dynamic> map) {
+    return FollowUpLead(
+      callNote: map['call_note'] as String?,
+      nextFollowUp: map['next_followup'] as Timestamp?,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {'call_note': callNote, 'next_followup': nextFollowUp};
   }
 }
