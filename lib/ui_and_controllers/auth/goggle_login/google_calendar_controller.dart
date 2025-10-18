@@ -20,7 +20,7 @@ class GoogleCalendarController extends GetxController {
     ],
   );
 
-  Future<void> autoLogin() async {
+  Future<bool> autoLogin() async {
     try {
       isLoading = true;
       update();
@@ -30,14 +30,24 @@ class GoogleCalendarController extends GetxController {
         final authHeaders = await account.authHeaders;
         calendarApi = CalendarApi(_GoogleAuthClient(authHeaders));
         log('🔑 Admin silently logged in: ${account.email}');
+        return true;
       } else {
+        // Get.offAllNamed(AppRoutes.adminLogin);
         log('⚠️ No previous login, user must login manually');
+        return false;
       }
     } catch (e) {
+      // Get.offAllNamed(AppRoutes.adminLogin);
+
       log('💥 Auto-login failed: $e');
+      return false;
+
     } finally {
       isLoading = false;
+
       update();
+      return false;
+
     }
   }
 

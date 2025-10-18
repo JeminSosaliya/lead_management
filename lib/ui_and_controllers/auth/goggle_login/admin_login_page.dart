@@ -14,7 +14,7 @@ class AdminLoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Admin Login")),
+      appBar: AppBar(title: const Text("Google Calender Login")),
       body: Center(
         child: GetBuilder<GoogleCalendarController>(
           builder: (_) {

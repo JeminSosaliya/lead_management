@@ -9,10 +9,14 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:lead_management/core/constant/app_assets.dart';
 import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/constant/list_const.dart';
+import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/core/utils/user_status_service.dart';
 import 'package:lead_management/routes/route_manager.dart';
 import 'package:lead_management/ui_and_controllers/main/profile/profile_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
+
+import '../../core/constant/app_color.dart';
+import '../auth/goggle_login/google_calendar_controller.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -23,14 +27,32 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   final ProfileController _profileController = Get.put(ProfileController());
+  final GoogleCalendarController controller = Get.put(GoogleCalendarController(), permanent: true);
+
   final User? initialUser = FirebaseAuth.instance.currentUser;
 
   @override
   void initState() {
+    checkLogin()  ;
     getAppData();
     super.initState();
   }
 
+  Future<void> checkLogin() async {
+    bool  autoLoginSuccess = await controller.autoLogin();
+    log("Auto-login success: $autoLoginSuccess");
+    if (!controller.isLoggedIn || !autoLoginSuccess) {
+      Get.offAllNamed(AppRoutes.adminLogin);
+    } else {
+      Get.offAllNamed(AppRoutes.home);
+      Get.context?.showAppSnackBar(
+        message: "Already signed in as ${controller.adminEmail}",
+        backgroundColor: colorGreen,
+        textColor: colorWhite,
+      );
+    }
+
+  }
   void getAppData() async {
     await _profileController.fetchEmployeeData();
 
@@ -46,7 +68,7 @@ class _SplashScreenState extends State<SplashScreen> {
       log("intro1");
       log("initialUser :: $initialUser");
       Get.offAllNamed(
-        initialUser != null ? AppRoutes.adminLogin : AppRoutes.login,
+        initialUser != null ? AppRoutes.home : AppRoutes.login,
       );
     });
   }
