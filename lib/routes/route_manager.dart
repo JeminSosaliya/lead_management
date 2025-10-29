@@ -31,14 +31,17 @@ class AppRoutes {
   static const String analytics = "/analytics";
   static const String analyticsListScreen = "/analyticsListScreen";
   static const String leadDetailsScreen = "/leadDetailsScreen";
-  static const String adminLogin = "/adminLogin";
+  static const String goggleLogin = "/adminLogin";
 
 
   static List<GetPage> pages = [
     GetPage(name: splash, page: () => SplashScreen()),
     GetPage(name: login, page: () => LoginScreen()),
     GetPage(name: home, page: () => HomeScreen()),
-    GetPage(name: adminLogin, page: () => AdminLoginPage()),
+    GetPage(name: goggleLogin, page: () => AdminLoginPage()),
+
+    // GetPage(name: ownerHomeScreen, page: () => OwnerHomeScreen()),
+    // GetPage(name: employeeHomeScreen, page: () => EmployeeHomeScreen()),
     GetPage(name: addLeadScreen, page: () => AddLeadScreen()),
     GetPage(name: addEmployee, page: () => const AddEmployeeScreen()),
     GetPage(name: addAdmin, page: () => const AddAdminScreen()),

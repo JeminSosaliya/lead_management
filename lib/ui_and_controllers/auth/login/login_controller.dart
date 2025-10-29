@@ -74,7 +74,7 @@ class LoginController extends GetxController {
         message: "Login successful!",
         backgroundColor: colorGreen,
       );
-      Get.offAllNamed(AppRoutes.adminLogin);
+      Get.offAllNamed(AppRoutes.goggleLogin);
     } on FirebaseAuthException catch (e) {
       print("Firebase Auth Error: ${e.code} - ${e.message}");
       String errorMessage = "Login failed. Please try again.";
