@@ -39,7 +39,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   /// Step 1 → Splash delay + check login state
   Future<void> _handleSplashFlow() async {
-    await Future.delayed(const Duration(seconds: 2)); // splash duration
+    await Future.delayed(const Duration(seconds: 2));
     await _checkLoginFlow();
   }
 

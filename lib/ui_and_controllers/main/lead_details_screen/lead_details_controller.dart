@@ -28,10 +28,10 @@ class LeadDetailsController extends GetxController {
   bool isEditMode = false;
   bool showEmployeeError = false;
   bool showSourceError = false;
-  
+
   // Expand/Collapse state management
   bool isDetailsExpanded = false;
-  
+
   final formKey = GlobalKey<FormState>();
   final editFormKey = GlobalKey<FormState>();
   final noteController = TextEditingController();
@@ -118,7 +118,12 @@ class LeadDetailsController extends GetxController {
         }),
         ...adminsSnap.docs.map((doc) {
           final data = doc.data() as Map<String, dynamic>;
-          return {'uid': doc.id, 'name': data['name'] ?? '', 'type': 'admin'};
+          return {
+            'uid': doc.id,
+            'name': data['name'] ?? '',
+            'type': 'admin',
+            'email': data['email'] ?? '',
+          };
         }),
       ];
 
@@ -152,7 +157,6 @@ class LeadDetailsController extends GetxController {
   void toggleEditMode() {
     isEditMode = !isEditMode;
     if (isEditMode) {
-      // Initialize controllers with current lead data
       nameController.text = lead?.clientName ?? '';
       phoneController.text = lead?.clientPhone ?? '';
       emailController.text = lead?.clientEmail ?? '';
@@ -188,6 +192,8 @@ class LeadDetailsController extends GetxController {
   }
 
   void setSelectedEmployee(String? value) {
+    log('Employee list: $employees');
+
     if (value != null && value.trim().isNotEmpty) {
       final employee = employees.firstWhere(
         (e) => e['name'] == value,
@@ -198,6 +204,12 @@ class LeadDetailsController extends GetxController {
       selectedEmployeeEmail = employee['email']?.toString() ?? '';
       selectedEmployeeName = value;
       selectedEmployeeType = employee['type']?.toString() ?? '';
+
+      log('✅ Selected Employee:');
+      log('   Name: $selectedEmployeeName');
+      log('   Email: $selectedEmployeeEmail');
+      log('   UID: $selectedEmployee');
+      log('   Type: $selectedEmployeeType');
 
       showEmployeeError = false;
     } else {
@@ -393,9 +405,11 @@ class LeadDetailsController extends GetxController {
             newEmployeeEmails: [selectedEmployeeEmail],
           );
 
-          if (updatedEventId != null && updatedEventId != updatedLead.eventId) {
+          if (updatedEventId != null) {
             updatedLead.eventId = updatedEventId;
-            log('✅ Event ID updated: $updatedEventId');
+            log(
+              '✅ Event ID updated: $updatedEventId oldEmployee $employeeOldEmail and newEmployee $selectedEmployeeEmail',
+            );
           }
         } catch (e) {
           log(

@@ -246,7 +246,7 @@ class GoogleCalendarController extends GetxController {
   }
 
   Future<String?> updateOrCreateEvent({
-    required String? eventId, // nullable, in case event does not exist
+    required String? eventId,
     required String title,
     required String description,
     required DateTime startTime,
@@ -262,6 +262,25 @@ class GoogleCalendarController extends GetxController {
         textColor: colorWhite,
       );
       return null;
+    }
+
+    // 🧩 Log input data
+    log("----------------------------------------------------");
+    log("🗓 updateOrCreateEvent CALLED");
+    log("📌 eventId: $eventId");
+    log("📌 title: $title");
+    log("📌 description: $description");
+    log("🕐 start: $startTime");
+    log("🕐 end: $endTime");
+
+    log("👥 Old Attendees (${oldEmployeeEmails.length}):");
+    for (final email in oldEmployeeEmails) {
+      log("   → $email");
+    }
+
+    log("👥 New Attendees (${newEmployeeEmails.length}):");
+    for (final email in newEmployeeEmails) {
+      log("   → $email");
     }
 
     Event event = Event(
@@ -280,16 +299,19 @@ class GoogleCalendarController extends GetxController {
       Event updatedEvent;
 
       if (eventId != null && eventId.isNotEmpty) {
+        log("🔁 Updating existing event: $eventId");
         try {
-          // Try to fetch the existing event
           final existingEvent = await calendarApi!.events.get('primary', eventId);
+          log("✅ Fetched existing event: ${existingEvent.id}");
 
-          // Update event details
           existingEvent.summary = title;
           existingEvent.description = description;
-          existingEvent.start = EventDateTime(dateTime: startTime, timeZone: 'Asia/Kolkata');
-          existingEvent.end = EventDateTime(dateTime: endTime, timeZone: 'Asia/Kolkata');
-          existingEvent.attendees = newEmployeeEmails.map((e) => EventAttendee(email: e)).toList();
+          existingEvent.start =
+              EventDateTime(dateTime: startTime, timeZone: 'Asia/Kolkata');
+          existingEvent.end =
+              EventDateTime(dateTime: endTime, timeZone: 'Asia/Kolkata');
+          existingEvent.attendees =
+              newEmployeeEmails.map((e) => EventAttendee(email: e)).toList();
           existingEvent.reminders = EventReminders(
             useDefault: false,
             overrides: [EventReminder(method: 'popup', minutes: 5)],
@@ -303,13 +325,14 @@ class GoogleCalendarController extends GetxController {
           );
 
           log('✅ Event updated successfully: ${updatedEvent.id}');
+          log("----------------------------------------------------");
           return updatedEvent.id;
         } catch (e) {
           if (e is DetailedApiRequestError && e.status == 404) {
-            log('⚠️ Event not found, will create a new one');
-            eventId = null; // Force creation below
+            log('⚠️ Event not found, switching to create new event');
+            eventId = null;
           } else if (e.toString().contains('401')) {
-            log("⚠️ Token expired, re-login needed");
+            log("⚠️ Token expired → re-login and retry");
             await handleGoogleReLogin();
             return await updateOrCreateEvent(
               eventId: eventId,
@@ -321,13 +344,21 @@ class GoogleCalendarController extends GetxController {
               newEmployeeEmails: newEmployeeEmails,
             );
           } else {
+            log("💥 Update event error: $e");
             rethrow;
           }
         }
       }
 
-      updatedEvent = await calendarApi!.events.insert(event, 'primary', sendUpdates: 'all');
+      log("➕ Creating new event...");
+      updatedEvent = await calendarApi!.events.insert(
+        event,
+        'primary',
+        sendUpdates: 'all',
+      );
+
       log('🆕 Event created successfully: ${updatedEvent.id}');
+      log("----------------------------------------------------");
       return updatedEvent.id;
     } catch (e) {
       log('💥 Failed to update/create event: $e');
@@ -336,6 +367,7 @@ class GoogleCalendarController extends GetxController {
         backgroundColor: colorRed,
         textColor: colorWhite,
       );
+      log("----------------------------------------------------");
       return null;
     }
   }
