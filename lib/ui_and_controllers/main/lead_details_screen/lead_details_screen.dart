@@ -794,7 +794,7 @@ class LeadDetailsScreen extends StatelessWidget {
                                       ),
                                     ),
                                 ],
-                              ),
+                            ),
                             ),
 
                             CustomCard(
@@ -818,6 +818,9 @@ class LeadDetailsScreen extends StatelessWidget {
                                 ],
                               ),
                             ),
+
+                          // Chat Section
+                          _ChatSection(controller: controller),
 
                             if (hasValue(lead.referralName) ||
                                 hasValue(lead.referralNumber))
@@ -1091,6 +1094,159 @@ class LeadDetailsScreen extends StatelessWidget {
             ),
           ),
           if (trailing != null) trailing,
+        ],
+      ),
+    );
+  }
+
+}
+
+class _ChatSection extends StatelessWidget {
+  final LeadDetailsController controller;
+  const _ChatSection({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final bool canChat = controller.canChat;
+    return CustomCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          WantText(
+            text: 'Chat',
+            fontSize: width * 0.041,
+            fontWeight: FontWeight.w600,
+            textColor: colorBlack,
+          ),
+          SizedBox(height: height * 0.008),
+          Container(
+            height: height * 0.35,
+            decoration: BoxDecoration(
+              color: colorWhite,
+              border: Border.all(color: colorGreyTextFieldBorder, width: 0.5),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: StreamBuilder(
+              stream: controller.messageStream(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: colorMainTheme),
+                  );
+                }
+                if (!snapshot.hasData) {
+                  return Center(
+                    child: WantText(
+                      text: 'No messages yet',
+                      fontSize: width * 0.031,
+                      fontWeight: FontWeight.w400,
+                      textColor: colorDarkGreyText,
+                    ),
+                  );
+                }
+                final docs = (snapshot.data as QuerySnapshot).docs;
+                return ListView.builder(
+                  controller: controller.chatScrollController,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: width * 0.02,
+                    vertical: height * 0.008,
+                  ),
+                  itemCount: docs.length,
+                  itemBuilder: (context, index) {
+                    final data = docs[index].data() as Map<String, dynamic>;
+                    final isMe = data['senderId'] == controller.currentUserId;
+                    final message = (data['text'] ?? '').toString();
+                    final sender = (data['senderName'] ?? '').toString();
+                    final ts = data['createdAt'];
+                    String timeText = '';
+                    try {
+                      if (ts is Timestamp) {
+                        timeText = DateFormat('hh:mm a').format(ts.toDate());
+                      }
+                    } catch (_) {}
+                    return Align(
+                      alignment:
+                          isMe ? Alignment.centerRight : Alignment.centerLeft,
+                      child: Container(
+                        margin: EdgeInsets.symmetric(vertical: height * 0.004),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: width * 0.03,
+                          vertical: height * 0.008,
+                        ),
+                        constraints: BoxConstraints(maxWidth: width * 0.7),
+                        decoration: BoxDecoration(
+                          color: isMe
+                              ? colorMainTheme.withValues(alpha: .12)
+                              : colorGreyTextFieldBorder.withOpacity(.5),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (!isMe)
+                              WantText(
+                                text: sender,
+                                fontSize: width * 0.03,
+                                fontWeight: FontWeight.w600,
+                                textColor: colorDarkGreyText,
+                              ),
+                            WantText(
+                              text: message,
+                              fontSize: width * 0.035,
+                              fontWeight: FontWeight.w400,
+                              textColor: colorBlack,
+                            ),
+                            if (timeText.isNotEmpty)
+                              Align(
+                                alignment: Alignment.bottomRight,
+                                child: Text(
+                                  timeText,
+                                  style: TextStyle(
+                                    fontSize: width * 0.027,
+                                    color: colorDarkGreyText,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          SizedBox(height: height * 0.008),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: controller.chatController,
+                  enabled: canChat,
+                  decoration: InputDecoration(
+                    hintText: canChat
+                        ? 'Type a message'
+                        : 'Chat not available for this user',
+                    isDense: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: width * 0.03,
+                      vertical: height * 0.014,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: width * 0.02),
+              IconButton(
+                onPressed: (!canChat || controller.isSendingMessage)
+                    ? null
+                    : controller.sendMessage,
+                icon: Icon(Icons.send, color: colorMainTheme),
+              ),
+            ],
+          ),
         ],
       ),
     );

@@ -28,9 +28,14 @@ class LeadDetailsController extends GetxController {
   bool isEditMode = false;
   bool showEmployeeError = false;
   bool showSourceError = false;
-
+  
   // Expand/Collapse state management
   bool isDetailsExpanded = false;
+
+  // Chat state
+  final TextEditingController chatController = TextEditingController();
+  final ScrollController chatScrollController = ScrollController();
+  bool isSendingMessage = false;
 
   final formKey = GlobalKey<FormState>();
   final editFormKey = GlobalKey<FormState>();
@@ -80,6 +85,13 @@ class LeadDetailsController extends GetxController {
   LeadDetailsController({required this.leadId});
 
   bool get isAdmin => ListConst.currentUserProfileData.type == 'admin';
+  String get currentUserId => ListConst.currentUserProfileData.uid?.toString() ?? '';
+  String get currentUserName => ListConst.currentUserProfileData.name?.toString() ?? '';
+
+  bool get canChat {
+    if (lead == null) return false;
+    return currentUserId == (lead!.addedBy) || currentUserId == (lead!.assignedTo);
+  }
 
   @override
   void onInit() {
@@ -157,6 +169,7 @@ class LeadDetailsController extends GetxController {
   void toggleEditMode() {
     isEditMode = !isEditMode;
     if (isEditMode) {
+      // Initialize controllers with current lead data
       nameController.text = lead?.clientName ?? '';
       phoneController.text = lead?.clientPhone ?? '';
       emailController.text = lead?.clientEmail ?? '';
@@ -533,6 +546,54 @@ class LeadDetailsController extends GetxController {
     }
     isLoading = false;
     update();
+  }
+
+  // ===== Chat APIs =====
+  Stream<QuerySnapshot<Map<String, dynamic>>> messageStream() {
+    return fireStore
+        .collection('leads')
+        .doc(leadId)
+        .collection('messages')
+        .orderBy('createdAt', descending: false)
+        .snapshots();
+  }
+
+  Future<void> sendMessage() async {
+    final text = chatController.text.trim();
+    if (text.isEmpty || !canChat) return;
+    isSendingMessage = true;
+    update();
+    try {
+      await fireStore
+          .collection('leads')
+          .doc(leadId)
+          .collection('messages')
+          .add({
+        'text': text,
+        'senderId': currentUserId,
+        'senderName': currentUserName,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      chatController.clear();
+      await Future.delayed(const Duration(milliseconds: 50));
+      if (chatScrollController.hasClients) {
+        chatScrollController.animateTo(
+          chatScrollController.position.maxScrollExtent + 60,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      }
+    } catch (e) {
+      log('Error sending message: $e');
+      Get.context?.showAppSnackBar(
+        message: 'Failed to send message',
+        backgroundColor: colorRedCalendar,
+        textColor: colorWhite,
+      );
+    } finally {
+      isSendingMessage = false;
+      update();
+    }
   }
 
   Future<void> openDirectionsToLead(double destLat, double destLng) async {
@@ -916,6 +977,8 @@ class LeadDetailsController extends GetxController {
     referralNameController.dispose();
     referralNumberController.dispose();
     initialFollowUpController.dispose();
+    chatController.dispose();
+    chatScrollController.dispose();
     super.onClose();
   }
 }
