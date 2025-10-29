@@ -415,11 +415,11 @@ class LeadDetailsController extends GetxController {
           log(
             "⚠️ Google Calendar update failed: $e, email: $selectedEmployeeEmail",
           );
-          Get.context?.showAppSnackBar(
-            message: 'Failed to update Google Calendar event',
-            backgroundColor: colorRedCalendar,
-            textColor: colorWhite,
-          );
+          // Get.context?.showAppSnackBar(
+          //   message: 'Failed to update Google Calendar event',
+          //   backgroundColor: colorRedCalendar,
+          //   textColor: colorWhite,
+          // );
         }
       }
 
