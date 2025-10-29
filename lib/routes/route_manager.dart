@@ -39,9 +39,6 @@ class AppRoutes {
     GetPage(name: login, page: () => LoginScreen()),
     GetPage(name: home, page: () => HomeScreen()),
     GetPage(name: adminLogin, page: () => AdminLoginPage()),
-
-    // GetPage(name: ownerHomeScreen, page: () => OwnerHomeScreen()),
-    // GetPage(name: employeeHomeScreen, page: () => EmployeeHomeScreen()),
     GetPage(name: addLeadScreen, page: () => AddLeadScreen()),
     GetPage(name: addEmployee, page: () => const AddEmployeeScreen()),
     GetPage(name: addAdmin, page: () => const AddAdminScreen()),
