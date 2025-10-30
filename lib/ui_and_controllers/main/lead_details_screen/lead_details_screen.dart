@@ -8,6 +8,7 @@ import 'package:lead_management/core/constant/app_assets.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
  import 'package:lead_management/model/lead_add_model.dart';
+import 'package:lead_management/ui_and_controllers/main/lead_details_screen/chat_section.dart';
 import 'package:lead_management/ui_and_controllers/main/lead_details_screen/lead_details_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
@@ -402,7 +403,6 @@ class LeadDetailsScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 SizedBox(height: height * 0.01),
                 if(lead.initialFollowUp != null)
                   Container(
@@ -484,20 +484,6 @@ class LeadDetailsScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // if (lead.nextFollowUp != null) ...[
-                            //   WantText(
-                            //     text: "Next Follow-up",
-                            //     fontSize: width * 0.035,
-                            //     fontWeight: FontWeight.w500,
-                            //     textColor: colorBlack,
-                            //   ),
-                            //   WantText(
-                            //     text: formatTimestamp(lead.nextFollowUp),
-                            //     fontSize: width * 0.031,
-                            //     fontWeight: FontWeight.w500,
-                            //     textColor: colorGreenOne,
-                            //   ),
-                            // ],
                             WantText(
                               text: "Next Follow-up",
                               fontSize: width * 0.035,
@@ -530,136 +516,6 @@ class LeadDetailsScreen extends StatelessWidget {
                       );
                     },
                   ),
-                // if (hasValue(lead.callNote) ||
-                //     lead.initialFollowUp != null ||
-                //     lead.nextFollowUp != null) ...[
-                //   // SizedBox(height: height * 0.01),
-                //   Container(
-                //     width: double.infinity,
-                //     margin: EdgeInsets.only(
-                //       top: height * 0.016,
-                //       left: width * 0.041,
-                //       right: width * 0.041,
-                //     ),
-                //     padding: EdgeInsets.all(width * 0.03),
-                //     decoration: BoxDecoration(
-                //       color: colorWhite,
-                //       borderRadius: BorderRadius.circular(12),
-                //       border: Border.all(
-                //         color: colorMainTheme.withOpacity(0.3),
-                //         width: 1.5,
-                //       ),
-                //       boxShadow: [
-                //         BoxShadow(
-                //           color: colorBoxShadow,
-                //           blurRadius: 6,
-                //           offset: Offset(4, 3),
-                //         ),
-                //       ],
-                //     ),
-                //     child: Column(
-                //       crossAxisAlignment: CrossAxisAlignment.start,
-                //       children: [
-                //         if (lead.initialFollowUp != null) ...[
-                //           WantText(
-                //             text: "Initial Follow-up",
-                //             fontSize: width * 0.035,
-                //             fontWeight: FontWeight.w500,
-                //             textColor: colorBlack,
-                //           ),
-                //           WantText(
-                //             text: formatTimestamp(lead.initialFollowUp),
-                //             fontSize: width * 0.031,
-                //             fontWeight: FontWeight.w500,
-                //             textColor: colorGreenOne,
-                //           ),
-                //         ],
-                //       ],
-                //     ),
-                //   ),
-                //   if (lead.followUpLeads?.isNotEmpty ?? false)
-                //     ListView.separated(
-                //       itemCount: lead.followUpLeads!.length,
-                //       shrinkWrap: true,
-                //       physics: NeverScrollableScrollPhysics(),
-                //       separatorBuilder: (context, index) {
-                //         return SizedBox(height: height * 0.016);
-                //       },
-                //       itemBuilder: (context, index) {
-                //         FollowUpLead followUpLead = lead.followUpLeads![index];
-                //         return Container(
-                //           width: double.infinity,
-                //           margin: EdgeInsets.only(
-                //             top: height * 0.016,
-                //             left: width * 0.041,
-                //             right: width * 0.041,
-                //           ),
-                //           padding: EdgeInsets.all(width * 0.03),
-                //           decoration: BoxDecoration(
-                //             color: colorWhite,
-                //             borderRadius: BorderRadius.circular(12),
-                //             border: Border.all(
-                //               color: colorMainTheme.withOpacity(0.3),
-                //               width: 1.5,
-                //             ),
-                //             boxShadow: [
-                //               BoxShadow(
-                //                 color: colorBoxShadow,
-                //                 blurRadius: 6,
-                //                 offset: Offset(4, 3),
-                //               ),
-                //             ],
-                //           ),
-                //           child: Column(
-                //             crossAxisAlignment: CrossAxisAlignment.start,
-                //             children: [
-                //               // if (lead.nextFollowUp != null) ...[
-                //               //   WantText(
-                //               //     text: "Next Follow-up",
-                //               //     fontSize: width * 0.035,
-                //               //     fontWeight: FontWeight.w500,
-                //               //     textColor: colorBlack,
-                //               //   ),
-                //               //   WantText(
-                //               //     text: formatTimestamp(lead.nextFollowUp),
-                //               //     fontSize: width * 0.031,
-                //               //     fontWeight: FontWeight.w500,
-                //               //     textColor: colorGreenOne,
-                //               //   ),
-                //               // ],
-                //               WantText(
-                //                 text: "Next Follow-up",
-                //                 fontSize: width * 0.035,
-                //                 fontWeight: FontWeight.w500,
-                //                 textColor: colorBlack,
-                //               ),
-                //               WantText(
-                //                 text: formatTimestamp(
-                //                   followUpLead.nextFollowUp,
-                //                 ),
-                //                 fontSize: width * 0.031,
-                //                 fontWeight: FontWeight.w500,
-                //                 textColor: colorGreenOne,
-                //               ),
-                //               SizedBox(height: height * 0.01),
-                //               WantText(
-                //                 text: "Reason",
-                //                 fontSize: width * 0.041,
-                //                 fontWeight: FontWeight.w500,
-                //                 textColor: colorBlack,
-                //               ),
-                //               WantText(
-                //                 text: followUpLead.callNote ?? "N/A",
-                //                 fontSize: width * 0.035,
-                //                 fontWeight: FontWeight.w500,
-                //                 textColor: colorRed,
-                //               ),
-                //             ],
-                //           ),
-                //         );
-                //       },
-                //     ),
-                // ],
                 AnimatedSize(
                   duration: Duration(milliseconds: 300),
                   child: controller.isDetailsExpanded
@@ -819,8 +675,7 @@ class LeadDetailsScreen extends StatelessWidget {
                               ),
                             ),
 
-                          // Chat Section
-                          _ChatSection(controller: controller),
+
 
                             if (hasValue(lead.referralName) ||
                                 hasValue(lead.referralNumber))
@@ -872,7 +727,7 @@ class LeadDetailsScreen extends StatelessWidget {
                         )
                       : SizedBox.shrink(),
                 ),
-
+                ChatSection(controller: controller),
                 SizedBox(height: height * 0.01),
 
                 if (isEditable)
@@ -1101,154 +956,4 @@ class LeadDetailsScreen extends StatelessWidget {
 
 }
 
-class _ChatSection extends StatelessWidget {
-  final LeadDetailsController controller;
-  const _ChatSection({required this.controller});
 
-  @override
-  Widget build(BuildContext context) {
-    final bool canChat = controller.canChat;
-    return CustomCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          WantText(
-            text: 'Chat',
-            fontSize: width * 0.041,
-            fontWeight: FontWeight.w600,
-            textColor: colorBlack,
-          ),
-          SizedBox(height: height * 0.008),
-          Container(
-            height: height * 0.35,
-            decoration: BoxDecoration(
-              color: colorWhite,
-              border: Border.all(color: colorGreyTextFieldBorder, width: 0.5),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: StreamBuilder(
-              stream: controller.messageStream(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(color: colorMainTheme),
-                  );
-                }
-                if (!snapshot.hasData) {
-                  return Center(
-                    child: WantText(
-                      text: 'No messages yet',
-                      fontSize: width * 0.031,
-                      fontWeight: FontWeight.w400,
-                      textColor: colorDarkGreyText,
-                    ),
-                  );
-                }
-                final docs = (snapshot.data as QuerySnapshot).docs;
-                return ListView.builder(
-                  controller: controller.chatScrollController,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: width * 0.02,
-                    vertical: height * 0.008,
-                  ),
-                  itemCount: docs.length,
-                  itemBuilder: (context, index) {
-                    final data = docs[index].data() as Map<String, dynamic>;
-                    final isMe = data['senderId'] == controller.currentUserId;
-                    final message = (data['text'] ?? '').toString();
-                    final sender = (data['senderName'] ?? '').toString();
-                    final ts = data['createdAt'];
-                    String timeText = '';
-                    try {
-                      if (ts is Timestamp) {
-                        timeText = DateFormat('hh:mm a').format(ts.toDate());
-                      }
-                    } catch (_) {}
-                    return Align(
-                      alignment:
-                          isMe ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Container(
-                        margin: EdgeInsets.symmetric(vertical: height * 0.004),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: width * 0.03,
-                          vertical: height * 0.008,
-                        ),
-                        constraints: BoxConstraints(maxWidth: width * 0.7),
-                        decoration: BoxDecoration(
-                          color: isMe
-                              ? colorMainTheme.withValues(alpha: .12)
-                              : colorGreyTextFieldBorder.withOpacity(.5),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (!isMe)
-                              WantText(
-                                text: sender,
-                                fontSize: width * 0.03,
-                                fontWeight: FontWeight.w600,
-                                textColor: colorDarkGreyText,
-                              ),
-                            WantText(
-                              text: message,
-                              fontSize: width * 0.035,
-                              fontWeight: FontWeight.w400,
-                              textColor: colorBlack,
-                            ),
-                            if (timeText.isNotEmpty)
-                              Align(
-                                alignment: Alignment.bottomRight,
-                                child: Text(
-                                  timeText,
-                                  style: TextStyle(
-                                    fontSize: width * 0.027,
-                                    color: colorDarkGreyText,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-          SizedBox(height: height * 0.008),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: controller.chatController,
-                  enabled: canChat,
-                  decoration: InputDecoration(
-                    hintText: canChat
-                        ? 'Type a message'
-                        : 'Chat not available for this user',
-                    isDense: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: width * 0.03,
-                      vertical: height * 0.014,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: width * 0.02),
-              IconButton(
-                onPressed: (!canChat || controller.isSendingMessage)
-                    ? null
-                    : controller.sendMessage,
-                icon: Icon(Icons.send, color: colorMainTheme),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
