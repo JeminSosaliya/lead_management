@@ -28,6 +28,7 @@ class CustomTextFormField extends StatelessWidget {
   final TextCapitalization textCapitalization;
   final List<TextInputFormatter>? inputFormatters;
   final String? Function(String?)? validator;
+  final bool? enabled;
 
   const CustomTextFormField({
     super.key,
@@ -53,6 +54,7 @@ class CustomTextFormField extends StatelessWidget {
     this.textCapitalization = TextCapitalization.none,
     this.inputFormatters,
     this.validator,
+    this.enabled,
   });
 
   @override
@@ -72,6 +74,7 @@ class CustomTextFormField extends StatelessWidget {
         SizedBox(
           width: width,
           child: TextFormField(
+            enabled: enabled,
             maxLines: maxLines,
             controller: controller,
             obscureText: obscureText,
