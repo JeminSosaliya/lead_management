@@ -92,17 +92,12 @@ class LeadDetailsController extends GetxController {
   LeadDetailsController({required this.leadId});
 
   bool get isAdmin => ListConst.currentUserProfileData.type == 'admin';
-
-  String get currentUserId =>
-      ListConst.currentUserProfileData.uid?.toString() ?? '';
-
-  String get currentUserName =>
-      ListConst.currentUserProfileData.name?.toString() ?? '';
+  String get currentUserId => ListConst.currentUserProfileData.uid?.toString() ?? '';
+  String get currentUserName => ListConst.currentUserProfileData.name?.toString() ?? '';
 
   bool get canChat {
     if (lead == null) return false;
-    return currentUserId == (lead!.addedBy) ||
-        currentUserId == (lead!.assignedTo);
+    return currentUserId == (lead!.addedBy) || currentUserId == (lead!.assignedTo);
   }
 
   @override
@@ -112,6 +107,8 @@ class LeadDetailsController extends GetxController {
     fetchEmployees();
     fetchTechnicianTypes();
   }
+
+
 
   Future<void> fetchEmployees() async {
     try {
@@ -207,7 +204,7 @@ class LeadDetailsController extends GetxController {
       selectedEmployee = lead?.assignedTo;
       selectedEmployeeName = lead?.assignedToName;
       final employee = employees.firstWhere(
-        (e) => e['name'] == selectedEmployeeName,
+            (e) => e['name'] == selectedEmployeeName,
         orElse: () => {},
       );
       employeeOldEmail = employee['email']?.toString() ?? '';
@@ -221,7 +218,7 @@ class LeadDetailsController extends GetxController {
 
     if (value != null && value.trim().isNotEmpty) {
       final employee = employees.firstWhere(
-        (e) => e['name'] == value,
+            (e) => e['name'] == value,
         orElse: () => {},
       );
 
@@ -290,7 +287,7 @@ class LeadDetailsController extends GetxController {
     }
 
     final result = await Get.to(
-      () => LocationPickerScreen(
+          () => LocationPickerScreen(
         initialLatitude: selectedLatitude,
         initialLongitude: selectedLongitude,
       ),
@@ -300,7 +297,7 @@ class LeadDetailsController extends GetxController {
       selectedLatitude = result['latitude'];
       selectedLongitude = result['longitude'];
       locationAddress =
-          'Lat: ${selectedLatitude!.toStringAsFixed(6)}, Lng: ${selectedLongitude!.toStringAsFixed(6)}';
+      'Lat: ${selectedLatitude!.toStringAsFixed(6)}, Lng: ${selectedLongitude!.toStringAsFixed(6)}';
       update();
     }
   }
@@ -318,8 +315,8 @@ class LeadDetailsController extends GetxController {
     if (date != null) {
       bool isToday =
           date.year == now.year &&
-          date.month == now.month &&
-          date.day == now.day;
+              date.month == now.month &&
+              date.day == now.day;
 
       TimeOfDay initialTime = isToday
           ? TimeOfDay.fromDateTime(now.add(Duration(minutes: 1)))
@@ -424,7 +421,7 @@ class LeadDetailsController extends GetxController {
             description: updatedLead.description ?? lead!.description ?? '',
             startTime: initialFollowUp ?? DateTime.now(),
             endTime:
-                initialFollowUp?.add(const Duration(minutes: 5)) ??
+            initialFollowUp?.add(const Duration(minutes: 5)) ??
                 DateTime.now().add(const Duration(days: 1)),
             oldEmployeeEmails: [employeeOldEmail],
             newEmployeeEmails: [selectedEmployeeEmail],
@@ -569,7 +566,6 @@ class LeadDetailsController extends GetxController {
         .orderBy('createdAt', descending: false)
         .snapshots();
   }
-
   Future<void> sendMessage() async {
     final text = chatController.text.trim();
     if (text.isEmpty || !canChat) return;
@@ -581,11 +577,11 @@ class LeadDetailsController extends GetxController {
           .doc(leadId)
           .collection('messages')
           .add({
-            'text': text,
-            'senderId': currentUserId,
-            'senderName': currentUserName,
-            'createdAt': FieldValue.serverTimestamp(),
-          });
+        'text': text,
+        'senderId': currentUserId,
+        'senderName': currentUserName,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
       chatController.clear();
 
       // Notify both participants (addedBy and assignedTo), excluding sender
@@ -611,7 +607,6 @@ class LeadDetailsController extends GetxController {
       update();
     }
   }
-
   // Future<void> sendMessage() async {
   //   final text = chatController.text.trim();
   //   if (text.isEmpty || !canChat) return;
@@ -873,8 +868,8 @@ class LeadDetailsController extends GetxController {
     if (date != null) {
       bool isToday =
           date.year == now.year &&
-          date.month == now.month &&
-          date.day == now.day;
+              date.month == now.month &&
+              date.day == now.day;
 
       TimeOfDay initialTime = isToday
           ? TimeOfDay.fromDateTime(now.add(Duration(minutes: 1)))
@@ -1036,12 +1031,9 @@ class LeadDetailsController extends GetxController {
     chatScrollController.dispose();
     super.onClose();
   }
-
   Future<AccessCredentials> _getAccessToken() async {
     final serviceAccountPath = dotenv.env['PATH_TO_SECRET'];
-    String serviceAccountJson = await rootBundle.loadString(
-      serviceAccountPath!,
-    );
+    String serviceAccountJson = await rootBundle.loadString(serviceAccountPath!);
     final serviceAccount = ServiceAccountCredentials.fromJson(
       jsonDecode(serviceAccountJson),
     );
@@ -1049,7 +1041,6 @@ class LeadDetailsController extends GetxController {
     final client = await clientViaServiceAccount(serviceAccount, scopes);
     return client.credentials;
   }
-
   Future<bool> _sendPushNotification({
     required String deviceToken,
     required String title,
@@ -1072,7 +1063,10 @@ class LeadDetailsController extends GetxController {
       'message': {
         'token': deviceToken,
         'notification': {'title': title, 'body': body},
-        'data': {'type': 'LEAD_MESSAGE', 'leadId': leadId},
+        'data': {
+          'type': 'LEAD_MESSAGE',
+          'leadId': leadId,
+        },
         'android': {
           'priority': 'HIGH',
           'collapse_key': collapseId,
@@ -1089,11 +1083,11 @@ class LeadDetailsController extends GetxController {
             'aps': {
               'alert': {'title': title, 'body': body},
               'sound': 'default',
-              'category': 'FLUTTER_NOTIFICATION_CLICK',
-            },
-          },
-        },
-      },
+              'category': 'FLUTTER_NOTIFICATION_CLICK'
+            }
+          }
+        }
+      }
     };
 
     final response = await http.post(
@@ -1108,6 +1102,44 @@ class LeadDetailsController extends GetxController {
     return response.statusCode == 200;
   }
 
+
+  // Future<bool> _sendPushNotification({
+  //   required String deviceToken,
+  //   required String title,
+  //   required String body,
+  // }) async {
+  //   if (deviceToken.isEmpty) return false;
+  //   final credentials = await _getAccessToken();
+  //   final accessToken = credentials.accessToken.data;
+  //
+  //   final serviceAccountPath = dotenv.env['PATH_TO_SECRET'];
+  //   final serviceAccountJson = await rootBundle.loadString(serviceAccountPath!);
+  //   final projectId = jsonDecode(serviceAccountJson)['project_id'];
+  //
+  //   final url = Uri.parse(
+  //     'https://fcm.googleapis.com/v1/projects/$projectId/messages:send',
+  //   );
+  //
+  //   final data = {
+  //     'message': {
+  //       'token': deviceToken,
+  //       'notification': {'title': title, 'body': body},
+  //       // 'data': {'type': 'lead_chat', 'leadId': leadId}, // optional deep-link data
+  //     },
+  //   };
+  //
+  //   final response = await http.post(
+  //     url,
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       'Authorization': 'Bearer $accessToken',
+  //     },
+  //     body: jsonEncode(data),
+  //   );
+  //
+  //   return response.statusCode == 200;
+  // }
+
   Future<void> _notifyChatParticipants(String messageText) async {
     try {
       if (lead == null) return;
@@ -1117,9 +1149,7 @@ class LeadDetailsController extends GetxController {
       final String assignedToId = lead!.assignedTo;
 
       final Set<String> recipients = {addedById, assignedToId};
-      recipients.removeWhere(
-        (id) => id == currentUserId,
-      ); // don't notify sender
+      recipients.removeWhere((id) => id == currentUserId); // don't notify sender
 
       for (final userId in recipients) {
         final doc = await fireStore.collection('users').doc(userId).get();

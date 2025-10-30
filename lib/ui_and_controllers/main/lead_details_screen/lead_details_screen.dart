@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'package:lead_management/core/constant/app_assets.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
- import 'package:lead_management/model/lead_add_model.dart';
+import 'package:lead_management/model/lead_add_model.dart';
 import 'package:lead_management/ui_and_controllers/main/lead_details_screen/lead_details_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_appbar.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
@@ -230,7 +230,7 @@ class LeadDetailsScreen extends StatelessWidget {
                           .map((e) => e['name'] as String)
                           .toList(),
                       hintText:
-                          controller.selectedEmployeeName ?? 'Select User',
+                      controller.selectedEmployeeName ?? 'Select User',
                       iconData1: Icons.arrow_drop_down,
                       iconData2: Icons.arrow_drop_up,
                       onChanged: (value) {
@@ -251,7 +251,7 @@ class LeadDetailsScreen extends StatelessWidget {
                       title: 'Select Technician (Optional)',
                       items: controller.technicianTypes,
                       hintText:
-                          controller.selectedTechnician ?? 'Select Technician',
+                      controller.selectedTechnician ?? 'Select Technician',
                       iconData1: Icons.arrow_drop_down,
                       iconData2: Icons.arrow_drop_up,
                       onChanged: (value) {
@@ -664,212 +664,212 @@ class LeadDetailsScreen extends StatelessWidget {
                   duration: Duration(milliseconds: 300),
                   child: controller.isDetailsExpanded
                       ? Column(
+                    children: [
+                      CustomCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            CustomCard(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            WantText(
+                              text: "Basic Information",
+                              fontSize: width * 0.045,
+                              fontWeight: FontWeight.w500,
+                              textColor: colorBlack,
+                            ),
+                            SizedBox(height: height * 0.01),
+
+                            if (hasValue(lead.companyName))
+                              _infoCard(title: "Company", value: lead.companyName!),
+
+                            _infoCard(title: "Source", value: lead.source ?? 'N/A'),
+                            if (hasValue(lead.description))
+                              _infoCard(
+                                title: "Description/Notes",
+                                value: lead.description!,
+                              ),
+
+                            if (hasValue(lead.address))
+                              _infoCard(title: "Address", value: lead.address!),
+
+                            _infoCard(
+                              title: "Client Contact Number",
+                              value: lead.clientPhone,
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  WantText(
-                                    text: "Basic Information",
-                                    fontSize: width * 0.045,
-                                    fontWeight: FontWeight.w500,
-                                    textColor: colorBlack,
-                                  ),
-                                  SizedBox(height: height * 0.01),
-
-                                  if (hasValue(lead.companyName))
-                                    _infoCard(title: "Company", value: lead.companyName!),
-
-                                  _infoCard(title: "Source", value: lead.source ?? 'N/A'),
-                                  if (hasValue(lead.description))
-                                    _infoCard(
-                                      title: "Description/Notes",
-                                      value: lead.description!,
+                                  if (controller.isAdmin) ...[
+                                    GestureDetector(
+                                      onTap: () {
+                                        controller.copyToClipboard(lead.clientPhone);
+                                      },
+                                      child: Icon(
+                                        Icons.copy,
+                                        color: colorMainTheme,
+                                        size: 15,
+                                      ),
                                     ),
-
-                                  if (hasValue(lead.address))
-                                    _infoCard(title: "Address", value: lead.address!),
-
-                                  _infoCard(
-                                    title: "Client Contact Number",
-                                    value: lead.clientPhone,
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        if (controller.isAdmin) ...[
-                                          GestureDetector(
-                                            onTap: () {
-                                              controller.copyToClipboard(lead.clientPhone);
-                                            },
+                                    SizedBox(width: 8),
+                                  ],
+                                  GestureDetector(
+                                    onTap: () {
+                                      log('tap on whatsapp');
+                                      controller.openWhatsApp(lead.clientPhone);
+                                    },
+                                    child: Image.asset(
+                                      AppAssets.whatsapp,
+                                      height: 15,
+                                      width: 15,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (lead.latitude != null && lead.longitude != null)
+                              GestureDetector(
+                                onTap: () => controller.openDirectionsToLead(
+                                  lead.latitude!,
+                                  lead.longitude!,
+                                ),
+                                child: Container(
+                                  margin: EdgeInsets.only(top: height * 0.016),
+                                  padding: EdgeInsets.all(width * 0.03),
+                                  decoration: BoxDecoration(
+                                    color: colorWhite,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: colorMainTheme.withOpacity(0.3),
+                                      width: .5,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: EdgeInsets.all(width * 0.015),
+                                            decoration: BoxDecoration(
+                                              color: colorMainTheme.withValues(
+                                                alpha: .1,
+                                              ),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
                                             child: Icon(
-                                              Icons.copy,
+                                              Icons.location_on,
                                               color: colorMainTheme,
-                                              size: 15,
+                                              size: width * 0.05,
                                             ),
                                           ),
-                                          SizedBox(width: 8),
-                                        ],
-                                        GestureDetector(
-                                          onTap: () {
-                                            log('tap on whatsapp');
-                                            controller.openWhatsApp(lead.clientPhone);
-                                          },
-                                          child: Image.asset(
-                                            AppAssets.whatsapp,
-                                            height: 15,
-                                            width: 15,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  if (lead.latitude != null && lead.longitude != null)
-                                    GestureDetector(
-                                      onTap: () => controller.openDirectionsToLead(
-                                        lead.latitude!,
-                                        lead.longitude!,
-                                      ),
-                                      child: Container(
-                                        margin: EdgeInsets.only(top: height * 0.016),
-                                        padding: EdgeInsets.all(width * 0.03),
-                                        decoration: BoxDecoration(
-                                          color: colorWhite,
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(
-                                            color: colorMainTheme.withOpacity(0.3),
-                                            width: .5,
-                                          ),
-                                        ),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
+                                          SizedBox(width: width * 0.03),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                               children: [
-                                                Container(
-                                                  padding: EdgeInsets.all(width * 0.015),
-                                                  decoration: BoxDecoration(
-                                                    color: colorMainTheme.withValues(
-                                                      alpha: .1,
-                                                    ),
-                                                    borderRadius: BorderRadius.circular(8),
-                                                  ),
-                                                  child: Icon(
-                                                    Icons.location_on,
-                                                    color: colorMainTheme,
-                                                    size: width * 0.05,
-                                                  ),
+                                                WantText(
+                                                  text: 'Location',
+                                                  fontSize: width * 0.035,
+                                                  fontWeight: FontWeight.w600,
+                                                  textColor: colorBlack,
                                                 ),
-                                                SizedBox(width: width * 0.03),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment.start,
-                                                    children: [
-                                                      WantText(
-                                                        text: 'Location',
-                                                        fontSize: width * 0.035,
-                                                        fontWeight: FontWeight.w600,
-                                                        textColor: colorBlack,
-                                                      ),
-                                                      SizedBox(height: 4),
-                                                      WantText(
-                                                        text:
-                                                            'Lat: ${lead.latitude!.toStringAsFixed(6)}, Lng: ${lead.longitude!.toStringAsFixed(6)}',
-                                                        fontSize: width * 0.03,
-                                                        fontWeight: FontWeight.w400,
-                                                        textColor: colorDarkGreyText,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Icon(
-                                                  Icons.directions,
-                                                  color: colorMainTheme,
-                                                  size: 18,
+                                                SizedBox(height: 4),
+                                                WantText(
+                                                  text:
+                                                  'Lat: ${lead.latitude!.toStringAsFixed(6)}, Lng: ${lead.longitude!.toStringAsFixed(6)}',
+                                                  fontSize: width * 0.03,
+                                                  fontWeight: FontWeight.w400,
+                                                  textColor: colorDarkGreyText,
                                                 ),
                                               ],
                                             ),
-                                          ],
-                                        ),
+                                          ),
+                                          Icon(
+                                            Icons.directions,
+                                            color: colorMainTheme,
+                                            size: 18,
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                ],
-                            ),
-                            ),
-
-                            CustomCard(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  WantText(
-                                    text: 'Assignment Information',
-                                    fontSize: width * 0.041,
-                                    fontWeight: FontWeight.w600,
-                                    textColor: colorBlack,
+                                    ],
                                   ),
-                                  SizedBox(height: height * 0.01),
-                                  _infoCard(title: "Added By", value: lead.addedByName),
-                                  _infoCard(
-                                    title: "Assigned To",
-                                    value: lead.assignedToName,
-                                  ),
-                                  if (hasValue(lead.technician))
-                                    _infoCard(title: "Technician", value: lead.technician!),
-                                ],
-                              ),
-                            ),
-
-                          // Chat Section
-                          _ChatSection(controller: controller),
-
-                            if (hasValue(lead.referralName) ||
-                                hasValue(lead.referralNumber))
-                              CustomCard(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    WantText(
-                                      text: 'Referral Information',
-                                      fontSize: width * 0.041,
-                                      fontWeight: FontWeight.w600,
-                                      textColor: colorBlack,
-                                    ),
-                                    SizedBox(height: height * 0.01),
-                                    if (hasValue(lead.referralName))
-                                      _infoCard(
-                                        title: "Referral Name",
-                                        value: lead.referralName!,
-                                      ),
-                                    if (hasValue(lead.referralNumber))
-                                      _infoCard(
-                                        title: "Referral Number",
-                                        value: lead.referralNumber!,
-                                        trailing: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            if (controller.isAdmin) ...[
-                                              GestureDetector(
-                                                onTap: () {
-                                                  controller.copyToClipboard(
-                                                    lead.referralNumber!,
-                                                  );
-                                                },
-                                                child: Icon(
-                                                  Icons.copy,
-                                                  color: colorMainTheme,
-                                                  size: 15,
-                                                ),
-                                              ),
-                                              SizedBox(width: width * 0.005),
-                                            ],
-                                          ],
-                                        ),
-                                      ),
-                                  ],
                                 ),
                               ),
                           ],
-                        )
+                        ),
+                      ),
+
+                      CustomCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            WantText(
+                              text: 'Assignment Information',
+                              fontSize: width * 0.041,
+                              fontWeight: FontWeight.w600,
+                              textColor: colorBlack,
+                            ),
+                            SizedBox(height: height * 0.01),
+                            _infoCard(title: "Added By", value: lead.addedByName),
+                            _infoCard(
+                              title: "Assigned To",
+                              value: lead.assignedToName,
+                            ),
+                            if (hasValue(lead.technician))
+                              _infoCard(title: "Technician", value: lead.technician!),
+                          ],
+                        ),
+                      ),
+
+                      // Chat Section
+                      _ChatSection(controller: controller),
+
+                      if (hasValue(lead.referralName) ||
+                          hasValue(lead.referralNumber))
+                        CustomCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              WantText(
+                                text: 'Referral Information',
+                                fontSize: width * 0.041,
+                                fontWeight: FontWeight.w600,
+                                textColor: colorBlack,
+                              ),
+                              SizedBox(height: height * 0.01),
+                              if (hasValue(lead.referralName))
+                                _infoCard(
+                                  title: "Referral Name",
+                                  value: lead.referralName!,
+                                ),
+                              if (hasValue(lead.referralNumber))
+                                _infoCard(
+                                  title: "Referral Number",
+                                  value: lead.referralNumber!,
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (controller.isAdmin) ...[
+                                        GestureDetector(
+                                          onTap: () {
+                                            controller.copyToClipboard(
+                                              lead.referralNumber!,
+                                            );
+                                          },
+                                          child: Icon(
+                                            Icons.copy,
+                                            color: colorMainTheme,
+                                            size: 15,
+                                          ),
+                                        ),
+                                        SizedBox(width: width * 0.005),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  )
                       : SizedBox.shrink(),
                 ),
 
@@ -940,7 +940,7 @@ class LeadDetailsScreen extends StatelessWidget {
                                 title: 'Select stage',
                                 items: controller.stageOptions,
                                 hintText:
-                                    controller.selectedStageDisplay.isNotEmpty
+                                controller.selectedStageDisplay.isNotEmpty
                                     ? controller.selectedStageDisplay
                                     : 'Select Stage*',
                                 iconData1: Icons.arrow_drop_down,
@@ -991,8 +991,8 @@ class LeadDetailsScreen extends StatelessWidget {
                                 onTap: controller.isUpdating
                                     ? null
                                     : () {
-                                        controller.updateLead();
-                                      },
+                                  controller.updateLead();
+                                },
                                 label: 'Update Lead',
                               ),
                               SizedBox(height: height * 0.03),
@@ -1024,7 +1024,7 @@ class LeadDetailsScreen extends StatelessWidget {
                         Expanded(
                           child: WantText(
                             text:
-                                'This lead is ${lead.stage} and cannot be updated.',
+                            'This lead is ${lead.stage} and cannot be updated.',
                             fontSize: width * 0.038,
                             fontWeight: FontWeight.w500,
                             textOverflow: TextOverflow.visible,
@@ -1166,7 +1166,7 @@ class _ChatSection extends StatelessWidget {
                     } catch (_) {}
                     return Align(
                       alignment:
-                          isMe ? Alignment.centerRight : Alignment.centerLeft,
+                      isMe ? Alignment.centerRight : Alignment.centerLeft,
                       child: Container(
                         margin: EdgeInsets.symmetric(vertical: height * 0.004),
                         padding: EdgeInsets.symmetric(
