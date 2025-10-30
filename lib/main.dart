@@ -19,6 +19,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+
   print("Handling a background message: ${message.messageId}");
   print("Background notification title: ${message.notification?.title}");
   print("Background notification body: ${message.notification?.body}");

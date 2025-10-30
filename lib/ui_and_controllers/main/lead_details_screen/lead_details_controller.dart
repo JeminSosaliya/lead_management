@@ -15,7 +15,14 @@ import 'package:lead_management/ui_and_controllers/main/home/home_controller.dar
 import 'package:lead_management/ui_and_controllers/widgets/location_picker_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/utils/push_notification_utils.dart';
 import '../../auth/goggle_login/google_calendar_controller.dart';
+import 'dart:async';
+import 'dart:developer';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:googleapis_auth/auth_io.dart';
 
 class LeadDetailsController extends GetxController {
   final String leadId;
@@ -100,6 +107,8 @@ class LeadDetailsController extends GetxController {
     fetchEmployees();
     fetchTechnicianTypes();
   }
+
+
 
   Future<void> fetchEmployees() async {
     try {
@@ -557,7 +566,6 @@ class LeadDetailsController extends GetxController {
         .orderBy('createdAt', descending: false)
         .snapshots();
   }
-
   Future<void> sendMessage() async {
     final text = chatController.text.trim();
     if (text.isEmpty || !canChat) return;
@@ -575,6 +583,10 @@ class LeadDetailsController extends GetxController {
         'createdAt': FieldValue.serverTimestamp(),
       });
       chatController.clear();
+
+      // Notify both participants (addedBy and assignedTo), excluding sender
+      await _notifyChatParticipants(text);
+
       await Future.delayed(const Duration(milliseconds: 50));
       if (chatScrollController.hasClients) {
         chatScrollController.animateTo(
@@ -595,6 +607,44 @@ class LeadDetailsController extends GetxController {
       update();
     }
   }
+  // Future<void> sendMessage() async {
+  //   final text = chatController.text.trim();
+  //   if (text.isEmpty || !canChat) return;
+  //   isSendingMessage = true;
+  //   update();
+  //   try {
+  //     await fireStore
+  //         .collection('leads')
+  //         .doc(leadId)
+  //         .collection('messages')
+  //         .add({
+  //       'text': text,
+  //       'senderId': currentUserId,
+  //       'senderName': currentUserName,
+  //       'createdAt': FieldValue.serverTimestamp(),
+  //     });
+  //     chatController.clear();
+  //
+  //     await Future.delayed(const Duration(milliseconds: 50));
+  //     if (chatScrollController.hasClients) {
+  //       chatScrollController.animateTo(
+  //         chatScrollController.position.maxScrollExtent + 60,
+  //         duration: const Duration(milliseconds: 250),
+  //         curve: Curves.easeOut,
+  //       );
+  //     }
+  //   } catch (e) {
+  //     log('Error sending message: $e');
+  //     Get.context?.showAppSnackBar(
+  //       message: 'Failed to send message',
+  //       backgroundColor: colorRedCalendar,
+  //       textColor: colorWhite,
+  //     );
+  //   } finally {
+  //     isSendingMessage = false;
+  //     update();
+  //   }
+  // }
 
   Future<void> openDirectionsToLead(double destLat, double destLng) async {
     try {
@@ -980,5 +1030,146 @@ class LeadDetailsController extends GetxController {
     chatController.dispose();
     chatScrollController.dispose();
     super.onClose();
+  }
+  Future<AccessCredentials> _getAccessToken() async {
+    final serviceAccountPath = dotenv.env['PATH_TO_SECRET'];
+    String serviceAccountJson = await rootBundle.loadString(serviceAccountPath!);
+    final serviceAccount = ServiceAccountCredentials.fromJson(
+      jsonDecode(serviceAccountJson),
+    );
+    final scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
+    final client = await clientViaServiceAccount(serviceAccount, scopes);
+    return client.credentials;
+  }
+  Future<bool> _sendPushNotification({
+    required String deviceToken,
+    required String title,
+    required String body,
+  }) async {
+    if (deviceToken.isEmpty) return false;
+    final credentials = await _getAccessToken();
+    final accessToken = credentials.accessToken.data;
+
+    final serviceAccountPath = dotenv.env['PATH_TO_SECRET'];
+    final serviceAccountJson = await rootBundle.loadString(serviceAccountPath!);
+    final projectId = jsonDecode(serviceAccountJson)['project_id'];
+
+    final url = Uri.parse(
+      'https://fcm.googleapis.com/v1/projects/$projectId/messages:send',
+    );
+
+    final collapseId = 'lead_chat_$leadId';
+    final data = {
+      'message': {
+        'token': deviceToken,
+        'notification': {'title': title, 'body': body},
+        'data': {
+          'type': 'LEAD_MESSAGE',
+          'leadId': leadId,
+        },
+        'android': {
+          'priority': 'HIGH',
+          'collapse_key': collapseId,
+          'notification': {
+            'channel_id': channelId,
+            'sound': 'default',
+            'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+            'tag': collapseId,
+          },
+        },
+        'apns': {
+          'headers': {'apns-priority': '10', 'apns-collapse-id': collapseId},
+          'payload': {
+            'aps': {
+              'alert': {'title': title, 'body': body},
+              'sound': 'default',
+              'category': 'FLUTTER_NOTIFICATION_CLICK'
+            }
+          }
+        }
+      }
+    };
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+      body: jsonEncode(data),
+    );
+
+    return response.statusCode == 200;
+  }
+
+
+  // Future<bool> _sendPushNotification({
+  //   required String deviceToken,
+  //   required String title,
+  //   required String body,
+  // }) async {
+  //   if (deviceToken.isEmpty) return false;
+  //   final credentials = await _getAccessToken();
+  //   final accessToken = credentials.accessToken.data;
+  //
+  //   final serviceAccountPath = dotenv.env['PATH_TO_SECRET'];
+  //   final serviceAccountJson = await rootBundle.loadString(serviceAccountPath!);
+  //   final projectId = jsonDecode(serviceAccountJson)['project_id'];
+  //
+  //   final url = Uri.parse(
+  //     'https://fcm.googleapis.com/v1/projects/$projectId/messages:send',
+  //   );
+  //
+  //   final data = {
+  //     'message': {
+  //       'token': deviceToken,
+  //       'notification': {'title': title, 'body': body},
+  //       // 'data': {'type': 'lead_chat', 'leadId': leadId}, // optional deep-link data
+  //     },
+  //   };
+  //
+  //   final response = await http.post(
+  //     url,
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       'Authorization': 'Bearer $accessToken',
+  //     },
+  //     body: jsonEncode(data),
+  //   );
+  //
+  //   return response.statusCode == 200;
+  // }
+
+  Future<void> _notifyChatParticipants(String messageText) async {
+    try {
+      if (lead == null) return;
+
+      final String senderName = currentUserName;
+      final String addedById = lead!.addedBy;
+      final String assignedToId = lead!.assignedTo;
+
+      final Set<String> recipients = {addedById, assignedToId};
+      recipients.removeWhere((id) => id == currentUserId); // don't notify sender
+
+      for (final userId in recipients) {
+        final doc = await fireStore.collection('users').doc(userId).get();
+        if (!doc.exists) continue;
+
+        final data = doc.data() as Map<String, dynamic>;
+        final String? deviceToken = data['fcmToken'];
+        if (deviceToken == null || deviceToken.isEmpty) continue;
+
+        final title = 'New message on lead ${lead!.clientName}';
+        final body = '$senderName: $messageText';
+
+        await _sendPushNotification(
+          deviceToken: deviceToken,
+          title: title,
+          body: body,
+        );
+      }
+    } catch (e) {
+      log('Error sending chat notifications: $e');
+    }
   }
 }

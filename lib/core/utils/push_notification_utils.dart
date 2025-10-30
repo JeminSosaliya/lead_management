@@ -8,22 +8,22 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 String channelId = "lead_management_app_channel";
 String channelName = "lead_management_app";
 String channelDes = "lead_management_app_channel_des";
 
 class NotificationUtils {
-
   late AndroidNotificationChannel channel;
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
   void init() async {
     channel = AndroidNotificationChannel(
-      channelId, // id
-      channelName, // title
-      description: channelDes, //// description
+      channelId,
+      channelName,
+      description: channelDes,
       importance: Importance.high,
       playSound: true,
     );
@@ -31,32 +31,37 @@ class NotificationUtils {
     if (Platform.isAndroid) {
       await flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
+            AndroidFlutterLocalNotificationsPlugin
+          >()
           ?.createNotificationChannel(channel)
           .then((void value) {});
+
+      final notifStatus = await Permission.notification.status;
+      if (!notifStatus.isGranted) {
+        await Permission.notification.request();
+      }
     } else if (Platform.isIOS) {
       flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
-          IOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-        alert: true,
-        sound: true,
-      )
+            IOSFlutterLocalNotificationsPlugin
+          >()
+          ?.requestPermissions(alert: true, sound: true)
           .then((bool? value) {
-        if (value ?? false) {}
-      });
+            if (value ?? false) {}
+          });
     }
     notificationConfig();
+    onMessageOpenApp();
   }
 
   void notificationConfig() async {
-    NotificationSettings settings =
-    await FirebaseMessaging.instance.requestPermission(
-      alert: true,
-      badge: true,
-      provisional: false,
-      sound: true,
-    );
+    NotificationSettings settings = await FirebaseMessaging.instance
+        .requestPermission(
+          alert: true,
+          badge: true,
+          provisional: false,
+          sound: true,
+        );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized ||
         settings.authorizationStatus == AuthorizationStatus.notDetermined) {
@@ -76,12 +81,11 @@ class NotificationUtils {
               .collection('users')
               .doc(userId)
               .update({
-            'fcmToken': token,
-            'updatedAt': FieldValue.serverTimestamp(),
-          });
+                'fcmToken': token,
+                'updatedAt': FieldValue.serverTimestamp(),
+              });
         }
       });
-
     } else {
       if (kDebugMode) {
         print('User declined or has not accepted permission');
@@ -92,10 +96,10 @@ class NotificationUtils {
     /// heads up notifications.
     await FirebaseMessaging.instance
         .setForegroundNotificationPresentationOptions(
-      alert: true,
-      badge: false,
-      sound: true,
-    );
+          alert: true,
+          badge: false,
+          sound: true,
+        );
     onMessage();
   }
 
@@ -114,41 +118,40 @@ class NotificationUtils {
     }
 
     final DarwinInitializationSettings iosSettings =
-    DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: false,
-      requestSoundPermission: true,
-      defaultPresentAlert: true,
-      defaultPresentSound: true,
-      // onDidReceiveLocalNotification: onDidReceiveLocalNotification,
-    );
+        DarwinInitializationSettings(
+          requestAlertPermission: true,
+          requestBadgePermission: false,
+          requestSoundPermission: true,
+          defaultPresentAlert: true,
+          defaultPresentSound: true,
+          // onDidReceiveLocalNotification: onDidReceiveLocalNotification,
+        );
     const AndroidInitializationSettings androidSettings =
-    AndroidInitializationSettings(
-      // "@drawable/ic_notification",
-      "@mipmap/ic_launcher",
+        AndroidInitializationSettings(
+          // "@drawable/ic_notification",
+          "@mipmap/ic_launcher",
+        );
+    InitializationSettings settings = InitializationSettings(
+      android: androidSettings,
+      iOS: iosSettings,
     );
-    InitializationSettings settings =
-    InitializationSettings(android: androidSettings, iOS: iosSettings);
     flutterLocalNotificationsPlugin.initialize(
       settings,
       onDidReceiveNotificationResponse: selectNotification,
     );
     AndroidNotificationDetails androidPlatformChannelSpecifics =
-    AndroidNotificationDetails(
-      channel.id,
-      channel.name,
-      importance: Importance.max,
-      // icon: '@drawable/ic_notification',
-      icon: '@mipmap/ic_launcher',
-      channelShowBadge: false,
-      color: const Color.fromARGB(0, 120, 120, 120),
-      playSound: true,
-    );
+        AndroidNotificationDetails(
+          channel.id,
+          channel.name,
+          importance: Importance.max,
+          // icon: '@drawable/ic_notification',
+          icon: '@mipmap/ic_launcher',
+          channelShowBadge: false,
+          color: const Color.fromARGB(0, 120, 120, 120),
+          playSound: true,
+        );
     DarwinNotificationDetails iOSPlatformChannelSpecifics =
-    const DarwinNotificationDetails(
-      presentAlert: true,
-      presentSound: true,
-    );
+        const DarwinNotificationDetails(presentAlert: true, presentSound: true);
     NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,
       iOS: iOSPlatformChannelSpecifics,
@@ -199,21 +202,21 @@ class NotificationUtils {
 
   void onMessageOpenApp() {
     /// This function Manage push notification tap when app is in terminate state
-    FirebaseMessaging.instance.getInitialMessage().then(
-          (RemoteMessage? message) {
-        if (message != null) {
-          Map<String, dynamic> notification = {
-            "title": message.notification!.title,
-            "des": message.notification!.body,
-            "data": message.data.toString(),
-          };
-          log("Notification getInitialMessage :- ${notification.toString()}");
-          handlePushTap(message.data);
-        } else {
-          log("Notification getInitialMessage :- null");
-        }
-      },
-    );
+    FirebaseMessaging.instance.getInitialMessage().then((
+      RemoteMessage? message,
+    ) {
+      if (message != null) {
+        Map<String, dynamic> notification = {
+          "title": message.notification!.title,
+          "des": message.notification!.body,
+          "data": message.data.toString(),
+        };
+        log("Notification getInitialMessage :- ${notification.toString()}");
+        handlePushTap(message.data);
+      } else {
+        log("Notification getInitialMessage :- null");
+      }
+    });
 
     /// This function Manage push notification tap when app is in background state
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -278,7 +281,11 @@ class NotificationUtils {
   }
 
   void onDidReceiveLocalNotification(
-      int id, String? title, String? body, String? payload) async {
+    int id,
+    String? title,
+    String? body,
+    String? payload,
+  ) async {
     // display a dialog with the notification details, tap ok to go to another page
     if (payload != null) {
       // handlePushTap(payload);
@@ -289,5 +296,4 @@ class NotificationUtils {
       }
     }
   }
-
 }

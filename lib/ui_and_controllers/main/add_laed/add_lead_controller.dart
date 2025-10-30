@@ -12,6 +12,7 @@ import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/model/lead_add_model.dart';
 import 'package:lead_management/ui_and_controllers/main/home/home_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/location_picker_screen.dart';
+import '../../../core/utils/push_notification_utils.dart';
 import '../../auth/goggle_login/google_calendar_controller.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -578,7 +579,6 @@ class AddLeadController extends GetxController {
     final client = await clientViaServiceAccount(serviceAccount, scopes);
     return client.credentials;
   }
-
   Future<bool> sendPushNotification({
     required String deviceToken,
     required String title,
@@ -595,11 +595,35 @@ class AddLeadController extends GetxController {
       'https://fcm.googleapis.com/v1/projects/$projectId/messages:send',
     );
 
+    final collapseId = 'lead_assign_$projectId';
     final data = {
       'message': {
         'token': deviceToken,
         'notification': {'title': title, 'body': body},
-      },
+        'data': {
+          'type': 'add_lead',
+        },
+        'android': {
+          'priority': 'HIGH',
+          'collapse_key': collapseId,
+          'notification': {
+            'channel_id': channelId,
+            'sound': 'default',
+            'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+            'tag': collapseId,
+          },
+        },
+        'apns': {
+          'headers': {'apns-priority': '10', 'apns-collapse-id': collapseId},
+          'payload': {
+            'aps': {
+              'alert': {'title': title, 'body': body},
+              'sound': 'default',
+              'category': 'FLUTTER_NOTIFICATION_CLICK'
+            }
+          }
+        }
+      }
     };
 
     final response = await http.post(
