@@ -729,7 +729,6 @@ class LeadDetailsScreen extends StatelessWidget {
                 ),
                 ChatSection(controller: controller),
                 SizedBox(height: height * 0.01),
-
                 if (isEditable)
                   Padding(
                     padding: EdgeInsets.symmetric(
