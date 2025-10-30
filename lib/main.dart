@@ -13,12 +13,12 @@ import 'package:lead_management/routes/route_manager.dart';
 import 'package:lead_management/ui_and_controllers/auth/goggle_login/google_calendar_controller.dart';
 
 import 'core/utils/shred_pref.dart';
+
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
 
   print("Handling a background message: ${message.messageId}");
   print("Background notification title: ${message.notification?.title}");
@@ -36,7 +36,7 @@ void main() async {
   NotificationUtils().init();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   Get.put(GoogleCalendarController(), permanent: true);
-await dotenv.load(fileName: '.env');
+  await dotenv.load(fileName: '.env');
   // Attempt silent login for admin
   final calendarController = Get.find<GoogleCalendarController>();
   await calendarController.autoLogin();
@@ -70,4 +70,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
