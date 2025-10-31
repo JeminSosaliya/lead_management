@@ -334,6 +334,16 @@ class NotificationUtils {
             messageData.containsKey('assigned_to');
 
         if (looksLikeAssignment) {
+          // If the assignment notification carries a leadId, prefer opening details
+          final dynamic assignLeadIdRaw =
+              messageData['leadId'] ?? messageData['lead_id'];
+          if (assignLeadIdRaw != null && assignLeadIdRaw.toString().isNotEmpty) {
+            Get.offAllNamed(
+              AppRoutes.leadDetailsScreen,
+              arguments: [assignLeadIdRaw.toString(), null],
+            );
+            return true;
+          }
           Get.offAllNamed(AppRoutes.home);
           return true;
         }

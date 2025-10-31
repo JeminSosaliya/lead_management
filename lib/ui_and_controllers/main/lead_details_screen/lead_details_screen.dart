@@ -23,21 +23,31 @@ class LeadDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final leadId = Get.arguments[0];
-    final initialData = Get.arguments[1];
-    final controller = Get.put(LeadDetailsController(leadId: leadId));
+    final String leadId = Get.arguments[0];
+    final Lead? initialData = Get.arguments[1];
+    // Ensure a unique controller instance per leadId and avoid reusing disposed instances
+    final bool alreadyRegistered = Get.isRegistered<LeadDetailsController>(tag: leadId);
+    final LeadDetailsController controller = alreadyRegistered
+        ? Get.find<LeadDetailsController>(tag: leadId)
+        : Get.put<LeadDetailsController>(
+            LeadDetailsController(leadId: leadId),
+            tag: leadId,
+          );
 
     if (initialData != null) {
-      controller.initializeData(initialData!);
-      controller.initializeData(initialData!);
+      controller.initializeData(initialData);
     }
 
     return WillPopScope(
       onWillPop: () async {
-        log("onWillPop called. Previous route: ${Get.previousRoute}");
-        log("onWillPop called. Previous route: ${Get.previousRoute.isEmpty}");
+        // If there is no previous route (e.g., opened from notification with cleared stack), go to Home
+        log('Get.previousRoute: ${Get.previousRoute}');
+        log('Get.currentRoute: ${Get.previousRoute.isEmpty}');
         Get.offAllNamed(AppRoutes.home);
-
+        if (Get.previousRoute.isEmpty || Get.previousRoute == '/') {
+          Get.offAllNamed(AppRoutes.home);
+          return false;
+        }
         return true;
       },
       child: Scaffold(
@@ -45,13 +55,17 @@ class LeadDetailsScreen extends StatelessWidget {
       appBar: CustomAppBar(
         showBackButton: true,
         onBackPressed: () {
-          log("onWillPop called. Previous route::  ${Get.previousRoute}");
+          log('Get.previousRoute: ${Get.previousRoute}');
+          log('Get.currentRoute: ${Get.previousRoute.isEmpty}');
           Get.offAllNamed(AppRoutes.home);
-
+          if (Get.previousRoute.isEmpty || Get.previousRoute == '/') {
+            Get.offAllNamed(AppRoutes.home);
+          }
         },
         title: "Lead Details",
         actions: [
           GetBuilder<LeadDetailsController>(
+            tag: leadId,
             builder: (controller) {
               if (controller.lead == null ||
                   controller.lead!.stage == 'completed' ||
@@ -68,6 +82,7 @@ class LeadDetailsScreen extends StatelessWidget {
         ],
       ),
       body: GetBuilder<LeadDetailsController>(
+        tag: leadId,
         builder: (controller) {
           if (controller.isLoading || controller.lead == null) {
             return const Center(
