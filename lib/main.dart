@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -24,6 +23,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("Background notification title: ${message.notification?.title}");
   print("Background notification body: ${message.notification?.body}");
   print("Background notification data: ${message.data}");
+
 }
 
 void main() async {
@@ -58,6 +58,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
+    // Deep link processing is centralized in Splash after auth init
     return GetMaterialApp(
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,

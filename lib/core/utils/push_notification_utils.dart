@@ -2,12 +2,13 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get/get.dart';
+import 'package:lead_management/routes/route_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 String channelId = "lead_management_app_channel";
@@ -15,6 +16,7 @@ String channelName = "lead_management_app";
 String channelDes = "lead_management_app_channel_des";
 
 class NotificationUtils {
+  static Map<String, dynamic>? _pendingPayload;
   late AndroidNotificationChannel channel;
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -206,13 +208,12 @@ class NotificationUtils {
       RemoteMessage? message,
     ) {
       if (message != null) {
-        Map<String, dynamic> notification = {
-          "title": message.notification!.title,
-          "des": message.notification!.body,
-          "data": message.data.toString(),
-        };
-        log("Notification getInitialMessage :- ${notification.toString()}");
-        handlePushTap(message.data);
+        try {
+          _pendingPayload = Map<String, dynamic>.from(message.data);
+        } catch (_) {
+          _pendingPayload = message.data;
+        }
+        log("Notification getInitialMessage (stored) :- ${_pendingPayload.toString()}");
       } else {
         log("Notification getInitialMessage :- null");
       }
@@ -231,6 +232,18 @@ class NotificationUtils {
     // FirebaseMessaging.onBackgroundMessage((message) {
     //   return Future(() => null);
     // });
+  }
+
+  static bool hasPendingDeepLink() => _pendingPayload != null;
+
+  static bool processPendingDeepLinkIfAny() {
+    if (_pendingPayload != null) {
+      final Map<String, dynamic> payload = _pendingPayload!;
+      _pendingPayload = null;
+      NotificationUtils().handlePushTap(payload);
+      return true;
+    }
+    return false;
   }
 
   handlePushTapWithPayload(String? payLoadData) {
@@ -257,20 +270,49 @@ class NotificationUtils {
 
   handlePushTap(Map<String, dynamic>? payLoad) {
     if (payLoad != null) {
-      log("---------> ${payLoad.toString()}", name: "myapp call");
+      log("---------> 1${payLoad.toString()}", name: "myapp call");
+      print("---------> 2${payLoad.toString()}");
+      debugPrint("---------> 3${payLoad.toString()}");
       try {
         Map<String, dynamic> messageData = payLoad;
-        if (messageData['type'] == 'SEND_FRIEND_REQUEST') {
-          // navigation - friend request screen
+        // Primary deep link: lead details screen
+        // Expecting a payload like: { "type": "lead_message", "leadId": "<id>" }
+        final dynamic leadIdRaw = messageData['leadId'] ?? messageData['lead_id'] ?? messageData['lead_id_str'];
+        log("LEAD_MESSAGE notification received 3 :: ${messageData['type']}");
+        print("LEAD_MESSAGE notification received 3 :: ${messageData['type']}");
+        debugPrint("LEAD_MESSAGE notification received 3 :: ${messageData['type']}");
+        if (leadIdRaw != null) {
+          final String leadId = leadIdRaw.toString();
+          // Navigate to lead details with [leadId, initialData=null]
+          debugPrint("LEAD_MESSAGE notification received 4 :: ${messageData['type']}");
+          // Use offAll to ensure Splash/Home don't override navigation during cold start
+          Get.offAllNamed(
+            AppRoutes.leadDetailsScreen,
+            arguments: [leadId, null],
+          );
+          return;
+        }
+
+        // Fallbacks for other legacy types (kept for future extension)
+        if (messageData['type'] == 'LEAD_MESSAGE') {
+          debugPrint("LEAD_MESSAGE notification received");
+          print("LEAD_MESSAGE notification received 1");
+          log("LEAD_MESSAGE notification received 2");
+          final String leadId = leadIdRaw.toString();
+          Get.offAllNamed(
+            AppRoutes.leadDetailsScreen,
+            arguments: [leadId, null],
+          );
+          return;
         }
         if (messageData['type'] == 'SEND_CHALLENGE_REQUEST') {
-          // navigation - challenge request screen
+          return;
         }
         if (messageData['type'] == 'ACCEPT_CHALLENGE_REQUEST') {
-          // navigation - custom challenge screen
+          return;
         }
         if (messageData['type'] == 'ACCEPT_FRIEND_REQUEST') {
-          // navigation - friend screen
+          return;
         }
       } catch (e) {
         if (kDebugMode) {

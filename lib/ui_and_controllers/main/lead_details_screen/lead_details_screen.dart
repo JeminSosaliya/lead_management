@@ -16,6 +16,7 @@ import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_textformfield.dart';
 import 'package:lead_management/ui_and_controllers/widgets/dropdown.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
+import 'package:lead_management/routes/route_manager.dart';
 
 class LeadDetailsScreen extends StatelessWidget {
   const LeadDetailsScreen({super.key});
@@ -31,9 +32,23 @@ class LeadDetailsScreen extends StatelessWidget {
       controller.initializeData(initialData!);
     }
 
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: () async {
+        log("onWillPop called. Previous route: ${Get.previousRoute}");
+        log("onWillPop called. Previous route: ${Get.previousRoute.isEmpty}");
+        Get.offAllNamed(AppRoutes.home);
+
+        return true;
+      },
+      child: Scaffold(
       backgroundColor: colorWhite,
       appBar: CustomAppBar(
+        showBackButton: true,
+        onBackPressed: () {
+          log("onWillPop called. Previous route::  ${Get.previousRoute}");
+          Get.offAllNamed(AppRoutes.home);
+
+        },
         title: "Lead Details",
         actions: [
           GetBuilder<LeadDetailsController>(
@@ -894,6 +909,7 @@ class LeadDetailsScreen extends StatelessWidget {
           );
         },
       ),
+    ),
     );
   }
 
