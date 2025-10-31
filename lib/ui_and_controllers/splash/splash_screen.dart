@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:lead_management/core/constant/app_assets.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/utils/extension.dart';
+import 'package:lead_management/core/utils/push_notification_utils.dart';
 import 'package:lead_management/core/utils/user_status_service.dart';
 import 'package:lead_management/routes/route_manager.dart';
 import 'package:lead_management/ui_and_controllers/main/profile/profile_controller.dart';
@@ -58,6 +59,11 @@ class _SplashScreenState extends State<SplashScreen> {
         }
         log("Already signed in as Admin: ${controller.adminEmail}");
         await _initializeAppData();
+        // If app was launched from a notification (killed state), honor deep link
+        if (NotificationUtils.hasPendingDeepLink()) {
+          final processed = NotificationUtils.processPendingDeepLinkIfAny();
+          if (processed) return; // deep link handled, don't override
+        }
         Get.offAllNamed(AppRoutes.home);
         Get.context?.showAppSnackBar(
           message: "Welcome back, ${controller.adminEmail}",
