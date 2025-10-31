@@ -256,6 +256,7 @@ class AddLeadController extends GetxController {
         assignedToName: assignedToName,
         leadClientName: clientName,
         addedByName: addedByName,
+        leadId: leadId,
       );
 
       isSubmitting = false;
@@ -275,6 +276,7 @@ class AddLeadController extends GetxController {
     required String assignedToName,
     required String leadClientName,
     required String addedByName,
+    required String leadId,
   }) async {
     try {
       DocumentSnapshot userDoc = await fireStore
@@ -294,6 +296,7 @@ class AddLeadController extends GetxController {
             deviceToken: deviceToken,
             title: title,
             body: body,
+            leadId: leadId,
           );
           if (notificationSent) {
             print('Notification sent successfully to $assignedToName');
@@ -583,6 +586,7 @@ class AddLeadController extends GetxController {
     required String deviceToken,
     required String title,
     required String body,
+    String? leadId,
   }) async {
     if (deviceToken.isEmpty) return false;
     final credentials = await _getAccessToken();
@@ -595,13 +599,14 @@ class AddLeadController extends GetxController {
       'https://fcm.googleapis.com/v1/projects/$projectId/messages:send',
     );
 
-    final collapseId = 'lead_assign_$projectId';
+    final collapseId = 'lead_assign_${leadId ?? projectId}';
     final data = {
       'message': {
         'token': deviceToken,
         'notification': {'title': title, 'body': body},
         'data': {
-          'type': 'add_lead',
+          'type': 'LEAD_ASSIGNED',
+          if (leadId != null) 'leadId': leadId,
         },
         'android': {
           'priority': 'HIGH',
