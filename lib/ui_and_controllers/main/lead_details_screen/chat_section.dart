@@ -53,6 +53,35 @@ class ChatSection extends StatelessWidget {
                   );
                 }
                 final docs = (snapshot.data as QuerySnapshot).docs;
+
+                bool _isSameDay(DateTime a, DateTime b) {
+                  return a.year == b.year &&
+                      a.month == b.month &&
+                      a.day == b.day;
+                }
+
+                String _friendlyDateLabel(DateTime date) {
+                  final now = DateTime.now();
+                  final today = DateTime(now.year, now.month, now.day);
+                  final thatDay = DateTime(date.year, date.month, date.day);
+
+                  if (_isSameDay(thatDay, today)) {
+                    return 'Today';
+                  }
+                  if (_isSameDay(
+                    thatDay,
+                    today.subtract(const Duration(days: 1)),
+                  )) {
+                    return 'Yesterday';
+                  }
+                  if (thatDay.isAfter(
+                    today.subtract(const Duration(days: 7)),
+                  )) {
+                    return DateFormat('EEEE').format(thatDay);
+                  }
+                  return DateFormat('d MMM y').format(thatDay);
+                }
+
                 return ListView.builder(
                   controller: controller.chatScrollController,
                   padding: EdgeInsets.symmetric(
@@ -67,20 +96,37 @@ class ChatSection extends StatelessWidget {
                     final sender = (data['senderName'] ?? '').toString();
                     final ts = data['createdAt'];
                     String timeText = '';
+                    DateTime? msgDate;
                     try {
                       if (ts is Timestamp) {
-                        timeText = DateFormat('hh:mm a').format(ts.toDate());
+                        msgDate = ts.toDate();
+                        timeText = DateFormat('hh:mm a').format(msgDate);
                       }
                     } catch (_) {}
 
-                    return Align(
+                    bool showHeader = false;
+                    if (msgDate != null) {
+                      if (index == 0) {
+                        showHeader = true;
+                      } else {
+                        final prevData =
+                            docs[index - 1].data() as Map<String, dynamic>;
+                        final prevTs = prevData['createdAt'];
+                        DateTime? prevDate;
+                        if (prevTs is Timestamp) {
+                          prevDate = prevTs.toDate();
+                        }
+                        showHeader =
+                            prevDate == null || !_isSameDay(msgDate, prevDate);
+                      }
+                    }
+
+                    Widget bubble = Align(
                       alignment: isMe
                           ? Alignment.centerRight
                           : Alignment.centerLeft,
                       child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: width * 0.75,
-                        ),
+                        constraints: BoxConstraints(maxWidth: width * 0.75),
                         child: Container(
                           margin: EdgeInsets.symmetric(
                             vertical: height * 0.004,
@@ -150,6 +196,41 @@ class ChatSection extends StatelessWidget {
                           ),
                         ),
                       ),
+                    );
+
+                    if (!showHeader) {
+                      return bubble;
+                    }
+
+                    final label = _friendlyDateLabel(msgDate!);
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Center(
+                          child: Container(
+                            margin: EdgeInsets.symmetric(
+                              vertical: height * 0.004,
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: width * 0.03,
+                              vertical: height * 0.004,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colorGreyTextFieldBorder.withOpacity(.6),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: WantText(
+                              text: label,
+                              fontSize: width * 0.029,
+                              fontWeight: FontWeight.w600,
+                              textColor: colorBlack,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: height * 0.012),
+
+                        bubble,
+                      ],
                     );
                   },
                 );
