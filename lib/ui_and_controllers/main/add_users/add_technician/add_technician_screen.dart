@@ -106,7 +106,10 @@ class AddTechnicianScreen extends StatelessWidget {
                       SizedBox(width: width * 0.03),
                       Obx(() => CustomButton(
                         Width: width * 0.25,
-                        onTap: controller.isAdding ? null : controller.addTechnicianType,
+                        onTap: controller.isAdding ? null : (){
+                          FocusScope.of(context).unfocus();
+                          controller.addTechnicianType();
+                        },
                         label: controller.isAdding ? 'Adding...' : 'Add',
                         backgroundColor: colorMainTheme,
                         textColor: colorWhite,

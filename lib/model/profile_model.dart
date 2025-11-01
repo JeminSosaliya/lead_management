@@ -23,6 +23,7 @@ class CurrentUserProfileData {
   String? type;
   String? uid;
   DateTime? updatedAt;
+  String? password;
 
   CurrentUserProfileData({
     this.address,
@@ -36,6 +37,7 @@ class CurrentUserProfileData {
     this.type,
     this.uid,
     this.updatedAt,
+    this.password,
   });
 
   factory CurrentUserProfileData.fromJson(Map<String, dynamic> json) => CurrentUserProfileData(
@@ -50,6 +52,7 @@ class CurrentUserProfileData {
     type: json["type"],
     uid: json["uid"],
     updatedAt: _parseDateTime(json["updatedAt"]),
+    password: json["password"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -65,6 +68,7 @@ class CurrentUserProfileData {
     "type": type,
     "uid": uid,
     "updatedAt": updatedAt?.toIso8601String(),
+    "password": password,
   };
 
   // Updated to handle both ISO 8601 and custom format

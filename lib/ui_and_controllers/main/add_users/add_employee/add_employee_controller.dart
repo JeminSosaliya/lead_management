@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -12,11 +14,13 @@ class AddEmployeeController extends GetxController {
   final _numberController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController(); // Add confirm password controller
+  final _confirmPasswordController =
+      TextEditingController(); // Add confirm password controller
   final _addressController = TextEditingController();
   final _designationController = TextEditingController();
-  final _referenceController = TextEditingController(); // Add reference controller
-  
+  final _referenceController =
+      TextEditingController(); // Add reference controller
+
   final _isLoading = false.obs;
   final _obscurePassword = true.obs;
   final _obscureConfirmPassword = true.obs; // Add confirm password visibility
@@ -27,23 +31,36 @@ class AddEmployeeController extends GetxController {
 
   // Getters
   GlobalKey<FormState> get formKey => _formKey;
+
   TextEditingController get nameController => _nameController;
+
   TextEditingController get numberController => _numberController;
+
   TextEditingController get emailController => _emailController;
+
   TextEditingController get passwordController => _passwordController;
-  TextEditingController get confirmPasswordController => _confirmPasswordController; // Add confirm password getter
+
+  TextEditingController get confirmPasswordController =>
+      _confirmPasswordController; // Add confirm password getter
   TextEditingController get addressController => _addressController;
+
   TextEditingController get designationController => _designationController;
-  TextEditingController get referenceController => _referenceController; // Add reference getter
+
+  TextEditingController get referenceController =>
+      _referenceController; // Add reference getter
   bool get isLoading => _isLoading.value;
+
   bool get obscurePassword => _obscurePassword.value;
-  bool get obscureConfirmPassword => _obscureConfirmPassword.value; // Add confirm password visibility getter
+
+  bool get obscureConfirmPassword =>
+      _obscureConfirmPassword.value; // Add confirm password visibility getter
 
   void togglePasswordVisibility() {
     _obscurePassword.value = !_obscurePassword.value;
   }
 
-  void toggleConfirmPasswordVisibility() { // Add confirm password toggle
+  void toggleConfirmPasswordVisibility() {
+    // Add confirm password toggle
     _obscureConfirmPassword.value = !_obscureConfirmPassword.value;
   }
 
@@ -53,16 +70,38 @@ class AddEmployeeController extends GetxController {
     _isLoading.value = true;
 
     try {
-      // Step 1: Create user account with Firebase Auth
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+      final String? currentAdminEmail = ListConst.currentUserProfileData.email;
+      final String? currentAdminUid = ListConst.currentUserProfileData.uid;
 
-      // Step 2: Update user display name
+      if (currentAdminEmail == null || currentAdminUid == null) {
+        Get.context!.showAppSnackBar(
+          message: "Admin session not found. Please login again.",
+          backgroundColor: colorRedCalendar,
+        );
+        _isLoading.value = false;
+        return;
+      }
+
+      String? adminPassword = ListConst.currentUserProfileData.password;
+      log("Admin Password: $adminPassword");
+
+      if (adminPassword == null || adminPassword.isEmpty) {
+        Get.context!.showAppSnackBar(
+          message: "Admin password not found in database.",
+          backgroundColor: colorRedCalendar,
+        );
+        _isLoading.value = false;
+        return;
+      }
+
+      UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
+
       await userCredential.user?.updateDisplayName(_nameController.text.trim());
 
-      // Step 3: Save user details to Firestore
       await _firestore.collection('users').doc(userCredential.user!.uid).set({
         'uid': userCredential.user!.uid,
         'name': _nameController.text.trim(),
@@ -71,30 +110,32 @@ class AddEmployeeController extends GetxController {
         'address': _addressController.text.trim(),
         'designation': _designationController.text.trim(),
         'reference': _referenceController.text.trim(),
-        'password': _passwordController.text.trim(), // Add password storage
+        'password': _passwordController.text.trim(),
         'type': 'employee',
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
         'isActive': true,
-        'createdBy': ListConst.currentUserProfileData.name, // Admin who created this employee
+        'createdBy': ListConst.currentUserProfileData.name,
       });
 
       await _auth.signOut();
-      
+
+      await _auth.signInWithEmailAndPassword(
+        email: currentAdminEmail,
+        password: adminPassword,
+      );
+
       Get.context!.showAppSnackBar(
         message: "Employee created successfully!",
         backgroundColor: colorGreen,
       );
-      
-      // Clear form
+
       _clearForm();
-      
-      // Navigate back to home screen
+
       Get.back();
-      
     } on FirebaseAuthException catch (e) {
       String errorMessage = "Error creating employee account.";
-      
+
       switch (e.code) {
         case 'weak-password':
           errorMessage = "Password is too weak.";
@@ -108,10 +149,17 @@ class AddEmployeeController extends GetxController {
         case 'operation-not-allowed':
           errorMessage = "Email/password accounts are not enabled.";
           break;
+        case 'wrong-password':
+          errorMessage =
+              "Failed to re-authenticate as admin. Please login again.";
+          break;
+        case 'user-not-found':
+          errorMessage = "Admin account not found.";
+          break;
         default:
           errorMessage = "Error creating account: ${e.message}";
       }
-      
+
       Get.context!.showAppSnackBar(
         message: errorMessage,
         backgroundColor: colorRedCalendar,

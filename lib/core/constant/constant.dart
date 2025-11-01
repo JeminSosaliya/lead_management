@@ -11,3 +11,4 @@ RxString currentUserUid = ''.obs;
 RxString currentUserCreatedBy = ''.obs;
 RxString currentUserCreatedAt = ''.obs;
 RxString currentUserUpdatedAt = ''.obs;
+RxString currentUserPassword = ''.obs;

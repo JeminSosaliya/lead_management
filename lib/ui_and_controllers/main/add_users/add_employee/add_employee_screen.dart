@@ -279,7 +279,10 @@ class AddEmployeeScreen extends StatelessWidget {
               Obx(
                 () => CustomButton(
                   Width: width,
-                  onTap: controller.isLoading ? null : controller.addUser,
+                  onTap: controller.isLoading ? null : (){
+                    FocusScope.of(context).unfocus();
+                    controller.addUser();
+                  },
                   label: controller.isLoading
                       ? "Adding Employee..."
                       : "Add Employee",

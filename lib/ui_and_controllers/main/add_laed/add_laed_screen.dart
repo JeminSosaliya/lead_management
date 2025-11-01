@@ -31,7 +31,7 @@ class AddLeadScreen extends StatelessWidget {
     bool isOwner = currentUserRole == 'admin';
 
     return GetBuilder<AddLeadController>(
-        builder: (AddLeadController controller) {
+      builder: (AddLeadController controller) {
         return Scaffold(
           backgroundColor: colorWhite,
           appBar: CustomAppBar(
@@ -40,10 +40,13 @@ class AddLeadScreen extends StatelessWidget {
             actions: [
               GestureDetector(
                 onTap: controller.isSubmitting
-              ? null
-              : () => controller.submitForm(),
+                    ? null
+                    : () {
+                        FocusScope.of(context).unfocus();
+                        controller.submitForm();
+                      },
                 child: Padding(
-                  padding:  EdgeInsets.only(right: width*0.046),
+                  padding: EdgeInsets.only(right: width * 0.046),
                   child: WantText(
                     text: "Add Lead",
                     fontSize: width * 0.041,
@@ -123,29 +126,6 @@ class AddLeadScreen extends StatelessWidget {
                             }
                             return null;
                           },
-                          //      validator: (value) {
-                          //   if (value != null && value.isNotEmpty) {
-                          //     // Basic email format check
-                          //     if (!RegExp(r'^[\w\.-]+@([\w-]+\.)+[a-zA-Z]{2,}$').hasMatch(value)) {
-                          //       return 'Please enter a valid email address';
-                          //     }
-                          //
-                          //     // Optional: Only allow specific known domains
-                          //     final allowedDomains = [
-                          //       'gmail.com',
-                          //       'yahoo.com',
-                          //       'outlook.com',
-                          //       'hotmail.com',
-                          //       'icloud.com',
-                          //     ];
-                          //
-                          //     final domain = value.split('@').last.toLowerCase();
-                          //     if (!allowedDomains.contains(domain)) {
-                          //       return 'Please enter a valid domain (e.g. gmail.com)';
-                          //     }
-                          //   }
-                          //   return null;
-                          // },
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(
                               RegExp(r'[a-zA-Z0-9@._-]'),
@@ -159,7 +139,8 @@ class AddLeadScreen extends StatelessWidget {
                           title: 'Select Category (Optional)',
                           items: controller.technicianTypes,
                           hintText:
-                              controller.selectedTechnician ?? 'Select Technician',
+                              controller.selectedTechnician ??
+                              'Select Technician',
                           iconData1: Icons.arrow_drop_down,
                           iconData2: Icons.arrow_drop_up,
                           onChanged: (value) {
@@ -204,7 +185,8 @@ class AddLeadScreen extends StatelessWidget {
                         SearchableCSCDropdown(
                           title: 'Source',
                           items: controller.sources,
-                          hintText: controller.selectedSource ?? 'Select Source',
+                          hintText:
+                              controller.selectedSource ?? 'Select Source',
                           iconData1: Icons.arrow_drop_down,
                           iconData2: Icons.arrow_drop_up,
                           onChanged: (value) {
@@ -218,7 +200,10 @@ class AddLeadScreen extends StatelessWidget {
                             padding: const EdgeInsets.only(top: 4, left: 4),
                             child: Text(
                               'Please select a source',
-                              style: TextStyle(color: colorRedError, fontSize: 12),
+                              style: TextStyle(
+                                color: colorRedError,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
                         SizedBox(height: height * 0.023),
@@ -227,10 +212,10 @@ class AddLeadScreen extends StatelessWidget {
                           builder: (memController) {
                             final assignableUsers = [
                               ...memController.employees.where(
-                                (e) => e["isActive"] == true,
+                                (e) => e["isActive"] == true && e["name"].toString() != "Main Admin",
                               ),
                               ...memController.admins.where(
-                                (a) => a["isActive"] == true,
+                                (a) => a["isActive"] == true && a["name"].toString() != "Main Admin",
                               ),
                             ];
 
@@ -248,20 +233,22 @@ class AddLeadScreen extends StatelessWidget {
                                   iconData1: Icons.arrow_drop_down,
                                   iconData2: Icons.arrow_drop_up,
                                   onChanged: (value) {
-                                    final selectedUser = assignableUsers.firstWhere(
-                                      (user) => user["name"].toString() == value,
-                                      orElse: () => {
-                                        "uid": "",
-                                        "name": "",
-                                        "type": "",
-                                      },
-                                    );
+                                    final selectedUser = assignableUsers
+                                        .firstWhere(
+                                          (user) =>
+                                              user["name"].toString() == value,
+                                          orElse: () => {
+                                            "uid": "",
+                                            "name": "",
+                                            "type": "",
+                                          },
+                                        );
                                     if (selectedUser["uid"] != "") {
                                       controller.setSelectedEmployee(
                                         selectedUser["uid"],
                                         employeeName: value,
                                         userType: selectedUser["type"],
-                                        email: selectedUser["email"]
+                                        email: selectedUser["email"],
                                       );
                                     }
                                   },
@@ -271,7 +258,10 @@ class AddLeadScreen extends StatelessWidget {
                                 if (controller.selectedEmployee == null &&
                                     controller.showEmployeeError)
                                   Padding(
-                                    padding: const EdgeInsets.only(top: 4, left: 4),
+                                    padding: const EdgeInsets.only(
+                                      top: 4,
+                                      left: 4,
+                                    ),
                                     child: Text(
                                       isOwner
                                           ? 'Please select a user to assign'
@@ -306,7 +296,9 @@ class AddLeadScreen extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: colorWhite,
-                              border: Border.all(color: colorGreyTextFieldBorder),
+                              border: Border.all(
+                                color: colorGreyTextFieldBorder,
+                              ),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Row(
@@ -373,7 +365,8 @@ class AddLeadScreen extends StatelessWidget {
                             DateTime? date = await showDatePicker(
                               context: context,
                               initialDate: now,
-                              initialEntryMode: DatePickerEntryMode.calendarOnly,
+                              initialEntryMode:
+                                  DatePickerEntryMode.calendarOnly,
                               firstDate: now,
                               lastDate: DateTime(2100),
                             );
@@ -406,7 +399,8 @@ class AddLeadScreen extends StatelessWidget {
 
                                 if (dateTime.isBefore(now)) {
                                   Get.context?.showAppSnackBar(
-                                    message: 'Please select a future date and time',
+                                    message:
+                                        'Please select a future date and time',
                                     backgroundColor: colorRedCalendar,
                                     textColor: colorWhite,
                                   );
@@ -424,7 +418,10 @@ class AddLeadScreen extends StatelessWidget {
                               }
                             }
                           },
-                          prefixIcon: Icon(Icons.calendar_today, color: colorGrey),
+                          prefixIcon: Icon(
+                            Icons.calendar_today,
+                            color: colorGrey,
+                          ),
                         ),
 
                         SizedBox(height: height * 0.023),
@@ -433,9 +430,14 @@ class AddLeadScreen extends StatelessWidget {
                           Width: width,
                           onTap: controller.isSubmitting
                               ? null
-                              : () => controller.submitForm(),
+                              : () {
+                                  FocusScope.of(context).unfocus();
+                                  controller.submitForm();
+                                },
                           label: controller.isSubmitting
-                              ? (isOwner ? 'Adding Lead...' : 'Adding My Lead...')
+                              ? (isOwner
+                                    ? 'Adding Lead...'
+                                    : 'Adding My Lead...')
                               : (isOwner ? 'Add Lead' : 'Add My Lead'),
                           backgroundColor: controller.isSubmitting
                               ? colorGreyText
@@ -443,7 +445,6 @@ class AddLeadScreen extends StatelessWidget {
                           boarderRadius: 8,
                         ),
                         SizedBox(height: height * 0.045),
-
                       ],
                     ),
                   ),
@@ -452,7 +453,7 @@ class AddLeadScreen extends StatelessWidget {
             },
           ),
         );
-      }
+      },
     );
   }
 }

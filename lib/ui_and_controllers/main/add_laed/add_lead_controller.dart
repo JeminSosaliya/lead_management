@@ -251,6 +251,17 @@ class AddLeadController extends GetxController {
       );
 
       await fireStore.collection('leads').doc(leadId).set(newLead.toMap());
+
+      await _createOrUpdateReminder(
+        assignedToUserId: assignedToEmployee,
+        assignedToName: assignedToName,
+        clientName: clientName,
+        description: description ?? '',
+        followUpTime: nextFollowUp,
+        leadId: leadId,
+        isUpdate: false,
+      );
+
       await _sendLeadAssignmentNotification(
         assignedToUserId: assignedToEmployee,
         assignedToName: assignedToName,
@@ -268,6 +279,74 @@ class AddLeadController extends GetxController {
       print("Error adding lead: $e");
 
       return false;
+    }
+  }
+
+  Future<void> _createOrUpdateReminder({
+    required String assignedToUserId,
+    required String assignedToName,
+    required String clientName,
+    required String description,
+    required DateTime? followUpTime,
+    String? leadId,
+    bool isUpdate = false,
+  }) async {
+    try {
+      if (followUpTime == null) {
+        log('⚠️ No follow-up time provided, skipping reminder creation');
+        return;
+      }
+
+      DocumentSnapshot userDoc = await fireStore
+          .collection('users')
+          .doc(assignedToUserId)
+          .get();
+
+      if (!userDoc.exists) {
+        log('⚠️ User not found for reminder: $assignedToUserId');
+        return;
+      }
+
+      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+      String? fcmToken = userData['fcmToken'] as String?;
+
+      if (fcmToken == null || fcmToken.isEmpty) {
+        log('⚠️ No FCM token found for user: $assignedToName');
+        fcmToken = '';
+      }
+
+      QuerySnapshot reminderQuery = await fireStore
+          .collection('reminder')
+          .where('leadId', isEqualTo: leadId)
+          .limit(1)
+          .get();
+
+      Map<String, dynamic> reminderData = {
+        'name': assignedToName,
+        'id': assignedToUserId,
+        'fcmToken': fcmToken,
+        'time': Timestamp.fromDate(followUpTime),
+        'content': description ?? '',
+        'title': clientName,
+        'type': 'reminder',
+        'isSent': false,
+        'leadId': leadId,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      if (reminderQuery.docs.isNotEmpty) {
+        await fireStore
+            .collection('reminder')
+            .doc(reminderQuery.docs.first.id)
+            .update(reminderData);
+        log('✅ Reminder updated for lead: $leadId');
+      } else {
+        reminderData['createdAt'] = FieldValue.serverTimestamp();
+        await fireStore.collection('reminder').add(reminderData);
+        log('✅ Reminder created for lead: $leadId');
+      }
+    } catch (e) {
+      log('❌ Error creating/updating reminder: $e');
     }
   }
 
