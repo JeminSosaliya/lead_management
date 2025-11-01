@@ -24,7 +24,7 @@ class AdminLoginPage extends StatelessWidget {
               icon: const Icon(Icons.login),
               label: Text(controller.isLoggedIn
                   ? "Signed in as ${controller.adminEmail}"
-                  : "Sign in as Admin"),
+                  : "Sign in for notifications"),
               onPressed: () async {
                 if (!controller.isLoggedIn) {
                   await controller.loginAdmin();
