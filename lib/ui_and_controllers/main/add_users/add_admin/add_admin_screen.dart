@@ -241,7 +241,10 @@ class AddAdminScreen extends StatelessWidget {
               Obx(
                 () => CustomButton(
                   Width: width,
-                  onTap: controller.isLoading ? null : controller.addAdmin,
+                  onTap: controller.isLoading ? null :() {
+                    FocusScope.of(context).unfocus();
+                    controller.addAdmin();
+                  },
                   label: controller.isLoading ? "Adding Admin..." : "Add Admin",
                   backgroundColor: controller.isLoading
                       ? colorGreyText

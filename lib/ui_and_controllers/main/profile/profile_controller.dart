@@ -140,6 +140,12 @@ class ProfileController extends GetxController {
             "currentUserUpdatedAt >>>>>> ${currentUserUpdatedAt.value}",
           );
         }
+        if (userProfile.password != null) {
+          currentUserPassword.value = userProfile.password!;
+          developer.log(
+            "currentUserPassword >>>>>> ${currentUserPassword.value}",
+          );
+        }
       }
     } catch (e) {
       _errorMessage.value = 'Error loading profile: $e';

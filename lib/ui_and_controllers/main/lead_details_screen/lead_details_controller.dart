@@ -450,6 +450,15 @@ class LeadDetailsController extends GetxController {
           .doc(leadId)
           .update(updatedLead.toMap());
 
+      await _createOrUpdateReminder(
+        assignedToUserId: selectedEmployee ?? lead!.assignedTo,
+        assignedToName: selectedEmployeeName ?? lead!.assignedToName,
+        clientName: updatedLead.clientName,
+        description: updatedLead.description ?? '',
+        followUpTime: initialFollowUp,
+        isUpdate: true,
+      );
+
       Get.context?.showAppSnackBar(
         message: 'Lead details updated successfully',
         backgroundColor: colorGreen,
@@ -477,6 +486,92 @@ class LeadDetailsController extends GetxController {
     } finally {
       isUpdating = false;
       update();
+    }
+  }
+
+  Future<void> _createOrUpdateReminder({
+    required String assignedToUserId,
+    required String assignedToName,
+    required String clientName,
+    required String description,
+    required DateTime? followUpTime,
+    String? content, // For call note updates
+    bool isUpdate = false,
+  }) async {
+    try {
+      if (followUpTime == null && content == null) {
+        log('⚠️ No follow-up time or content provided, skipping reminder update');
+        return;
+      }
+
+      // Fetch assigned user's FCM token
+      DocumentSnapshot userDoc = await fireStore
+          .collection('users')
+          .doc(assignedToUserId)
+          .get();
+
+      if (!userDoc.exists) {
+        log('⚠️ User not found for reminder: $assignedToUserId');
+        return;
+      }
+
+      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+      String? fcmToken = userData['fcmToken'] as String?;
+
+      if (fcmToken == null || fcmToken.isEmpty) {
+        log('⚠️ No FCM token found for user: $assignedToName');
+        fcmToken = '';
+      }
+
+      // Query for existing reminder by leadId
+      QuerySnapshot reminderQuery = await fireStore
+          .collection('reminder')
+          .where('leadId', isEqualTo: leadId)
+          .limit(1)
+          .get();
+
+      Map<String, dynamic> reminderData = {
+        'name': assignedToName,
+        'id': assignedToUserId,
+        'fcmToken': fcmToken,
+        'title': clientName,
+        'type': 'reminder',
+        'isSent': false,
+        'leadId': leadId,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      // Update time if provided
+      if (followUpTime != null) {
+        reminderData['time'] = Timestamp.fromDate(followUpTime);
+      }
+
+      // Update content (description or call note)
+      if (content != null && content.isNotEmpty) {
+        reminderData['content'] = content;
+      } else if (description.isNotEmpty) {
+        reminderData['content'] = description;
+      }
+
+      if (reminderQuery.docs.isNotEmpty) {
+        // Update existing reminder
+        await fireStore
+            .collection('reminder')
+            .doc(reminderQuery.docs.first.id)
+            .update(reminderData);
+        log('✅ Reminder updated for lead: $leadId');
+      } else {
+        // Create new reminder if it doesn't exist
+        reminderData['createdAt'] = FieldValue.serverTimestamp();
+        if (followUpTime != null) {
+          reminderData['time'] = Timestamp.fromDate(followUpTime);
+        }
+        await fireStore.collection('reminder').add(reminderData);
+        log('✅ Reminder created for lead: $leadId');
+      }
+    } catch (e) {
+      log('❌ Error creating/updating reminder: $e');
+      // Don't throw - reminder failure shouldn't block lead update
     }
   }
 
@@ -954,6 +1049,15 @@ class LeadDetailsController extends GetxController {
 
       try {
         await fireStore.collection('leads').doc(leadId).update(updates);
+        await _createOrUpdateReminder(
+          assignedToUserId: lead!.assignedTo,
+          assignedToName: lead!.assignedToName,
+          clientName: lead!.clientName,
+          description: lead!.description ?? '',
+          followUpTime: nextFollowUpDateTime,
+          content: noteController.text.trim(), // Call note as content
+          isUpdate: true,
+        );
         Get.context?.showAppSnackBar(
           message: 'Lead updated successfully',
           backgroundColor: colorGreen,

@@ -128,7 +128,10 @@ class LoginScreen extends StatelessWidget {
                 SizedBox(height: height * 0.03),
                 Obx(
                   () => CustomButton(
-                    onTap: controller.isLoading ? null : controller.login,
+                    onTap: controller.isLoading ? null : (){
+                      FocusScope.of(context).unfocus();
+                      controller.login();
+                    },
                     label: controller.isLoading ? "Signing In..." : "Sign In",
                     backgroundColor: controller.isLoading
                         ? colorGreyText

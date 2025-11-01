@@ -22,7 +22,12 @@ class MemberController extends GetxController {
   bool get isLoading => _isLoading.value;
 
   List<Map<String, dynamic>> get currentList {
-    return _selectedType.value == 'employee' ? _employees : _admins;
+    if (_selectedType.value == 'employee') {
+      return _employees;
+    } else {
+      // Filter out "Main Admin" from admin list
+      return _admins.where((admin) => admin['name']?.toString() != 'Main Admin').toList();
+    }
   }
 
   @override
@@ -80,6 +85,7 @@ class MemberController extends GetxController {
 
       _admins.value = snapshot.docs
           .map((doc) => {'id': doc.id, ...doc.data()})
+          .where((admin) => admin['name']?.toString() != 'Main Admin') // Add this filter
           .toList();
     } catch (e) {
       print('Error loading admins: $e');

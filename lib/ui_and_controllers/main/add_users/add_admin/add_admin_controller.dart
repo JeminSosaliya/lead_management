@@ -1,8 +1,11 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lead_management/core/constant/app_color.dart';
+import 'package:lead_management/core/constant/list_const.dart';
 import 'package:lead_management/core/utils/extension.dart';
 
 class AddAdminController extends GetxController {
@@ -11,34 +14,42 @@ class AddAdminController extends GetxController {
   final _numberController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController(); // Add confirm password controller
+  final _confirmPasswordController = TextEditingController();
   final _addressController = TextEditingController();
 
   final _isLoading = false.obs;
   final _obscurePassword = true.obs;
-  final _obscureConfirmPassword = true.obs; // Add confirm password visibility
+  final _obscureConfirmPassword = true.obs;
 
-  // Firebase instances
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Getters
   GlobalKey<FormState> get formKey => _formKey;
+
   TextEditingController get nameController => _nameController;
+
   TextEditingController get numberController => _numberController;
+
   TextEditingController get emailController => _emailController;
+
   TextEditingController get passwordController => _passwordController;
-  TextEditingController get confirmPasswordController => _confirmPasswordController; // Add confirm password getter
+
+  TextEditingController get confirmPasswordController =>
+      _confirmPasswordController;
+
   TextEditingController get addressController => _addressController;
+
   bool get isLoading => _isLoading.value;
+
   bool get obscurePassword => _obscurePassword.value;
-  bool get obscureConfirmPassword => _obscureConfirmPassword.value; // Add confirm password visibility getter
+
+  bool get obscureConfirmPassword => _obscureConfirmPassword.value;
 
   void togglePasswordVisibility() {
     _obscurePassword.value = !_obscurePassword.value;
   }
 
-  void toggleConfirmPasswordVisibility() { // Add confirm password toggle
+  void toggleConfirmPasswordVisibility() {
     _obscureConfirmPassword.value = !_obscureConfirmPassword.value;
   }
 
@@ -48,10 +59,35 @@ class AddAdminController extends GetxController {
     _isLoading.value = true;
 
     try {
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+      final String? currentAdminEmail = ListConst.currentUserProfileData.email;
+      final String? currentAdminUid = ListConst.currentUserProfileData.uid;
+
+      if (currentAdminEmail == null || currentAdminUid == null) {
+        Get.context!.showAppSnackBar(
+          message: "Admin session not found. Please login again.",
+          backgroundColor: colorRedCalendar,
+        );
+        _isLoading.value = false;
+        return;
+      }
+
+      String? adminPassword = ListConst.currentUserProfileData.password;
+      log("Admin Password: $adminPassword");
+
+      if (adminPassword == null || adminPassword.isEmpty) {
+        Get.context!.showAppSnackBar(
+          message: "Admin password not found in database.",
+          backgroundColor: colorRedCalendar,
+        );
+        _isLoading.value = false;
+        return;
+      }
+
+      UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
 
       await userCredential.user?.updateDisplayName(_nameController.text.trim());
 
@@ -66,11 +102,15 @@ class AddAdminController extends GetxController {
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
         'isActive': true,
-        'createdBy': _auth.currentUser?.uid,
+        'createdBy': currentAdminUid,
       });
 
       await _auth.signOut();
 
+      await _auth.signInWithEmailAndPassword(
+        email: currentAdminEmail,
+        password: adminPassword,
+      );
 
       Get.context!.showAppSnackBar(
         message: "Admin created successfully!",
@@ -79,9 +119,8 @@ class AddAdminController extends GetxController {
 
       _clearForm();
       Get.back();
-
     } on FirebaseAuthException catch (e) {
-      String errorMessage = "Error creating add_admin account.";
+      String errorMessage = "Error creating admin account.";
 
       switch (e.code) {
         case 'weak-password':
@@ -96,6 +135,13 @@ class AddAdminController extends GetxController {
         case 'operation-not-allowed':
           errorMessage = "Email/password accounts are not enabled.";
           break;
+        case 'wrong-password':
+          errorMessage =
+              "Failed to re-authenticate as admin. Please login again.";
+          break;
+        case 'user-not-found':
+          errorMessage = "Admin account not found.";
+          break;
         default:
           errorMessage = "Error creating account: ${e.message}";
       }
@@ -107,7 +153,7 @@ class AddAdminController extends GetxController {
     } catch (e) {
       print("Error: $e");
       Get.context!.showAppSnackBar(
-        message: "Error creating add_admin. Please try again.",
+        message: "Error creating admin. Please try again.",
         backgroundColor: colorRedCalendar,
       );
     } finally {
