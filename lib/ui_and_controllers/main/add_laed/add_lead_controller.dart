@@ -369,7 +369,7 @@ class AddLeadController extends GetxController {
 
         if (deviceToken != null && deviceToken.isNotEmpty) {
           String title = "New Lead Assigned";
-          String body = "$leadClientName assigned to you lead by $addedByName";
+          String body = "New lead assigned to you";
 
           bool notificationSent = await sendPushNotification(
             deviceToken: deviceToken,
@@ -387,51 +387,9 @@ class AddLeadController extends GetxController {
     }
   }
 
-  // Future<void> _sendLeadAssignmentNotification({
-  //   required String assignedToUserId,
-  //   required String assignedToName,
-  //   required String leadClientName,
-  //   required String addedByName,
-  // }) async {
-  //   try {
-  //     DocumentSnapshot userDoc = await fireStore
-  //         .collection('users')
-  //         .doc(assignedToUserId)
-  //         .get();
-  //
-  //     if (userDoc.exists) {
-  //       Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-  //       List<dynamic> fcmTokens = userData['fcmTokens'] ?? [];
-  //
-  //       if (fcmTokens.isNotEmpty) {
-  //         String deviceToken = fcmTokens.first.toString();
-  //
-  //         String title = "New Lead Assigned";
-  //         String body = "$leadClientName assigned to you by $addedByName";
-  //
-  //         bool notificationSent = await sendPushNotification(
-  //           deviceToken: deviceToken,
-  //           title: title,
-  //           body: body,
-  //         );
-  //         if (notificationSent) {
-  //           print('Notification sent successfully to $assignedToName');
-  //         } else {
-  //           print('Failed to send notification');
-  //         }
-  //       } else {
-  //         print('No FCM token found for user: $assignedToName');
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print('Error sending notification: $e');
-  //   }
-  // }
-
   Future<void> submitForm() async {
     String currentUserRole = ListConst.currentUserProfileData.type ?? 'employee';
 
-    // Step 1️⃣ — Basic validations
     showSourceError = selectedSource == null;
     showEmployeeError = currentUserRole == 'admin' ? selectedEmployee == null : false;
     update();
@@ -525,7 +483,7 @@ class AddLeadController extends GetxController {
             backgroundColor: colorRedCalendar,
             textColor: colorWhite,
           );
-          return; // stop process if event fails
+          return;
         }
 
         log('✅ Google Calendar event added successfully. Event ID: $googleEventId');
