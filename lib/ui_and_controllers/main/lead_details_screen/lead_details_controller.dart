@@ -17,8 +17,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/utils/push_notification_utils.dart';
 import '../../auth/goggle_login/google_calendar_controller.dart';
-import 'dart:async';
-import 'dart:developer';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -28,22 +26,18 @@ class LeadDetailsController extends GetxController {
   final String leadId;
   Lead? lead;
   bool isLoading = true;
-  bool isUpdating = false;
+  final _isUpdating = false.obs;
+  bool get isUpdating => _isUpdating.value;
   bool showUpdateForm = false;
   bool showResponseError = false;
   bool showStageError = false;
   bool isEditMode = false;
   bool showEmployeeError = false;
   bool showSourceError = false;
-
-  // Expand/Collapse state management
   bool isDetailsExpanded = false;
-
-  // Chat state
   final TextEditingController chatController = TextEditingController();
   final ScrollController chatScrollController = ScrollController();
   bool isSendingMessage = false;
-
   final formKey = GlobalKey<FormState>();
   final editFormKey = GlobalKey<FormState>();
   final noteController = TextEditingController();
@@ -65,7 +59,6 @@ class LeadDetailsController extends GetxController {
     'Switch off',
   ];
   final List<String> stageOptions = ['In Progress', 'Completed', 'Cancelled'];
-
   List<Map<String, dynamic>> employees = [];
   List<String> technicianTypes = [];
   List<String> sources = ['Website', 'Phone', 'Referral', 'Walk-in', 'Other'];
@@ -78,7 +71,6 @@ class LeadDetailsController extends GetxController {
   double? selectedLongitude;
   String? locationAddress;
   DateTime? initialFollowUp;
-
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController emailController = TextEditingController();
@@ -88,9 +80,8 @@ class LeadDetailsController extends GetxController {
   TextEditingController referralNameController = TextEditingController();
   TextEditingController referralNumberController = TextEditingController();
   TextEditingController initialFollowUpController = TextEditingController();
-
+  TextEditingController altPhoneController = TextEditingController();
   LeadDetailsController({required this.leadId});
-
   bool get isAdmin => ListConst.currentUserProfileData.type == 'admin';
   String get currentUserId => ListConst.currentUserProfileData.uid?.toString() ?? '';
   String get currentUserName => ListConst.currentUserProfileData.name?.toString() ?? '';
@@ -178,7 +169,6 @@ class LeadDetailsController extends GetxController {
   void toggleEditMode() {
     isEditMode = !isEditMode;
     if (isEditMode) {
-      // Initialize controllers with current lead data
       nameController.text = lead?.clientName ?? '';
       phoneController.text = lead?.clientPhone ?? '';
       emailController.text = lead?.clientEmail ?? '';
@@ -187,6 +177,7 @@ class LeadDetailsController extends GetxController {
       addressController.text = lead?.address ?? '';
       referralNameController.text = lead?.referralName ?? '';
       referralNumberController.text = lead?.referralNumber ?? '';
+      altPhoneController.text = lead?.clientAltPhone ?? '';
       selectedSource = lead?.source;
       selectedTechnician = lead?.technician;
       selectedEmployeeType = lead?.assignedToRole;
@@ -200,7 +191,6 @@ class LeadDetailsController extends GetxController {
           'dd MMM yyyy, hh:mm a',
         ).format(initialFollowUp!);
       }
-      // Set selected employee
       selectedEmployee = lead?.assignedTo;
       selectedEmployeeName = lead?.assignedToName;
       final employee = employees.firstWhere(
@@ -365,12 +355,13 @@ class LeadDetailsController extends GetxController {
       return;
     }
 
-    isUpdating = true;
+    _isUpdating.value = true;
     update();
 
     try {
       Lead updatedLead = Lead(
         leadId: leadId,
+        followUpLeads:  lead!.followUpLeads,
         clientName: nameController.text.trim(),
         clientPhone: phoneController.text.trim(),
         clientEmail: emailController.text.trim().isEmpty
@@ -403,6 +394,9 @@ class LeadDetailsController extends GetxController {
         address: addressController.text.trim().isEmpty
             ? null
             : addressController.text.trim(),
+        clientAltPhone: altPhoneController.text.trim().isEmpty
+            ? null
+            : altPhoneController.text.trim(),
         createdAt: lead!.createdAt,
         updatedAt: Timestamp.now(),
         initialFollowUp: initialFollowUp != null
@@ -437,11 +431,7 @@ class LeadDetailsController extends GetxController {
           log(
             "⚠️ Google Calendar update failed: $e, email: $selectedEmployeeEmail",
           );
-          // Get.context?.showAppSnackBar(
-          //   message: 'Failed to update Google Calendar event',
-          //   backgroundColor: colorRedCalendar,
-          //   textColor: colorWhite,
-          // );
+
         }
       }
 
@@ -464,6 +454,7 @@ class LeadDetailsController extends GetxController {
         backgroundColor: colorGreen,
         textColor: colorWhite,
       );
+      await _notifyLeadUpdated(updatedByName: currentUserName);
 
       isEditMode = false;
       await fetchLead();
@@ -478,13 +469,8 @@ class LeadDetailsController extends GetxController {
       }
     } catch (e) {
       log("💥 Error updating lead details: $e");
-      // Get.context?.showAppSnackBar(
-      //   message: 'Failed to update lead details',
-      //   backgroundColor: colorRedCalendar,
-      //   textColor: colorWhite,
-      // );
     } finally {
-      isUpdating = false;
+      _isUpdating.value = false;
       update();
     }
   }
@@ -662,6 +648,7 @@ class LeadDetailsController extends GetxController {
         .snapshots();
   }
   Future<void> sendMessage() async {
+    if (_isDisposed) return;
     final text = chatController.text.trim();
     if (text.isEmpty || !canChat) return;
     isSendingMessage = true;
@@ -698,48 +685,12 @@ class LeadDetailsController extends GetxController {
         textColor: colorWhite,
       );
     } finally {
-      isSendingMessage = false;
-      update();
+      if (!_isDisposed) {
+        isSendingMessage = false;
+        update();
+      }
     }
   }
-  // Future<void> sendMessage() async {
-  //   final text = chatController.text.trim();
-  //   if (text.isEmpty || !canChat) return;
-  //   isSendingMessage = true;
-  //   update();
-  //   try {
-  //     await fireStore
-  //         .collection('leads')
-  //         .doc(leadId)
-  //         .collection('messages')
-  //         .add({
-  //       'text': text,
-  //       'senderId': currentUserId,
-  //       'senderName': currentUserName,
-  //       'createdAt': FieldValue.serverTimestamp(),
-  //     });
-  //     chatController.clear();
-  //
-  //     await Future.delayed(const Duration(milliseconds: 50));
-  //     if (chatScrollController.hasClients) {
-  //       chatScrollController.animateTo(
-  //         chatScrollController.position.maxScrollExtent + 60,
-  //         duration: const Duration(milliseconds: 250),
-  //         curve: Curves.easeOut,
-  //       );
-  //     }
-  //   } catch (e) {
-  //     log('Error sending message: $e');
-  //     Get.context?.showAppSnackBar(
-  //       message: 'Failed to send message',
-  //       backgroundColor: colorRedCalendar,
-  //       textColor: colorWhite,
-  //     );
-  //   } finally {
-  //     isSendingMessage = false;
-  //     update();
-  //   }
-  // }
 
   Future<void> openDirectionsToLead(double destLat, double destLng) async {
     try {
@@ -889,61 +840,70 @@ class LeadDetailsController extends GetxController {
     }
   }
 
-  // void callLead() async {
-  //   if (lead == null) return;
-  //
-  //   if (lead!.stage == 'completed' || lead!.stage == 'cancelled') {
-  //     Get.context?.showAppSnackBar(
-  //       message: 'Cannot call completed leads',
-  //       backgroundColor: colorRedCalendar,
-  //       textColor: colorWhite,
-  //     );
-  //     return;
-  //   }
-  //
-  //   String? phone = lead!.clientPhone;
-  //   if (phone.isEmpty) {
-  //     Get.context?.showAppSnackBar(
-  //       message: 'Phone number not available',
-  //       backgroundColor: colorRedCalendar,
-  //       textColor: colorWhite,
-  //     );
-  //     return;
-  //   }
-  //
-  //   final Uri url = Uri(scheme: 'tel', path: phone);
-  //   if (await canLaunchUrl(url)) {
-  //     await launchUrl(url);
-  //     showUpdateForm = true;
-  //     update();
-  //   } else {
-  //     Get.context?.showAppSnackBar(
-  //       message: 'Could not launch call',
-  //       backgroundColor: colorRedCalendar,
-  //       textColor: colorWhite,
-  //     );
-  //   }
-  // }
-
   void openWhatsApp(String phone) async {
-    String cleanPhone = phone.replaceAll(RegExp(r'[^\d+]'), '');
-    if (!cleanPhone.startsWith('+')) {
-      cleanPhone = '+91$cleanPhone';
-    }
-    final Uri url = Uri.parse('https://wa.me/$cleanPhone');
     try {
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
+      String cleanPhone = phone.replaceAll(RegExp(r'[^\d+]'), '');
+      
+      cleanPhone = cleanPhone.replaceAll(RegExp(r'[\s\-\(\)]'), '');
+      
+      if (!cleanPhone.startsWith('+')) {
+        if (cleanPhone.startsWith('0')) {
+          cleanPhone = cleanPhone.substring(1);
+        }
+        cleanPhone = '+91$cleanPhone';
+      }
+      
+      if (cleanPhone.startsWith('91') && cleanPhone.length == 12) {
+        cleanPhone = '+$cleanPhone';
+      }
+      
+      final phoneRegex = RegExp(r'^\+\d{10,15}$');
+      if (!phoneRegex.hasMatch(cleanPhone)) {
         Get.context?.showAppSnackBar(
-          message: 'Could not open WhatsApp',
+          message: 'Invalid phone number format',
           backgroundColor: colorRedCalendar,
           textColor: colorWhite,
         );
+        log('Invalid phone format: $cleanPhone');
+        return;
+      }
+
+      String phoneForUrl = cleanPhone.replaceFirst('+', '');
+      final Uri url = Uri.parse('https://wa.me/$phoneForUrl');
+      
+      log('Opening WhatsApp with phone: $cleanPhone, URL: ${url.toString()}');
+      try {
+        final launched = await launchUrl(
+          url,
+          mode: LaunchMode.externalApplication,
+        );
+        
+        if (!launched) {
+          throw Exception('Failed to launch WhatsApp');
+        }
+      } catch (e) {
+        log('External launch failed, trying platform default: $e');
+        try {
+          await launchUrl(
+            url,
+            mode: LaunchMode.platformDefault,
+          );
+        } catch (e2) {
+          log('Platform default failed, trying inAppWebView: $e2');
+          try {
+            await launchUrl(
+              url,
+              mode: LaunchMode.inAppWebView,
+            );
+          } catch (e3) {
+            throw Exception('All launch modes failed: $e3');
+          }
+        }
       }
     } catch (e) {
+      log('Error opening WhatsApp: $e');
       Get.context?.showAppSnackBar(
-        message: 'Could not open WhatsApp: $e',
+        message: 'Could not open WhatsApp. Please make sure WhatsApp is installed.',
         backgroundColor: colorRedCalendar,
         textColor: colorWhite,
       );
@@ -1004,6 +964,7 @@ class LeadDetailsController extends GetxController {
   }
 
   Future<void> updateLead() async {
+    /////
     if (lead == null ||
         lead!.stage == 'completed' ||
         lead!.stage == 'cancelled') {
@@ -1022,7 +983,7 @@ class LeadDetailsController extends GetxController {
     if (formKey.currentState!.validate() &&
         !showResponseError &&
         !showStageError) {
-      isUpdating = true;
+      _isUpdating.value = true;
       update();
 
       String newCallStatus = selectedResponse.toLowerCase().replaceAll(' ', '');
@@ -1063,6 +1024,7 @@ class LeadDetailsController extends GetxController {
           backgroundColor: colorGreen,
           textColor: colorWhite,
         );
+        await _notifyLeadUpdated(updatedByName: currentUserName); // NEW
         showUpdateForm = false;
         noteController.clear();
         followUpController.clear();
@@ -1070,8 +1032,9 @@ class LeadDetailsController extends GetxController {
         selectedResponse = '';
         selectedStage = '';
         selectedStageDisplay = '';
-        await fetchLead();
-        Get.back();
+        await fetchLead(); // Fetch updated lead data
+        update(); // Update UI to reflect changes
+
         String role = ListConst.currentUserProfileData.type ?? '';
         if (role == 'employee' || role == 'admin') {
           try {
@@ -1083,7 +1046,7 @@ class LeadDetailsController extends GetxController {
       } catch (e) {
         log("Error updating lead: $e");
       } finally {
-        isUpdating = false;
+        _isUpdating.value = false;
         update();
       }
     } else {
@@ -1120,8 +1083,13 @@ class LeadDetailsController extends GetxController {
 
   @override
   void onClose() {
-    noteController.dispose();
-    followUpController.dispose();
+    // Only dispose if controllers are still attached
+    if (noteController.hasListeners) {
+      noteController.dispose();
+    }
+    if (followUpController.hasListeners) {
+      followUpController.dispose();
+    }
     nameController.dispose();
     phoneController.dispose();
     emailController.dispose();
@@ -1131,8 +1099,12 @@ class LeadDetailsController extends GetxController {
     referralNameController.dispose();
     referralNumberController.dispose();
     initialFollowUpController.dispose();
+    altPhoneController.dispose();
     chatController.dispose();
-    chatScrollController.dispose();
+    // Only dispose scroll controller if it's attached
+    if (chatScrollController.hasClients) {
+      chatScrollController.dispose();
+    }
     super.onClose();
   }
   Future<AccessCredentials> _getAccessToken() async {
@@ -1145,10 +1117,13 @@ class LeadDetailsController extends GetxController {
     final client = await clientViaServiceAccount(serviceAccount, scopes);
     return client.credentials;
   }
+
   Future<bool> _sendPushNotification({
     required String deviceToken,
     required String title,
     required String body,
+    String dataType = 'LEAD_MESSAGE', // default keeps chat behavior
+    Map<String, String>? extraData,   // optional extra key/values
   }) async {
     if (deviceToken.isEmpty) return false;
     final credentials = await _getAccessToken();
@@ -1162,15 +1137,18 @@ class LeadDetailsController extends GetxController {
       'https://fcm.googleapis.com/v1/projects/$projectId/messages:send',
     );
 
-    final collapseId = 'lead_chat_$leadId';
-    final data = {
+    final collapseId = 'lead_$dataType\_$leadId';
+    final Map<String, String> data = {
+      'type': dataType,
+      'leadId': leadId,
+      ...?extraData,
+    };
+
+    final payload = {
       'message': {
         'token': deviceToken,
         'notification': {'title': title, 'body': body},
-        'data': {
-          'type': 'LEAD_MESSAGE',
-          'leadId': leadId,
-        },
+        'data': data,
         'android': {
           'priority': 'HIGH',
           'collapse_key': collapseId,
@@ -1200,49 +1178,11 @@ class LeadDetailsController extends GetxController {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $accessToken',
       },
-      body: jsonEncode(data),
+      body: jsonEncode(payload),
     );
 
     return response.statusCode == 200;
   }
-
-
-  // Future<bool> _sendPushNotification({
-  //   required String deviceToken,
-  //   required String title,
-  //   required String body,
-  // }) async {
-  //   if (deviceToken.isEmpty) return false;
-  //   final credentials = await _getAccessToken();
-  //   final accessToken = credentials.accessToken.data;
-  //
-  //   final serviceAccountPath = dotenv.env['PATH_TO_SECRET'];
-  //   final serviceAccountJson = await rootBundle.loadString(serviceAccountPath!);
-  //   final projectId = jsonDecode(serviceAccountJson)['project_id'];
-  //
-  //   final url = Uri.parse(
-  //     'https://fcm.googleapis.com/v1/projects/$projectId/messages:send',
-  //   );
-  //
-  //   final data = {
-  //     'message': {
-  //       'token': deviceToken,
-  //       'notification': {'title': title, 'body': body},
-  //       // 'data': {'type': 'lead_chat', 'leadId': leadId}, // optional deep-link data
-  //     },
-  //   };
-  //
-  //   final response = await http.post(
-  //     url,
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //       'Authorization': 'Bearer $accessToken',
-  //     },
-  //     body: jsonEncode(data),
-  //   );
-  //
-  //   return response.statusCode == 200;
-  // }
 
   Future<void> _notifyChatParticipants(String messageText) async {
     try {
@@ -1270,10 +1210,75 @@ class LeadDetailsController extends GetxController {
           deviceToken: deviceToken,
           title: title,
           body: body,
+          dataType: 'LEAD_MESSAGE',
         );
       }
     } catch (e) {
       log('Error sending chat notifications: $e');
     }
   }
+
+/*  Future<void> _notifyLeadUpdated({required String updatedByName}) async {
+    try {
+      if (lead == null) return;
+
+      final recipients = <String>{lead!.addedBy, lead!.assignedTo}
+        ..remove(currentUserId);
+
+      for (final userId in recipients) {
+        final doc = await fireStore.collection('users').doc(userId).get();
+        if (!doc.exists) continue;
+        final data = doc.data() as Map<String, dynamic>;
+        final token = (data['fcmToken'] as String?) ?? '';
+        if (token.isEmpty) continue;
+
+        final title = 'Lead updated';
+        final body = '$updatedByName updated lead: ${lead!.clientName}';
+
+        await _sendPushNotification(
+          deviceToken: token,
+          title: title,
+          body: body,
+          dataType: 'LEAD_UPDATED',
+          extraData: {
+            'updatedBy': updatedByName,
+          },
+        );
+      }
+    } catch (e) {
+      log('Error sending lead update notifications: $e');
+    }
+  }*/
+  Future<void> _notifyLeadUpdated({required String updatedByName}) async {
+    try {
+      if (lead == null) return;
+
+      final recipients = <String>{lead!.addedBy, lead!.assignedTo}
+        ..remove(currentUserId); // don't notify the editor
+
+      for (final userId in recipients) {
+        final doc = await fireStore.collection('users').doc(userId).get();
+        if (!doc.exists) continue;
+
+        final data = doc.data() as Map<String, dynamic>;
+        final String? token = data['fcmToken'];
+        if (token == null || token.isEmpty) continue;
+
+        final title = 'Lead updated';
+        final body = '$updatedByName updated lead: ${lead!.clientName}';
+
+        // This already includes leadId in the payload, so tapping routes correctly
+        await _sendPushNotification(
+          deviceToken: token,
+          title: title,
+          body: body,
+        );
+      }
+    } catch (e) {
+      log('Error sending lead update notifications: $e');
+    }
+  }
+
+  // Add this helper method to check if controller is disposed
+  bool get _isDisposed => !Get.isRegistered<LeadDetailsController>(tag: leadId);
 }

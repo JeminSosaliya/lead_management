@@ -111,6 +111,27 @@ class AddLeadScreen extends StatelessWidget {
                         SizedBox(height: height * 0.023),
 
                         CustomTextFormField(
+                          labelText:
+                              "Client Alternative Contact Number (optional)",
+                          hintText: 'Enter alternative contact number',
+                          controller: controller.altPhoneController,
+                          prefixIcon: Icon(Icons.phone, color: colorGrey),
+                          keyboardType: TextInputType.phone,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(15),
+                          ],
+                          validator: (value) {
+                            if (value != null && value.isNotEmpty) {
+                              if (value.length < 10) {
+                                return 'Alternative number must be more than 9 digits';
+                              }
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: height * 0.023),
+                        CustomTextFormField(
                           labelText: "Email (optional)",
                           hintText: 'Enter email',
                           controller: controller.emailController,
@@ -212,13 +233,24 @@ class AddLeadScreen extends StatelessWidget {
                           builder: (memController) {
                             final assignableUsers = [
                               ...memController.employees.where(
-                                (e) => e["isActive"] == true && e["name"].toString() != "Main Admin",
+                                (e) =>
+                                    e["isActive"] == true &&
+                                    e["name"].toString() != "Main Admin",
                               ),
                               ...memController.admins.where(
-                                (a) => a["isActive"] == true && a["name"].toString() != "Main Admin",
+                                (a) =>
+                                    a["isActive"] == true &&
+                                    a["name"].toString() != "Main Admin",
                               ),
                             ];
-
+                            // final assignableUsers = [
+                            //   ...memController.employees.where(
+                            //         (e) => e["isActive"] == true,
+                            //   ),
+                            //   ...memController.admins.where(
+                            //         (a) => a["isActive"] == true,
+                            //   ),
+                            // ];
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
