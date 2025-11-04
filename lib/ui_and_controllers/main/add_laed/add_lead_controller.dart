@@ -51,6 +51,7 @@ class AddLeadController extends GetxController {
 
   TextEditingController nameController = TextEditingController();
   TextEditingController clientPhoneController = TextEditingController();
+  TextEditingController altPhoneController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController companyController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
@@ -171,6 +172,7 @@ class AddLeadController extends GetxController {
     String? description,
     DateTime? nextFollowUp,
     String? goggleEventId,
+    String? clientAltPhone,
   }) async {
     isSubmitting = true;
     update();
@@ -242,12 +244,13 @@ class AddLeadController extends GetxController {
         address: addressController.text.trim().isEmpty
             ? null
             : addressController.text.trim(),
+        clientAltPhone: clientAltPhone,
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
         initialFollowUp: nextFollowUp != null
             ? Timestamp.fromDate(nextFollowUp)
             : null,
-        eventId: goggleEventId
+        eventId: goggleEventId,
       );
 
       await fireStore.collection('leads').doc(leadId).set(newLead.toMap());
@@ -388,10 +391,13 @@ class AddLeadController extends GetxController {
   }
 
   Future<void> submitForm() async {
-    String currentUserRole = ListConst.currentUserProfileData.type ?? 'employee';
+    String currentUserRole =
+        ListConst.currentUserProfileData.type ?? 'employee';
 
     showSourceError = selectedSource == null;
-    showEmployeeError = currentUserRole == 'admin' ? selectedEmployee == null : false;
+    showEmployeeError = currentUserRole == 'admin'
+        ? selectedEmployee == null
+        : false;
     update();
 
     log(
@@ -408,9 +414,13 @@ class AddLeadController extends GetxController {
       errorMessage = 'Client number is required';
     } else if (clientPhoneController.text.length < 10) {
       errorMessage = 'Client number must be more than 9 digits';
+    }
+    else if (altPhoneController.text.isNotEmpty && altPhoneController.text.length < 10) {
+      errorMessage = 'Client alternative number must be more than 9 digits';
     } else if (emailController.text.isNotEmpty &&
-        !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-            .hasMatch(emailController.text)) {
+        !RegExp(
+          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+        ).hasMatch(emailController.text)) {
       errorMessage = 'Invalid email format';
     } else if (descriptionController.text.trim().isEmpty) {
       errorMessage = 'Description/Notes is required';
@@ -455,10 +465,7 @@ class AddLeadController extends GetxController {
                   SizedBox(height: 15),
                   Text(
                     'Adding to Google Calendar...',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
@@ -470,8 +477,11 @@ class AddLeadController extends GetxController {
         googleEventId = await calendarController.addEvent(
           title: nameController.text.trim(),
           description: descriptionController.text.trim(),
-          startTime: nextFollowUp ??DateTime.now().add(const Duration(minutes: 5)),
-          endTime: nextFollowUp?.add(Duration(minutes: 5)) ?? DateTime.now().add(const Duration(days: 1)),
+          startTime:
+              nextFollowUp ?? DateTime.now().add(const Duration(minutes: 5)),
+          endTime:
+              nextFollowUp?.add(Duration(minutes: 5)) ??
+              DateTime.now().add(const Duration(days: 1)),
           employeeEmails: [selectedEmployeeEmail ?? ''],
         );
 
@@ -486,7 +496,9 @@ class AddLeadController extends GetxController {
           return;
         }
 
-        log('✅ Google Calendar event added successfully. Event ID: $googleEventId');
+        log(
+          '✅ Google Calendar event added successfully. Event ID: $googleEventId',
+        );
       } else {
         log('⚠️ Skipping Google Calendar (Not logged in)');
       }
@@ -544,13 +556,14 @@ class AddLeadController extends GetxController {
       referralName: referralNameController.text.trim().isEmpty
           ? null
           : referralNameController.text.trim(),
-      referralNumber: referralNumberController.text
-          .trim()
-          .isEmpty
+      referralNumber: referralNumberController.text.trim().isEmpty
           ? null
           : referralNumberController.text.trim(),
+      clientAltPhone: altPhoneController.text.trim().isEmpty // NEW
+          ? null
+          : altPhoneController.text.trim(),
       nextFollowUp: nextFollowUp,
-      goggleEventId: googleEventId
+      goggleEventId: googleEventId,
     );
 
     Get.back();
@@ -564,7 +577,9 @@ class AddLeadController extends GetxController {
         textColor: colorWhite,
       );
 
-      log('🎯 Lead added successfully to Firebase with event ID: $googleEventId and mail is $selectedEmployeeEmail');
+      log(
+        '🎯 Lead added successfully to Firebase with event ID: $googleEventId and mail is $selectedEmployeeEmail',
+      );
 
       // reload leads
       String role = ListConst.currentUserProfileData.type ?? '';
@@ -588,6 +603,7 @@ class AddLeadController extends GetxController {
   void _clearForm() {
     nameController.clear();
     clientPhoneController.clear();
+    altPhoneController.clear();
     emailController.clear();
     companyController.clear();
     descriptionController.clear();
@@ -619,6 +635,7 @@ class AddLeadController extends GetxController {
     final client = await clientViaServiceAccount(serviceAccount, scopes);
     return client.credentials;
   }
+
   Future<bool> sendPushNotification({
     required String deviceToken,
     required String title,
@@ -641,10 +658,7 @@ class AddLeadController extends GetxController {
       'message': {
         'token': deviceToken,
         'notification': {'title': title, 'body': body},
-        'data': {
-          'type': 'LEAD_ASSIGNED',
-          if (leadId != null) 'leadId': leadId,
-        },
+        'data': {'type': 'LEAD_ASSIGNED', if (leadId != null) 'leadId': leadId},
         'android': {
           'priority': 'HIGH',
           'collapse_key': collapseId,
@@ -661,11 +675,11 @@ class AddLeadController extends GetxController {
             'aps': {
               'alert': {'title': title, 'body': body},
               'sound': 'default',
-              'category': 'FLUTTER_NOTIFICATION_CLICK'
-            }
-          }
-        }
-      }
+              'category': 'FLUTTER_NOTIFICATION_CLICK',
+            },
+          },
+        },
+      },
     };
 
     final response = await http.post(
@@ -684,6 +698,7 @@ class AddLeadController extends GetxController {
   void onClose() {
     nameController.dispose();
     clientPhoneController.dispose();
+    altPhoneController.dispose();
     emailController.dispose();
     companyController.dispose();
     descriptionController.dispose();

@@ -22,6 +22,7 @@ class Lead {
   final String? address;
   final String? referralName;
   final String? referralNumber;
+  final String? clientAltPhone;
   final Timestamp createdAt;
   Timestamp updatedAt;
   String stage;
@@ -56,6 +57,7 @@ class Lead {
     this.address,
     this.referralName,
     this.referralNumber,
+    this.clientAltPhone,
     required this.createdAt,
     required this.updatedAt,
     this.stage = 'notContacted',
@@ -90,6 +92,7 @@ class Lead {
       address: map['address'] as String?,
       referralName: map['referralName'] as String?,
       referralNumber: map['referralNumber'] as String?,
+      clientAltPhone: map['clientAltPhone'] as String?,
       createdAt: map['createdAt'] as Timestamp,
       updatedAt: map['updatedAt'] as Timestamp,
       stage: map['stage'] as String? ?? 'notContacted',
@@ -131,13 +134,12 @@ class Lead {
       'address': address,
       'referralName': referralName,
       'referralNumber': referralNumber,
+      'clientAltPhone': clientAltPhone,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
       'stage': stage,
       'callStatus': callStatus,
-      // 'callNote': callNote,
       'initialFollowUp': initialFollowUp,
-      // 'nextFollowUp': nextFollowUp,
       'eventId': eventId,
       'followUpLeads':
           followUpLeads?.map((followUp) => followUp.toMap()).toList() ?? [],
