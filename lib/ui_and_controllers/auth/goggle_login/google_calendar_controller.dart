@@ -128,11 +128,11 @@ class GoogleCalendarController extends GetxController {
     required List<String> employeeEmails,
   }) async {
     if (calendarApi == null) {
-      Get.context?.showAppSnackBar(
-        message: "⚠️ Not Logged In, Please login as Admin first",
-        backgroundColor: colorRed,
-        textColor: colorWhite,
-      );
+      // Get.context?.showAppSnackBar(
+      //   message: "⚠️ Not Logged In, Please login as Admin first",
+      //   backgroundColor: colorRed,
+      //   textColor: colorWhite,
+      // );
       return null;
     }
 
@@ -256,11 +256,11 @@ class GoogleCalendarController extends GetxController {
   }) async {
     if (calendarApi == null) {
       log('⚠️ Not logged in to Google Calendar');
-      Get.context?.showAppSnackBar(
-        message: "⚠️ Not logged in. Please login as Admin.",
-        backgroundColor: colorRed,
-        textColor: colorWhite,
-      );
+      // Get.context?.showAppSnackBar(
+      //   message: "⚠️ Not logged in. Please login as Admin.",
+      //   backgroundColor: colorRed,
+      //   textColor: colorWhite,
+      // );
       return null;
     }
 
@@ -362,11 +362,11 @@ class GoogleCalendarController extends GetxController {
       return updatedEvent.id;
     } catch (e) {
       log('💥 Failed to update/create event: $e');
-      Get.context?.showAppSnackBar(
-        message: '💥 Failed to update/create event',
-        backgroundColor: colorRed,
-        textColor: colorWhite,
-      );
+      // Get.context?.showAppSnackBar(
+      //   message: '💥 Failed to update/create event',
+      //   backgroundColor: colorRed,
+      //   textColor: colorWhite,
+      // );
       log("----------------------------------------------------");
       return null;
     }

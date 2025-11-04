@@ -504,11 +504,11 @@ class AddLeadController extends GetxController {
       }
     } catch (e) {
       log('💥 Failed to add Google Calendar event: $e');
-      Get.context?.showAppSnackBar(
-        message: 'Event could not be added to Google Calendar',
-        backgroundColor: colorRedCalendar,
-        textColor: colorWhite,
-      );
+      // Get.context?.showAppSnackBar(
+      //   message: 'Event could not be added to Google Calendar',
+      //   backgroundColor: colorRedCalendar,
+      //   textColor: colorWhite,
+      // );
       return;
     }
 
