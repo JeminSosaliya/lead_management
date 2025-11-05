@@ -63,8 +63,8 @@ class HomeScreen extends StatelessWidget {
               .collection('users')
               .doc(currentUser.uid)
               .update({
-            'fcmToken': null,  // ⬅️ Set to null, don't use arrayRemove
-          });
+                'fcmToken': null, // ⬅️ Set to null, don't use arrayRemove
+              });
           log("✅ FCM token removed for user: ${currentUser.uid}");
         } catch (e) {
           log("⚠️ Error removing FCM token: $e");
@@ -92,11 +92,14 @@ class HomeScreen extends StatelessWidget {
       );
     }
   }
+
   @override
   Widget build(BuildContext context) {
     Get.put(HomeController());
     final ProfileController _profileController = Get.put(ProfileController());
-    final PermissionController _permissionController = Get.put(PermissionController());
+    final PermissionController _permissionController = Get.put(
+      PermissionController(),
+    );
 
     return GetBuilder<HomeController>(
       builder: (controller) {
@@ -903,13 +906,14 @@ class HomeScreen extends StatelessWidget {
             );
           },
           child: CustomCard(
-            isDelay: _isFollowUpDelayed(
-              lead.lastFollowUpDate ??     
-                  ((lead.followUpLeads != null &&
-                          lead.followUpLeads!.isNotEmpty)
-                      ? lead.followUpLeads!.last.nextFollowUp
-                      : null),
-            ),
+            // isDelay: _isFollowUpDelayed(
+            //   lead.lastFollowUpDate ??
+            //       ((lead.followUpLeads != null &&
+            //               lead.followUpLeads!.isNotEmpty)
+            //           ? lead.followUpLeads!.last.nextFollowUp
+            //           : null),
+            // ),
+            isDelay: _isFollowUpDelayed(lead.lastFollowUpDate),
             horizontalPadding: 0,
             verticalPadding: 0,
             child: Column(
@@ -1121,7 +1125,8 @@ class HomeScreen extends StatelessWidget {
       // Try Firestore console human-readable format, e.g.
       // "November 4, 2025 at 7:20:00 PM UTC+5:30"
       final RegExp rx = RegExp(
-          r'^(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),\s+(\d{4})\s+at\s+(\d{1,2}):(\d{2}):(\d{2})\s+(AM|PM)\s+UTC([+-]\d{1,2})(?::(\d{2}))?$');
+        r'^(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),\s+(\d{4})\s+at\s+(\d{1,2}):(\d{2}):(\d{2})\s+(AM|PM)\s+UTC([+-]\d{1,2})(?::(\d{2}))?$',
+      );
       final Match? m = rx.firstMatch(value.trim());
       if (m != null) {
         final String monthName = m.group(1)!;
@@ -1155,15 +1160,23 @@ class HomeScreen extends StatelessWidget {
         final int month = monthMap[monthName] ?? 1;
 
         // Build the wall-clock time as if it were UTC (temporary)
-        final DateTime wallClockAsUtc =
-            DateTime.utc(year, month, day, hour, minute, second);
+        final DateTime wallClockAsUtc = DateTime.utc(
+          year,
+          month,
+          day,
+          hour,
+          minute,
+          second,
+        );
 
         // Apply timezone offset: "UTC+05:30" means local = UTC + 5:30
         // So, UTC instant = local - 5:30
         final int sign = offsetHour >= 0 ? 1 : -1; // includes sign of hours
         final int absHour = offsetHour.abs();
-        final Duration offset =
-            Duration(hours: absHour * sign, minutes: offsetMinute * sign);
+        final Duration offset = Duration(
+          hours: absHour * sign,
+          minutes: offsetMinute * sign,
+        );
 
         final DateTime utcInstant = wallClockAsUtc.subtract(offset);
         return utcInstant.toLocal();
@@ -1178,7 +1191,8 @@ class HomeScreen extends StatelessWidget {
       return lead.updatedAt
               .toDate()
               .difference(lead.createdAt.toDate())
-              .inSeconds > 5;
+              .inSeconds >
+          5;
     } catch (e) {
       return false;
     }

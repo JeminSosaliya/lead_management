@@ -171,6 +171,11 @@ class LeadDetailsScreen extends StatelessWidget {
                         controller: controller.nameController,
                         textCapitalization: TextCapitalization.words,
                         prefixIcon: Icon(Icons.person, color: colorGrey),
+                        textInputAction: TextInputAction.next,
+                        focusNode: controller.fnEName,
+                        onFieldSubmitted: (_) {
+                          controller.fnEPhone.requestFocus();
+                        },
                         validator: (value) {
                           if (value == null || value.isEmpty)
                             return 'Please enter the client name';
@@ -188,6 +193,11 @@ class LeadDetailsScreen extends StatelessWidget {
                           FilteringTextInputFormatter.digitsOnly,
                           LengthLimitingTextInputFormatter(15),
                         ],
+                        textInputAction: TextInputAction.next,
+                        focusNode: controller.fnEPhone,
+                        onFieldSubmitted: (_) {
+                          controller.fnEAltPhone.requestFocus();
+                        },
                         validator: (value) {
                           if (value == null || value.isEmpty)
                             return 'Enter phone number';
@@ -207,6 +217,11 @@ class LeadDetailsScreen extends StatelessWidget {
                           FilteringTextInputFormatter.digitsOnly,
                           LengthLimitingTextInputFormatter(15),
                         ],
+                        textInputAction: TextInputAction.next,
+                        focusNode: controller.fnEAltPhone,
+                        onFieldSubmitted: (_) {
+                          controller.fnEEmail.requestFocus();
+                        },
                         validator: (value) {
                           if (value != null && value.isNotEmpty) {
                             if (value.length < 10)
@@ -222,6 +237,11 @@ class LeadDetailsScreen extends StatelessWidget {
                         controller: controller.emailController,
                         prefixIcon: Icon(Icons.email, color: colorGrey),
                         keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        focusNode: controller.fnEEmail,
+                        onFieldSubmitted: (_) {
+                          controller.fnECompany.requestFocus();
+                        },
                         validator: (value) {
                           if (value != null && value.isNotEmpty) {
                             if (!RegExp(
@@ -246,6 +266,11 @@ class LeadDetailsScreen extends StatelessWidget {
                         controller: controller.companyController,
                         textCapitalization: TextCapitalization.words,
                         prefixIcon: Icon(Icons.business, color: colorGrey),
+                        textInputAction: TextInputAction.next,
+                        focusNode: controller.fnECompany,
+                        onFieldSubmitted: (_) {
+                          controller.fnEAddress.requestFocus();
+                        },
                       ),
                       SizedBox(height: height * 0.023),
                       CustomTextFormField(
@@ -255,6 +280,11 @@ class LeadDetailsScreen extends StatelessWidget {
                         textCapitalization: TextCapitalization.words,
                         maxLines: 2,
                         prefixIcon: Icon(Icons.home, color: colorGrey),
+                        textInputAction: TextInputAction.next,
+                        focusNode: controller.fnEAddress,
+                        onFieldSubmitted: (_) {
+                          controller.fnEDesc.requestFocus();
+                        },
                       ),
                       SizedBox(height: height * 0.023),
                       CustomTextFormField(
@@ -264,6 +294,11 @@ class LeadDetailsScreen extends StatelessWidget {
                         textCapitalization: TextCapitalization.words,
                         maxLines: 3,
                         prefixIcon: Icon(Icons.note, color: colorGrey),
+                        textInputAction: TextInputAction.next,
+                        focusNode: controller.fnEDesc,
+                        onFieldSubmitted: (_) {
+                          controller.fnERefName.requestFocus();
+                        },
                         validator: (value) {
                           if (value == null || value.isEmpty)
                             return 'Please enter the note';
@@ -277,6 +312,11 @@ class LeadDetailsScreen extends StatelessWidget {
                         controller: controller.referralNameController,
                         textCapitalization: TextCapitalization.words,
                         prefixIcon: Icon(Icons.person, color: colorGrey),
+                        textInputAction: TextInputAction.next,
+                        focusNode: controller.fnERefName,
+                        onFieldSubmitted: (_) {
+                          controller.fnERefNumber.requestFocus();
+                        },
                       ),
                       SizedBox(height: height * 0.023),
                       CustomTextFormField(
@@ -289,6 +329,11 @@ class LeadDetailsScreen extends StatelessWidget {
                           FilteringTextInputFormatter.digitsOnly,
                           LengthLimitingTextInputFormatter(10),
                         ],
+                        textInputAction: TextInputAction.next,
+                        focusNode: controller.fnERefNumber,
+                        onFieldSubmitted: (_) {
+                          controller.fnESource.requestFocus();
+                        },
                       ),
                       SizedBox(height: height * 0.023),
                       SearchableCSCDropdown(
@@ -301,6 +346,9 @@ class LeadDetailsScreen extends StatelessWidget {
                           controller.setSelectedSource(value);
                         },
                         showError: controller.showSourceError,
+                        focusNode: controller.fnESource,
+                        textInputAction: TextInputAction.next,
+                        nextFocusNode: controller.fnEReassign,
                       ),
                       if (controller.showSourceError)
                         Padding(
@@ -327,6 +375,9 @@ class LeadDetailsScreen extends StatelessWidget {
                           controller.setSelectedEmployee(value);
                         },
                         showError: controller.showEmployeeError,
+                        focusNode: controller.fnEReassign,
+                        textInputAction: TextInputAction.next,
+                        nextFocusNode: controller.fnETechnician,
                       ),
                       if (controller.showEmployeeError)
                         Padding(
@@ -351,6 +402,9 @@ class LeadDetailsScreen extends StatelessWidget {
                         onChanged: (value) {
                           controller.setSelectedTechnician(value);
                         },
+                        focusNode: controller.fnETechnician,
+                        textInputAction: TextInputAction.done,
+                        nextFocusNode: null,
                       ),
                       SizedBox(height: height * 0.023),
                       WantText(
@@ -398,15 +452,6 @@ class LeadDetailsScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      // SizedBox(height: height * 0.023),
-                      // CustomTextFormField(
-                      //   labelText: "Initial Follow-up Date & Time",
-                      //   hintText: 'Initial Follow-up Date & Time',
-                      //   controller: controller.initialFollowUpController,
-                      //   readOnly: true,
-                      //   onTap: controller.pickInitialFollowUp,
-                      //   prefixIcon: Icon(Icons.calendar_today, color: colorGrey),
-                      // ),
                       SizedBox(height: height * 0.023),
                       Obx(
                             () => CustomButton(
@@ -830,6 +875,22 @@ class LeadDetailsScreen extends StatelessWidget {
                               textColor: colorGreenOne,
                             ),
                           ],
+
+                          if (hasValue(lead.description)) ...[
+                            SizedBox(height: height * 0.01),
+                            WantText(
+                              text: "Description/Notes",
+                              fontSize: width * 0.041,
+                              fontWeight: FontWeight.w500,
+                              textColor: colorBlack,
+                            ),
+                            WantText(
+                              text: lead.description!,
+                              fontSize: width * 0.035,
+                              fontWeight: FontWeight.w500,
+                              textColor: colorRed,
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -913,7 +974,19 @@ class LeadDetailsScreen extends StatelessWidget {
                       child: CustomButton(
                         Width: width,
                         onTap: controller.callLead,
-                        label: '📞 Call Lead',
+                        labelWidget: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.call, color: colorWhite,size: width*0.050,),
+                            SizedBox(width: width * 0.016),
+                            WantText(
+                              text: 'Call Lead',
+                              fontSize: width * 0.041,
+                              fontWeight: FontWeight.w600,
+                              textColor: colorWhite,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 
@@ -999,6 +1072,7 @@ class LeadDetailsScreen extends StatelessWidget {
                                   labelText: "Call Note",
                                   hintText: 'Enter call notes...',
                                   controller: controller.noteController,
+                                  textCapitalization: TextCapitalization.words,
                                   maxLines: 3,
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {

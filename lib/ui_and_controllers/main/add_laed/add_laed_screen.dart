@@ -48,7 +48,7 @@ class AddLeadScreen extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.only(right: width * 0.046),
                   child: WantText(
-                    text: "Add Lead",
+                    text: "Save",
                     fontSize: width * 0.041,
                     textColor: colorWhite,
                     fontWeight: FontWeight.w600,
@@ -79,7 +79,11 @@ class AddLeadScreen extends StatelessWidget {
                           controller: controller.nameController,
                           prefixIcon: Icon(Icons.person, color: colorGrey),
                           textCapitalization: TextCapitalization.words,
-
+                          textInputAction: TextInputAction.next,
+                          focusNode: controller.fnName,
+                          onFieldSubmitted: (_) {
+                            controller.fnPhone.requestFocus();
+                          },
                           validator: (value) {
                             if (value == null || value.isEmpty)
                               return 'Please enter the client name';
@@ -98,6 +102,11 @@ class AddLeadScreen extends StatelessWidget {
                             FilteringTextInputFormatter.digitsOnly,
                             LengthLimitingTextInputFormatter(15),
                           ],
+                          textInputAction: TextInputAction.next,
+                          focusNode: controller.fnPhone,
+                          onFieldSubmitted: (_) {
+                            controller.fnAltPhone.requestFocus();
+                          },
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Enter phone number';
@@ -121,6 +130,11 @@ class AddLeadScreen extends StatelessWidget {
                             FilteringTextInputFormatter.digitsOnly,
                             LengthLimitingTextInputFormatter(15),
                           ],
+                          textInputAction: TextInputAction.next,
+                          focusNode: controller.fnAltPhone,
+                          onFieldSubmitted: (_) {
+                            controller.fnEmail.requestFocus();
+                          },
                           validator: (value) {
                             if (value != null && value.isNotEmpty) {
                               if (value.length < 10) {
@@ -137,6 +151,11 @@ class AddLeadScreen extends StatelessWidget {
                           controller: controller.emailController,
                           prefixIcon: Icon(Icons.email, color: colorGrey),
                           keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          focusNode: controller.fnEmail,
+                          onFieldSubmitted: (_) {
+                            controller.fnCategory.requestFocus();
+                          },
                           validator: (value) {
                             if (value != null && value.isNotEmpty) {
                               if (!RegExp(
@@ -167,6 +186,9 @@ class AddLeadScreen extends StatelessWidget {
                           onChanged: (value) {
                             controller.setSelectedTechnician(value);
                           },
+                          focusNode: controller.fnCategory,
+                          textInputAction: TextInputAction.next,
+                          nextFocusNode: controller.fnCompany,
                         ),
                         SizedBox(height: height * 0.023),
 
@@ -176,6 +198,11 @@ class AddLeadScreen extends StatelessWidget {
                           textCapitalization: TextCapitalization.words,
                           controller: controller.companyController,
                           prefixIcon: Icon(Icons.business, color: colorGrey),
+                          textInputAction: TextInputAction.next,
+                          focusNode: controller.fnCompany,
+                          onFieldSubmitted: (_) {
+                            controller.fnAddress.requestFocus();
+                          },
                         ),
                         SizedBox(height: height * 0.023),
                         CustomTextFormField(
@@ -185,6 +212,11 @@ class AddLeadScreen extends StatelessWidget {
                           textCapitalization: TextCapitalization.words,
                           maxLines: 2,
                           prefixIcon: Icon(Icons.home, color: colorGrey),
+                          textInputAction: TextInputAction.next,
+                          focusNode: controller.fnAddress,
+                          onFieldSubmitted: (_) {
+                            controller.fnDescription.requestFocus();
+                          },
                         ),
                         SizedBox(height: height * 0.023),
 
@@ -195,6 +227,11 @@ class AddLeadScreen extends StatelessWidget {
                           maxLines: 3,
                           prefixIcon: Icon(Icons.note, color: colorGrey),
                           textCapitalization: TextCapitalization.words,
+                          textInputAction: TextInputAction.next,
+                          focusNode: controller.fnDescription,
+                          onFieldSubmitted: (_) {
+                            controller.fnSource.requestFocus();        // was: fnRefName
+                          },
                           validator: (value) {
                             if (value == null || value.isEmpty)
                               return 'Please enter the note';
@@ -214,6 +251,9 @@ class AddLeadScreen extends StatelessWidget {
                             controller.setSelectedSource(value);
                           },
                           showError: controller.showSourceError,
+                          focusNode: controller.fnSource,
+                          textInputAction: TextInputAction.next,
+                          nextFocusNode: controller.fnAssignTo,
                         ),
                         if (controller.selectedSource == null &&
                             controller.showSourceError)
@@ -285,6 +325,9 @@ class AddLeadScreen extends StatelessWidget {
                                     }
                                   },
                                   showError: controller.showEmployeeError,
+                                  focusNode: controller.fnAssignTo,
+                                  textInputAction: TextInputAction.next,
+                                  nextFocusNode: controller.fnRefName,
                                 ),
 
                                 if (controller.selectedEmployee == null &&
@@ -366,6 +409,11 @@ class AddLeadScreen extends StatelessWidget {
                           controller: controller.referralNameController,
                           textCapitalization: TextCapitalization.words,
                           prefixIcon: Icon(Icons.person, color: colorGrey),
+                          textInputAction: TextInputAction.next,
+                          focusNode: controller.fnRefName,
+                          onFieldSubmitted: (_) {
+                            controller.fnRefNumber.requestFocus();
+                          },
                         ),
                         SizedBox(height: height * 0.023),
                         CustomTextFormField(
@@ -374,7 +422,11 @@ class AddLeadScreen extends StatelessWidget {
                           controller: controller.referralNumberController,
                           prefixIcon: Icon(Icons.call, color: colorGrey),
                           keyboardType: TextInputType.phone,
-
+                          textInputAction: TextInputAction.done,
+                          focusNode: controller.fnRefNumber,
+                          onFieldSubmitted: (_) {
+                            FocusScope.of(context).unfocus();
+                          },
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
                             LengthLimitingTextInputFormatter(15),

@@ -37,7 +37,8 @@ class ChatSection extends StatelessWidget {
             child: StreamBuilder(
               stream: controller.messageStream(),
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+                if (snapshot.connectionState == ConnectionState.waiting &&
+                    !snapshot.hasData) {
                   return const Center(
                     child: CircularProgressIndicator(color: colorMainTheme),
                   );
@@ -52,8 +53,16 @@ class ChatSection extends StatelessWidget {
                     ),
                   );
                 }
-                final docs = (snapshot.data as QuerySnapshot).docs;
+                final qs = snapshot.data as QuerySnapshot<Map<String, dynamic>>;
+                final docs = qs.docs;
 
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (controller.chatScrollController.hasClients) {
+                    controller.chatScrollController.jumpTo(
+                      controller.chatScrollController.position.maxScrollExtent,
+                    );
+                  }
+                });
                 bool _isSameDay(DateTime a, DateTime b) {
                   return a.year == b.year &&
                       a.month == b.month &&

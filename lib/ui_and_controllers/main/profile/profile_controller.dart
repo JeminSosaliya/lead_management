@@ -22,8 +22,9 @@ class ProfileController extends GetxController {
     fetchEmployeeData();
   }
 
-  Future<void> fetchEmployeeData() async {
+  Future<void> fetchEmployeeData({Duration? minShimmer}) async {
     final FirebaseAuth _auth = FirebaseAuth.instance;
+    final DateTime _start = DateTime.now();
     try {
       _isLoading.value = true;
       _errorMessage.value = '';
@@ -154,6 +155,12 @@ class ProfileController extends GetxController {
         stackTrace: StackTrace.current,
       );
     } finally {
+      if (minShimmer != null) {
+        final elapsed = DateTime.now().difference(_start);
+        if (elapsed < minShimmer) {
+          await Future.delayed(minShimmer - elapsed);
+        }
+      }
       _isLoading.value = false;
     }
   }

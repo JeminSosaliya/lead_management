@@ -59,6 +59,19 @@ class AddLeadController extends GetxController {
   TextEditingController referralNameController = TextEditingController();
   TextEditingController referralNumberController = TextEditingController();
 
+  final FocusNode fnName = FocusNode();
+  final FocusNode fnPhone = FocusNode();
+  final FocusNode fnAltPhone = FocusNode();
+  final FocusNode fnEmail = FocusNode();
+  final FocusNode fnCompany = FocusNode();
+  final FocusNode fnAddress = FocusNode();
+  final FocusNode fnDescription = FocusNode();
+  final FocusNode fnRefName = FocusNode();
+  final FocusNode fnRefNumber = FocusNode();
+  final FocusNode fnCategory = FocusNode();
+  final FocusNode fnSource = FocusNode();
+  final FocusNode fnAssignTo = FocusNode();
+
   final List<String> sources = [
     'Website',
     'Phone',
@@ -712,6 +725,15 @@ class AddLeadController extends GetxController {
     referralNameController.dispose();
     referralNumberController.dispose();
     addressController.dispose();
+    fnName.dispose();
+    fnPhone.dispose();
+    fnAltPhone.dispose();
+    fnEmail.dispose();
+    fnCompany.dispose();
+    fnAddress.dispose();
+    fnDescription.dispose();
+    fnRefName.dispose();
+    fnRefNumber.dispose();
     super.onClose();
   }
 }

@@ -83,6 +83,19 @@ class LeadDetailsController extends GetxController {
   TextEditingController initialFollowUpController = TextEditingController();
   TextEditingController altPhoneController = TextEditingController();
 
+  final FocusNode fnEName = FocusNode();
+  final FocusNode fnEPhone = FocusNode();
+  final FocusNode fnEAltPhone = FocusNode();
+  final FocusNode fnEEmail = FocusNode();
+  final FocusNode fnECompany = FocusNode();
+  final FocusNode fnEAddress = FocusNode();
+  final FocusNode fnEDesc = FocusNode();
+  final FocusNode fnERefName = FocusNode();
+  final FocusNode fnERefNumber = FocusNode();
+  final FocusNode fnESource = FocusNode();
+  final FocusNode fnEReassign = FocusNode();
+  final FocusNode fnETechnician = FocusNode();
+
   LeadDetailsController({required this.leadId});
 
   bool get isAdmin => ListConst.currentUserProfileData.type == 'admin';
@@ -1112,6 +1125,19 @@ class LeadDetailsController extends GetxController {
     if (chatScrollController.hasClients) {
       chatScrollController.dispose();
     }
+
+    fnEName.dispose();
+    fnEPhone.dispose();
+    fnEAltPhone.dispose();
+    fnEEmail.dispose();
+    fnECompany.dispose();
+    fnEAddress.dispose();
+    fnEDesc.dispose();
+    fnERefName.dispose();
+    fnERefNumber.dispose();
+    fnESource.dispose();
+    fnEReassign.dispose();
+    fnETechnician.dispose();
     super.onClose();
   }
 
