@@ -27,6 +27,7 @@ class LeadDetailsController extends GetxController {
   Lead? lead;
   bool isLoading = true;
   final _isUpdating = false.obs;
+
   bool get isUpdating => _isUpdating.value;
   bool showUpdateForm = false;
   bool showResponseError = false;
@@ -81,14 +82,21 @@ class LeadDetailsController extends GetxController {
   TextEditingController referralNumberController = TextEditingController();
   TextEditingController initialFollowUpController = TextEditingController();
   TextEditingController altPhoneController = TextEditingController();
+
   LeadDetailsController({required this.leadId});
+
   bool get isAdmin => ListConst.currentUserProfileData.type == 'admin';
-  String get currentUserId => ListConst.currentUserProfileData.uid?.toString() ?? '';
-  String get currentUserName => ListConst.currentUserProfileData.name?.toString() ?? '';
+
+  String get currentUserId =>
+      ListConst.currentUserProfileData.uid?.toString() ?? '';
+
+  String get currentUserName =>
+      ListConst.currentUserProfileData.name?.toString() ?? '';
 
   bool get canChat {
     if (lead == null) return false;
-    return currentUserId == (lead!.addedBy) || currentUserId == (lead!.assignedTo);
+    return currentUserId == (lead!.addedBy) ||
+        currentUserId == (lead!.assignedTo);
   }
 
   @override
@@ -98,8 +106,6 @@ class LeadDetailsController extends GetxController {
     fetchEmployees();
     fetchTechnicianTypes();
   }
-
-
 
   Future<void> fetchEmployees() async {
     try {
@@ -194,7 +200,7 @@ class LeadDetailsController extends GetxController {
       selectedEmployee = lead?.assignedTo;
       selectedEmployeeName = lead?.assignedToName;
       final employee = employees.firstWhere(
-            (e) => e['name'] == selectedEmployeeName,
+        (e) => e['name'] == selectedEmployeeName,
         orElse: () => {},
       );
       employeeOldEmail = employee['email']?.toString() ?? '';
@@ -208,7 +214,7 @@ class LeadDetailsController extends GetxController {
 
     if (value != null && value.trim().isNotEmpty) {
       final employee = employees.firstWhere(
-            (e) => e['name'] == value,
+        (e) => e['name'] == value,
         orElse: () => {},
       );
 
@@ -277,7 +283,7 @@ class LeadDetailsController extends GetxController {
     }
 
     final result = await Get.to(
-          () => LocationPickerScreen(
+      () => LocationPickerScreen(
         initialLatitude: selectedLatitude,
         initialLongitude: selectedLongitude,
       ),
@@ -287,7 +293,7 @@ class LeadDetailsController extends GetxController {
       selectedLatitude = result['latitude'];
       selectedLongitude = result['longitude'];
       locationAddress =
-      'Lat: ${selectedLatitude!.toStringAsFixed(6)}, Lng: ${selectedLongitude!.toStringAsFixed(6)}';
+          'Lat: ${selectedLatitude!.toStringAsFixed(6)}, Lng: ${selectedLongitude!.toStringAsFixed(6)}';
       update();
     }
   }
@@ -305,8 +311,8 @@ class LeadDetailsController extends GetxController {
     if (date != null) {
       bool isToday =
           date.year == now.year &&
-              date.month == now.month &&
-              date.day == now.day;
+          date.month == now.month &&
+          date.day == now.day;
 
       TimeOfDay initialTime = isToday
           ? TimeOfDay.fromDateTime(now.add(Duration(minutes: 1)))
@@ -361,7 +367,7 @@ class LeadDetailsController extends GetxController {
     try {
       Lead updatedLead = Lead(
         leadId: leadId,
-        followUpLeads:  lead!.followUpLeads,
+        followUpLeads: lead!.followUpLeads,
         clientName: nameController.text.trim(),
         clientPhone: phoneController.text.trim(),
         clientEmail: emailController.text.trim().isEmpty
@@ -415,7 +421,7 @@ class LeadDetailsController extends GetxController {
             description: updatedLead.description ?? lead!.description ?? '',
             startTime: initialFollowUp ?? DateTime.now(),
             endTime:
-            initialFollowUp?.add(const Duration(minutes: 5)) ??
+                initialFollowUp?.add(const Duration(minutes: 5)) ??
                 DateTime.now().add(const Duration(days: 1)),
             oldEmployeeEmails: [employeeOldEmail],
             newEmployeeEmails: [selectedEmployeeEmail],
@@ -431,7 +437,6 @@ class LeadDetailsController extends GetxController {
           log(
             "⚠️ Google Calendar update failed: $e, email: $selectedEmployeeEmail",
           );
-
         }
       }
 
@@ -486,7 +491,9 @@ class LeadDetailsController extends GetxController {
   }) async {
     try {
       if (followUpTime == null && content == null) {
-        log('⚠️ No follow-up time or content provided, skipping reminder update');
+        log(
+          '⚠️ No follow-up time or content provided, skipping reminder update',
+        );
         return;
       }
 
@@ -647,6 +654,7 @@ class LeadDetailsController extends GetxController {
         .orderBy('createdAt', descending: false)
         .snapshots();
   }
+
   Future<void> sendMessage() async {
     if (_isDisposed) return;
     final text = chatController.text.trim();
@@ -659,11 +667,11 @@ class LeadDetailsController extends GetxController {
           .doc(leadId)
           .collection('messages')
           .add({
-        'text': text,
-        'senderId': currentUserId,
-        'senderName': currentUserName,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+            'text': text,
+            'senderId': currentUserId,
+            'senderName': currentUserName,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
       chatController.clear();
 
       // Notify both participants (addedBy and assignedTo), excluding sender
@@ -843,20 +851,20 @@ class LeadDetailsController extends GetxController {
   void openWhatsApp(String phone) async {
     try {
       String cleanPhone = phone.replaceAll(RegExp(r'[^\d+]'), '');
-      
+
       cleanPhone = cleanPhone.replaceAll(RegExp(r'[\s\-\(\)]'), '');
-      
+
       if (!cleanPhone.startsWith('+')) {
         if (cleanPhone.startsWith('0')) {
           cleanPhone = cleanPhone.substring(1);
         }
         cleanPhone = '+91$cleanPhone';
       }
-      
+
       if (cleanPhone.startsWith('91') && cleanPhone.length == 12) {
         cleanPhone = '+$cleanPhone';
       }
-      
+
       final phoneRegex = RegExp(r'^\+\d{10,15}$');
       if (!phoneRegex.hasMatch(cleanPhone)) {
         Get.context?.showAppSnackBar(
@@ -870,31 +878,25 @@ class LeadDetailsController extends GetxController {
 
       String phoneForUrl = cleanPhone.replaceFirst('+', '');
       final Uri url = Uri.parse('https://wa.me/$phoneForUrl');
-      
+
       log('Opening WhatsApp with phone: $cleanPhone, URL: ${url.toString()}');
       try {
         final launched = await launchUrl(
           url,
           mode: LaunchMode.externalApplication,
         );
-        
+
         if (!launched) {
           throw Exception('Failed to launch WhatsApp');
         }
       } catch (e) {
         log('External launch failed, trying platform default: $e');
         try {
-          await launchUrl(
-            url,
-            mode: LaunchMode.platformDefault,
-          );
+          await launchUrl(url, mode: LaunchMode.platformDefault);
         } catch (e2) {
           log('Platform default failed, trying inAppWebView: $e2');
           try {
-            await launchUrl(
-              url,
-              mode: LaunchMode.inAppWebView,
-            );
+            await launchUrl(url, mode: LaunchMode.inAppWebView);
           } catch (e3) {
             throw Exception('All launch modes failed: $e3');
           }
@@ -903,7 +905,8 @@ class LeadDetailsController extends GetxController {
     } catch (e) {
       log('Error opening WhatsApp: $e');
       Get.context?.showAppSnackBar(
-        message: 'Could not open WhatsApp. Please make sure WhatsApp is installed.',
+        message:
+            'Could not open WhatsApp. Please make sure WhatsApp is installed.',
         backgroundColor: colorRedCalendar,
         textColor: colorWhite,
       );
@@ -923,8 +926,8 @@ class LeadDetailsController extends GetxController {
     if (date != null) {
       bool isToday =
           date.year == now.year &&
-              date.month == now.month &&
-              date.day == now.day;
+          date.month == now.month &&
+          date.day == now.day;
 
       TimeOfDay initialTime = isToday
           ? TimeOfDay.fromDateTime(now.add(Duration(minutes: 1)))
@@ -1006,6 +1009,9 @@ class LeadDetailsController extends GetxController {
         //     ? Timestamp.fromDate(nextFollowUpDateTime!)
         //     : null,
         'updatedAt': Timestamp.now(),
+        'lastFollowUpDate': nextFollowUpDateTime != null
+            ? Timestamp.fromDate(nextFollowUpDateTime!)
+            : null,
       };
 
       try {
@@ -1016,7 +1022,8 @@ class LeadDetailsController extends GetxController {
           clientName: lead!.clientName,
           description: lead!.description ?? '',
           followUpTime: nextFollowUpDateTime,
-          content: noteController.text.trim(), // Call note as content
+          content: noteController.text.trim(),
+          // Call note as content
           isUpdate: true,
         );
         Get.context?.showAppSnackBar(
@@ -1107,9 +1114,12 @@ class LeadDetailsController extends GetxController {
     }
     super.onClose();
   }
+
   Future<AccessCredentials> _getAccessToken() async {
     final serviceAccountPath = dotenv.env['PATH_TO_SECRET'];
-    String serviceAccountJson = await rootBundle.loadString(serviceAccountPath!);
+    String serviceAccountJson = await rootBundle.loadString(
+      serviceAccountPath!,
+    );
     final serviceAccount = ServiceAccountCredentials.fromJson(
       jsonDecode(serviceAccountJson),
     );
@@ -1123,7 +1133,7 @@ class LeadDetailsController extends GetxController {
     required String title,
     required String body,
     String dataType = 'LEAD_MESSAGE', // default keeps chat behavior
-    Map<String, String>? extraData,   // optional extra key/values
+    Map<String, String>? extraData, // optional extra key/values
   }) async {
     if (deviceToken.isEmpty) return false;
     final credentials = await _getAccessToken();
@@ -1165,11 +1175,11 @@ class LeadDetailsController extends GetxController {
             'aps': {
               'alert': {'title': title, 'body': body},
               'sound': 'default',
-              'category': 'FLUTTER_NOTIFICATION_CLICK'
-            }
-          }
-        }
-      }
+              'category': 'FLUTTER_NOTIFICATION_CLICK',
+            },
+          },
+        },
+      },
     };
 
     final response = await http.post(
@@ -1193,7 +1203,9 @@ class LeadDetailsController extends GetxController {
       final String assignedToId = lead!.assignedTo;
 
       final Set<String> recipients = {addedById, assignedToId};
-      recipients.removeWhere((id) => id == currentUserId); // don't notify sender
+      recipients.removeWhere(
+        (id) => id == currentUserId,
+      ); // don't notify sender
 
       for (final userId in recipients) {
         final doc = await fireStore.collection('users').doc(userId).get();
@@ -1218,7 +1230,7 @@ class LeadDetailsController extends GetxController {
     }
   }
 
-/*  Future<void> _notifyLeadUpdated({required String updatedByName}) async {
+  /*  Future<void> _notifyLeadUpdated({required String updatedByName}) async {
     try {
       if (lead == null) return;
 

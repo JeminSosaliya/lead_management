@@ -25,6 +25,7 @@ class Lead {
   final String? clientAltPhone;
   final Timestamp createdAt;
   Timestamp updatedAt;
+  Timestamp? lastFollowUpDate;
   String stage;
   String callStatus;
 
@@ -64,6 +65,7 @@ class Lead {
     this.callStatus = 'notContacted',
     // this.callNote,
     this.initialFollowUp,
+    this.lastFollowUpDate,
     // this.nextFollowUp,
     this.eventId,
     this.followUpLeads,
@@ -99,6 +101,7 @@ class Lead {
       callStatus: map['callStatus'] as String? ?? 'notContacted',
       // callNote: map['callNote'] as String?,
       initialFollowUp: map['initialFollowUp'] as Timestamp?,
+      lastFollowUpDate: map['lastFollowUpDate'] as Timestamp?,
       // nextFollowUp: map['nextFollowUp'] as Timestamp?,
       eventId: map['eventId'] ?? '',
       followUpLeads: map['followUpLeads'] != null
@@ -140,6 +143,7 @@ class Lead {
       'stage': stage,
       'callStatus': callStatus,
       'initialFollowUp': initialFollowUp,
+      'lastFollowUpDate': lastFollowUpDate,
       'eventId': eventId,
       'followUpLeads':
           followUpLeads?.map((followUp) => followUp.toMap()).toList() ?? [],

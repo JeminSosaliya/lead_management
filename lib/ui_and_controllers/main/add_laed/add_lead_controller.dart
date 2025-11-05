@@ -251,6 +251,9 @@ class AddLeadController extends GetxController {
             ? Timestamp.fromDate(nextFollowUp)
             : null,
         eventId: goggleEventId,
+        lastFollowUpDate: nextFollowUp != null
+            ? Timestamp.fromDate(nextFollowUp)
+            : null,
       );
 
       await fireStore.collection('leads').doc(leadId).set(newLead.toMap());
@@ -414,8 +417,8 @@ class AddLeadController extends GetxController {
       errorMessage = 'Client number is required';
     } else if (clientPhoneController.text.length < 10) {
       errorMessage = 'Client number must be more than 9 digits';
-    }
-    else if (altPhoneController.text.isNotEmpty && altPhoneController.text.length < 10) {
+    } else if (altPhoneController.text.isNotEmpty &&
+        altPhoneController.text.length < 10) {
       errorMessage = 'Client alternative number must be more than 9 digits';
     } else if (emailController.text.isNotEmpty &&
         !RegExp(
@@ -559,7 +562,10 @@ class AddLeadController extends GetxController {
       referralNumber: referralNumberController.text.trim().isEmpty
           ? null
           : referralNumberController.text.trim(),
-      clientAltPhone: altPhoneController.text.trim().isEmpty // NEW
+      clientAltPhone:
+          altPhoneController.text
+              .trim()
+              .isEmpty // NEW
           ? null
           : altPhoneController.text.trim(),
       nextFollowUp: nextFollowUp,

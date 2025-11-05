@@ -11,6 +11,7 @@ class CustomCard extends StatelessWidget {
     this.leftMargin,
     this.rightMargin,
     this.topMargin,
+    this.isDelay = false,
   });
 
   final Widget? child;
@@ -19,6 +20,7 @@ class CustomCard extends StatelessWidget {
   final double? rightMargin;
   final double? leftMargin;
   final double? topMargin;
+  final bool isDelay;
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +38,7 @@ class CustomCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorWhite,
         borderRadius: BorderRadius.circular(12),
+        border: isDelay ? Border.all(color: Colors.red, width: 2) : null,
         boxShadow: [
           BoxShadow(color: colorBoxShadow, blurRadius: 7, offset: Offset(4, 3)),
         ],

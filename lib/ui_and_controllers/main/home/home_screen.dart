@@ -903,6 +903,13 @@ class HomeScreen extends StatelessWidget {
             );
           },
           child: CustomCard(
+            isDelay: _isFollowUpDelayed(
+              lead.lastFollowUpDate ??     
+                  ((lead.followUpLeads != null &&
+                          lead.followUpLeads!.isNotEmpty)
+                      ? lead.followUpLeads!.last.nextFollowUp
+                      : null),
+            ),
             horizontalPadding: 0,
             verticalPadding: 0,
             child: Column(
@@ -1019,7 +1026,6 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-
                 Padding(
                   padding: EdgeInsets.only(
                     left: width * 0.041,
@@ -1068,13 +1074,111 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
+  // Returns true when the provided follow-up time is in the past.
+  // Accepts Firestore Timestamp, DateTime, String (including Firestore console format), or epoch milliseconds.
+  bool _isFollowUpDelayed(dynamic followUpRaw) {
+    try {
+      final DateTime? followUp = _parseFollowUpDate(followUpRaw);
+      if (followUp == null) return false;
+
+      final DateTime nowUtc = DateTime.now().toUtc();
+      final DateTime followUpUtc = followUp.toUtc();
+      return followUpUtc.isBefore(nowUtc);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  DateTime? _parseFollowUpDate(dynamic value) {
+    if (value == null) return null;
+
+    // Firestore Timestamp
+    if (value is Timestamp) {
+      return value.toDate();
+    }
+
+    // DateTime provided directly
+    if (value is DateTime) {
+      return value;
+    }
+
+    // Epoch milliseconds or seconds
+    if (value is int) {
+      // Heuristics: treat as milliseconds if it's large enough
+      if (value > 100000000000) {
+        return DateTime.fromMillisecondsSinceEpoch(value, isUtc: true);
+      } else {
+        return DateTime.fromMillisecondsSinceEpoch(value * 1000, isUtc: true);
+      }
+    }
+
+    // String parsing
+    if (value is String) {
+      // Try standard ISO parsing first
+      final DateTime? iso = DateTime.tryParse(value);
+      if (iso != null) return iso;
+
+      // Try Firestore console human-readable format, e.g.
+      // "November 4, 2025 at 7:20:00 PM UTC+5:30"
+      final RegExp rx = RegExp(
+          r'^(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),\s+(\d{4})\s+at\s+(\d{1,2}):(\d{2}):(\d{2})\s+(AM|PM)\s+UTC([+-]\d{1,2})(?::(\d{2}))?$');
+      final Match? m = rx.firstMatch(value.trim());
+      if (m != null) {
+        final String monthName = m.group(1)!;
+        final int day = int.parse(m.group(2)!);
+        final int year = int.parse(m.group(3)!);
+        int hour = int.parse(m.group(4)!);
+        final int minute = int.parse(m.group(5)!);
+        final int second = int.parse(m.group(6)!);
+        final String ampm = m.group(7)!;
+        final int offsetHour = int.parse(m.group(8)!);
+        final int offsetMinute = int.parse(m.group(9) ?? '0');
+
+        // Convert 12-hour to 24-hour
+        if (ampm.toUpperCase() == 'PM' && hour < 12) hour += 12;
+        if (ampm.toUpperCase() == 'AM' && hour == 12) hour = 0;
+
+        final Map<String, int> monthMap = {
+          'January': 1,
+          'February': 2,
+          'March': 3,
+          'April': 4,
+          'May': 5,
+          'June': 6,
+          'July': 7,
+          'August': 8,
+          'September': 9,
+          'October': 10,
+          'November': 11,
+          'December': 12,
+        };
+        final int month = monthMap[monthName] ?? 1;
+
+        // Build the wall-clock time as if it were UTC (temporary)
+        final DateTime wallClockAsUtc =
+            DateTime.utc(year, month, day, hour, minute, second);
+
+        // Apply timezone offset: "UTC+05:30" means local = UTC + 5:30
+        // So, UTC instant = local - 5:30
+        final int sign = offsetHour >= 0 ? 1 : -1; // includes sign of hours
+        final int absHour = offsetHour.abs();
+        final Duration offset =
+            Duration(hours: absHour * sign, minutes: offsetMinute * sign);
+
+        final DateTime utcInstant = wallClockAsUtc.subtract(offset);
+        return utcInstant.toLocal();
+      }
+    }
+
+    return null;
+  }
+
   bool _isLeadUpdated(Lead lead) {
     try {
       return lead.updatedAt
               .toDate()
               .difference(lead.createdAt.toDate())
-              .inSeconds >
-          5;
+              .inSeconds > 5;
     } catch (e) {
       return false;
     }
