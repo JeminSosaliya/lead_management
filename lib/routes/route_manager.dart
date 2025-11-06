@@ -12,6 +12,7 @@ import 'package:lead_management/ui_and_controllers/main/member_details_screen/me
 import 'package:lead_management/ui_and_controllers/main/member_list_screen/member_list_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/profile/profile_screen.dart';
 import 'package:lead_management/ui_and_controllers/splash/splash_screen.dart';
+import 'package:lead_management/ui_and_controllers/main/notifications/notification_screen.dart';
 
 import '../ui_and_controllers/auth/goggle_login/admin_login_page.dart';
 
@@ -32,6 +33,7 @@ class AppRoutes {
   static const String analyticsListScreen = "/analyticsListScreen";
   static const String leadDetailsScreen = "/leadDetailsScreen";
   static const String goggleLogin = "/adminLogin";
+  static const String notifications = "/notifications";
 
 
   static List<GetPage> pages = [
@@ -52,5 +54,6 @@ class AppRoutes {
     GetPage(name: analytics, page: () => const AnalyticsScreen()),
     GetPage(name: analyticsListScreen, page: () => AnalyticsListScreen()),
     GetPage(name: leadDetailsScreen, page: () => LeadDetailsScreen()),
+    GetPage(name: notifications, page: () => const NotificationScreen()),
   ];
 }

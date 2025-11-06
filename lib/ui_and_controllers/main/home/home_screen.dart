@@ -15,12 +15,10 @@ import 'package:lead_management/core/utils/user_status_service.dart';
 import 'package:lead_management/model/lead_add_model.dart';
 import 'package:lead_management/routes/route_manager.dart';
 import 'package:lead_management/ui_and_controllers/main/home/home_controller.dart';
-import 'package:lead_management/ui_and_controllers/main/lead_details_screen/lead_details_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/profile/profile_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_shimmer.dart';
-import 'package:lead_management/ui_and_controllers/widgets/rich_text.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 import 'package:intl/intl.dart';
 
@@ -404,47 +402,57 @@ class HomeScreen extends StatelessWidget {
                                     ),
                                   ],
                                 )
-                              : Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: WantText(
-                                        text: controller.isAdmin
-                                            ? 'Lead Management - Owner'
-                                            : 'My Leads',
-                                        fontSize: width * 0.048,
-                                        fontWeight: FontWeight.w600,
-                                        textColor: colorWhite,
-                                      ),
-                                    ),
-                                    SizedBox(width: width * 0.01),
-                                    Row(
-                                      children: [
-                                        GestureDetector(
-                                          onTap: controller.startSearch,
-                                          child: Icon(
-                                            Icons.search,
-                                            color: colorWhite,
-                                          ),
-                                        ),
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.filter_list,
-                                            color: controller.filtersApplied
-                                                ? colorAmber
-                                                : colorWhite,
-                                          ),
-                                          onPressed: () =>
-                                              _showFilterBottomSheet(
-                                                context,
-                                                controller,
-                                              ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                              :  Row(
+                            mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: WantText(
+                                  text: controller.isAdmin
+                                      ? 'L M - Owner'
+                                      : 'My Leads',
+                                  fontSize: width * 0.048,
+                                  fontWeight: FontWeight.w600,
+                                  textColor: colorWhite,
                                 ),
+                              ),
+                              SizedBox(width: width * 0.01),
+                              Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: controller.startSearch,
+                                    child: Icon(
+                                      Icons.search,
+                                      color: colorWhite,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.filter_list,
+                                      color: controller.filtersApplied
+                                          ? colorAmber
+                                          : colorWhite,
+                                    ),
+                                    onPressed: () =>
+                                        _showFilterBottomSheet(
+                                          context,
+                                          controller,
+                                        ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Get.toNamed(AppRoutes.notifications);
+                                    },
+                                    child: Icon(
+                                      Icons.notifications_none,
+                                      color: colorWhite,
+                                    ),
+                                  ),
+                                  SizedBox(width: width * 0.02,)
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
