@@ -15,6 +15,10 @@ class LoginController extends GetxController {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  final FocusNode fnEmail = FocusNode();
+  final FocusNode fnPassword = FocusNode();
+
   final _isLoading = false.obs;
   final _obscurePassword = true.obs;
   final ProfileController _profileController = Get.put(ProfileController());
@@ -134,6 +138,8 @@ class LoginController extends GetxController {
   void onClose() {
     _emailController.dispose();
     _passwordController.dispose();
+    fnEmail.dispose();
+    fnPassword.dispose();
     super.onClose();
   }
 }

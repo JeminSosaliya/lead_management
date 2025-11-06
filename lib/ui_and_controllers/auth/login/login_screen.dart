@@ -82,6 +82,11 @@ class LoginScreen extends StatelessWidget {
                     color: colorGreyText,
                     size: width * 0.05,
                   ),
+                  textInputAction: TextInputAction.next,
+                  focusNode: controller.fnEmail,
+                  onFieldSubmitted: (_) {
+                    controller.fnPassword.requestFocus();
+                  },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Please enter your email";
@@ -104,6 +109,11 @@ class LoginScreen extends StatelessWidget {
                       color: colorGreyText,
                       size: width * 0.05,
                     ),
+                    textInputAction: TextInputAction.done,
+                    focusNode: controller.fnPassword,
+                    onFieldSubmitted: (_) {
+                      FocusScope.of(context).unfocus();
+                    },
                     suffixIcon: IconButton(
                       icon: Icon(
                         controller.obscurePassword
@@ -139,6 +149,8 @@ class LoginScreen extends StatelessWidget {
                     Width: width,
                   ),
                 ),
+                SizedBox(height: height * 0.03),
+
               ],
             ),
           ),

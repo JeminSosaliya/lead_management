@@ -291,7 +291,7 @@ class GoogleCalendarController extends GetxController {
       attendees: newEmployeeEmails.map((e) => EventAttendee(email: e)).toList(),
       reminders: EventReminders(
         useDefault: false,
-        overrides: [EventReminder(method: 'popup', minutes: 5)],
+        overrides: [EventReminder(method: 'popup', minutes: 15)],
       ),
     );
 

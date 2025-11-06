@@ -104,13 +104,20 @@ class Lead {
       lastFollowUpDate: map['lastFollowUpDate'] as Timestamp?,
       // nextFollowUp: map['nextFollowUp'] as Timestamp?,
       eventId: map['eventId'] ?? '',
-      followUpLeads: map['followUpLeads'] != null
-          ? List<FollowUpLead>.from(
-              (map['followUpLeads'] as List<dynamic>).map(
-                (e) => FollowUpLead.fromMap(e as Map<String, dynamic>),
-              ),
-            )
-          : [],
+      followUpLeads: () {
+        final items = map['followUpLeads'] != null
+            ? List<FollowUpLead>.from(
+          (map['followUpLeads'] as List<dynamic>)
+              .map((e) => FollowUpLead.fromMap(e as Map<String, dynamic>)),
+        )
+            : <FollowUpLead>[];
+        items.sort((a, b) {
+          final aDate = a.nextFollowUp?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
+          final bDate = b.nextFollowUp?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
+          return aDate.compareTo(bDate);
+        });
+        return items;
+      }(),
     );
   }
 

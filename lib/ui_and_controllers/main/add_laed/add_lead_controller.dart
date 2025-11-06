@@ -175,6 +175,36 @@ class AddLeadController extends GetxController {
     }
   }
 
+  String _normalizePhone(String value) {
+    final digitsOnly = value.replaceAll(RegExp(r'\D'), '');
+    if (digitsOnly.isEmpty) return '';
+    if (digitsOnly.length == 11 && digitsOnly.startsWith('0')) {
+      return digitsOnly.substring(1);
+    }
+    if (digitsOnly.length == 12 && digitsOnly.startsWith('91')) {
+      return digitsOnly.substring(2);
+    }
+    if (digitsOnly.length == 13 && digitsOnly.startsWith('091')) {
+      return digitsOnly.substring(3);
+    }
+    if (digitsOnly.length > 10) {
+      return digitsOnly.substring(digitsOnly.length - 10);
+    }
+    return digitsOnly;
+  }
+
+  void _normalizePhoneFields() {
+    clientPhoneController.text = _normalizePhone(clientPhoneController.text);
+    if (altPhoneController.text.trim().isNotEmpty) {
+      altPhoneController.text = _normalizePhone(altPhoneController.text);
+    }
+    if (referralNumberController.text.trim().isNotEmpty) {
+      referralNumberController.text = _normalizePhone(
+        referralNumberController.text,
+      );
+    }
+  }
+
   Future<bool> addLead({
     required String clientName,
     required String clientPhone,
@@ -236,11 +266,13 @@ class AddLeadController extends GetxController {
       Lead newLead = Lead(
         leadId: leadId,
         clientName: clientName,
-        clientPhone: clientPhone,
+        clientPhone: _normalizePhone(clientPhone),
         clientEmail: clientEmail,
         companyName: companyName,
         referralName: referralName,
-        referralNumber: referralNumber,
+        referralNumber: (referralNumber != null && referralNumber.isNotEmpty)
+            ? _normalizePhone(referralNumber)
+            : null,
         source: selectedSource,
         description: description,
         assignedTo: assignedToEmployee,
@@ -257,7 +289,9 @@ class AddLeadController extends GetxController {
         address: addressController.text.trim().isEmpty
             ? null
             : addressController.text.trim(),
-        clientAltPhone: clientAltPhone,
+        clientAltPhone: (clientAltPhone != null && clientAltPhone.isNotEmpty)
+            ? _normalizePhone(clientAltPhone)
+            : null,
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
         initialFollowUp: nextFollowUp != null
@@ -407,6 +441,7 @@ class AddLeadController extends GetxController {
   }
 
   Future<void> submitForm() async {
+    _normalizePhoneFields();
     String currentUserRole =
         ListConst.currentUserProfileData.type ?? 'employee';
 

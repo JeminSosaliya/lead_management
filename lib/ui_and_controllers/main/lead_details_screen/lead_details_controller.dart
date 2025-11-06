@@ -51,6 +51,7 @@ class LeadDetailsController extends GetxController {
   String employeeOldEmail = '';
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
   final List<String> responseOptions = [
+    'Hot Lead',
     'Interested',
     'Not Interested',
     'Will visit office',
@@ -203,6 +204,7 @@ class LeadDetailsController extends GetxController {
       selectedLatitude = lead?.latitude;
       selectedLongitude = lead?.longitude;
       locationAddress = lead?.locationAddress;
+      _normalizeEditPhoneFields();
 
       if (lead?.initialFollowUp != null) {
         initialFollowUp = lead!.initialFollowUp!.toDate();
@@ -366,6 +368,15 @@ class LeadDetailsController extends GetxController {
 
   Future<void> updateLeadDetails() async {
     final calendarController = Get.find<GoogleCalendarController>();
+    _normalizeEditPhoneFields();
+    final normalizedClientPhone = _normalizePhone(phoneController.text);
+    final normalizedAltPhone = altPhoneController.text.trim().isNotEmpty
+        ? _normalizePhone(altPhoneController.text)
+        : null;
+    final normalizedReferralNumber =
+    referralNumberController.text.trim().isNotEmpty
+        ? _normalizePhone(referralNumberController.text)
+        : null;
 
     if (!(editFormKey.currentState?.validate() ?? false) ||
         showSourceError ||
@@ -382,7 +393,7 @@ class LeadDetailsController extends GetxController {
         leadId: leadId,
         followUpLeads: lead!.followUpLeads,
         clientName: nameController.text.trim(),
-        clientPhone: phoneController.text.trim(),
+        clientPhone: normalizedClientPhone,
         clientEmail: emailController.text.trim().isEmpty
             ? null
             : emailController.text.trim(),
@@ -392,9 +403,7 @@ class LeadDetailsController extends GetxController {
         referralName: referralNameController.text.trim().isEmpty
             ? null
             : referralNameController.text.trim(),
-        referralNumber: referralNumberController.text.trim().isEmpty
-            ? null
-            : referralNumberController.text.trim(),
+        referralNumber: normalizedReferralNumber,
         source: selectedSource,
         description: descriptionController.text.trim().isEmpty
             ? null
@@ -413,9 +422,7 @@ class LeadDetailsController extends GetxController {
         address: addressController.text.trim().isEmpty
             ? null
             : addressController.text.trim(),
-        clientAltPhone: altPhoneController.text.trim().isEmpty
-            ? null
-            : altPhoneController.text.trim(),
+        clientAltPhone: normalizedAltPhone,
         createdAt: lead!.createdAt,
         updatedAt: Timestamp.now(),
         initialFollowUp: initialFollowUp != null
@@ -499,7 +506,7 @@ class LeadDetailsController extends GetxController {
     required String clientName,
     required String description,
     required DateTime? followUpTime,
-    String? content, // For call note updates
+    String? content,
     bool isUpdate = false,
   }) async {
     try {
@@ -783,6 +790,34 @@ class LeadDetailsController extends GetxController {
       log("Error opening directions: $e");
     }
   }
+  String _normalizePhone(String value) {
+    final digitsOnly = value.replaceAll(RegExp(r'\D'), '');
+    if (digitsOnly.isEmpty) return '';
+    if (digitsOnly.length == 11 && digitsOnly.startsWith('0')) {
+      return digitsOnly.substring(1);
+    }
+    if (digitsOnly.length == 12 && digitsOnly.startsWith('91')) {
+      return digitsOnly.substring(2);
+    }
+    if (digitsOnly.length == 13 && digitsOnly.startsWith('091')) {
+      return digitsOnly.substring(3);
+    }
+    if (digitsOnly.length > 10) {
+      return digitsOnly.substring(digitsOnly.length - 10);
+    }
+    return digitsOnly;
+  }
+
+  void _normalizeEditPhoneFields() {
+    phoneController.text = _normalizePhone(phoneController.text);
+    if (altPhoneController.text.trim().isNotEmpty) {
+      altPhoneController.text = _normalizePhone(altPhoneController.text);
+    }
+    if (referralNumberController.text.trim().isNotEmpty) {
+      referralNumberController.text =
+          _normalizePhone(referralNumberController.text);
+    }
+  }
 
   void callLead() async {
     if (lead == null) return;
@@ -1013,6 +1048,11 @@ class LeadDetailsController extends GetxController {
               : null,
         ),
       );
+      updatedList.sort((a, b) {
+        final aDate = a.nextFollowUp?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final bDate = b.nextFollowUp?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return aDate.compareTo(bDate);
+      });
       Map<String, dynamic> updates = {
         'stage': newStage,
         'callStatus': newCallStatus,
