@@ -107,6 +107,7 @@ class NotificationUtils {
 
   void onMessage() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      _persistNotification(message);
       showNotification(initializeNotification: false, message: message);
     });
   }
@@ -181,6 +182,7 @@ class NotificationUtils {
         );
       }
     }
+    _persistNotification(message);
     return onMessageOpenApp();
   }
 
@@ -208,6 +210,7 @@ class NotificationUtils {
       RemoteMessage? message,
     ) {
       if (message != null) {
+        _persistNotification(message, preferExistingDoc: true);
         try {
           _pendingPayload = Map<String, dynamic>.from(message.data);
         } catch (_) {
@@ -223,6 +226,7 @@ class NotificationUtils {
 
     /// This function Manage push notification tap when app is in background state
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      _persistNotification(message, preferExistingDoc: true);
       handlePushTap(message.data);
       Map<String, dynamic> notification = {
         "title": message.notification!.title,
@@ -373,6 +377,50 @@ class NotificationUtils {
     } else {
       if (kDebugMode) {
         print("PAYLOAD IS NULL");
+      }
+    }
+  }
+
+  Future<void> _persistNotification(
+    RemoteMessage message, {
+    bool preferExistingDoc = false,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('current_user_id');
+      if (userId == null || userId.isEmpty) {
+        return;
+      }
+
+      final collection = FirebaseFirestore.instance.collection('notificationList');
+      final docId = message.messageId ?? collection.doc().id;
+      final docRef = collection.doc(docId);
+
+      if (preferExistingDoc) {
+        final existing = await docRef.get();
+        if (existing.exists) {
+          return;
+        }
+      }
+
+      final data = message.data;
+      final title = message.notification?.title ?? data['title'] ?? '';
+      final body = message.notification?.body ?? data['body'] ?? '';
+      final leadId = data['leadId'] ?? data['lead_id'] ?? data['lead_id_str'] ?? '';
+      final notificationType = (data['type'] ?? data['event'] ?? 'GENERAL').toString();
+
+      await docRef.set({
+        'userId': userId,
+        'leadId': leadId,
+        'notificationType': notificationType,
+        'title': title,
+        'message': body,
+        'payload': data,
+        'timestamp': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Failed to persist notification: $e');
       }
     }
   }
