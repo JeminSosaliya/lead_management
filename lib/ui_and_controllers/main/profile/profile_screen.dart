@@ -25,7 +25,9 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: Icon(Icons.refresh, color: colorWhite),
-            onPressed: controller.refreshProfile,
+            onPressed: () => controller.fetchEmployeeData(
+              minShimmer: const Duration(milliseconds: 500),
+            ),
           ),
         ],
       ),

@@ -13,7 +13,10 @@ class SearchableCSCDropdown extends StatefulWidget {
   final IconData iconData1;
   final IconData iconData2;
   final TextInputType? keyboardType;
-  final bool showError; // new prop
+  final bool showError;
+  final FocusNode? focusNode;
+  final TextInputAction textInputAction;
+  final FocusNode? nextFocusNode;
 
 
   const SearchableCSCDropdown({
@@ -26,6 +29,9 @@ class SearchableCSCDropdown extends StatefulWidget {
     required this.iconData2,
     this.keyboardType,
     this.showError = false,
+    this.focusNode,
+    this.textInputAction = TextInputAction.next,
+    this.nextFocusNode,
   }) : super(key: key);
 
   @override
@@ -34,7 +40,7 @@ class SearchableCSCDropdown extends StatefulWidget {
 
 class _SearchableCSCDropdownState extends State<SearchableCSCDropdown> {
   TextEditingController _controller = TextEditingController();
-  FocusNode _focusNode = FocusNode();
+  late FocusNode _focusNode;
   List<String> _filteredItems = [];
   bool _isDropdownOpen = false;
 
@@ -42,6 +48,8 @@ class _SearchableCSCDropdownState extends State<SearchableCSCDropdown> {
   void initState() {
     super.initState();
     _filteredItems = widget.items;
+
+    _focusNode = widget.focusNode ?? FocusNode();
 
     _focusNode.addListener(() {
       if (_focusNode.hasFocus) {
@@ -98,6 +106,15 @@ class _SearchableCSCDropdownState extends State<SearchableCSCDropdown> {
             keyboardType: widget.keyboardType,
             controller: _controller,
             focusNode: _focusNode,
+            textCapitalization: TextCapitalization.words,
+            textInputAction: widget.textInputAction,
+            onFieldSubmitted: (_) {
+              if (widget.nextFocusNode != null) {
+                widget.nextFocusNode!.requestFocus();
+              } else {
+                _focusNode.unfocus();
+              }
+            },
             style: GoogleFonts.roboto(
               fontSize: width * 0.038,
               color: colorBlack,

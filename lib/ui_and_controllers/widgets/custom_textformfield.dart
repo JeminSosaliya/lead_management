@@ -29,6 +29,9 @@ class CustomTextFormField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final String? Function(String?)? validator;
   final bool? enabled;
+  final TextInputAction? textInputAction;
+  final FocusNode? focusNode;
+  final ValueChanged<String>? onFieldSubmitted;
 
   const CustomTextFormField({
     super.key,
@@ -55,6 +58,9 @@ class CustomTextFormField extends StatelessWidget {
     this.inputFormatters,
     this.validator,
     this.enabled,
+    this.textInputAction,
+    this.focusNode,
+    this.onFieldSubmitted,
   });
 
   @override
@@ -83,6 +89,9 @@ class CustomTextFormField extends StatelessWidget {
             textCapitalization: textCapitalization,
             inputFormatters: inputFormatters,
             validator: validator,
+            focusNode: focusNode,
+            textInputAction: textInputAction,
+            onFieldSubmitted: onFieldSubmitted,
             style: GoogleFonts.roboto(
               fontSize: width * 0.035,
               color: colorBlack,

@@ -403,7 +403,6 @@ class HomeController extends GetxController {
     _employeeSubscription?.cancel();
     _technicianSubscription?.cancel();
     _createdLeadsSubscription?.cancel();
-    searchController.dispose();
     super.onClose();
   }
 }
