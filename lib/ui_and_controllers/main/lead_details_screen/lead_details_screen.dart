@@ -128,6 +128,12 @@ class LeadDetailsScreen extends StatelessWidget {
             }
 
             final lead = controller.lead!;
+            final now = DateTime.now();
+            final nextUpcomingIndex = lead.followUpLeads?.indexWhere((item) {
+              final dt = item.nextFollowUp?.toDate();
+              return dt != null && !dt.isBefore(now);
+            }) ??
+                -1;
             bool isCompleted = lead.stage == 'completed';
             bool isCancelled = lead.stage == 'cancelled';
             bool isEditable = !isCompleted && !isCancelled;
@@ -225,7 +231,7 @@ class LeadDetailsScreen extends StatelessWidget {
                         validator: (value) {
                           if (value != null && value.isNotEmpty) {
                             if (value.length < 10)
-                              return 'Alternative number must be more than 9 digits';
+                              return 'Alternative number must be exactly 10 digits';
                           }
                           return null;
                         },
@@ -895,6 +901,7 @@ class LeadDetailsScreen extends StatelessWidget {
                       ),
                     ),
 
+
                   if (lead.followUpLeads?.isNotEmpty ?? false)
                     ListView.separated(
                       itemCount: lead.followUpLeads!.length,
@@ -905,6 +912,7 @@ class LeadDetailsScreen extends StatelessWidget {
                       },
                       itemBuilder: (context, index) {
                         FollowUpLead followUpLead = lead.followUpLeads![index];
+                        final isUpcoming = index == nextUpcomingIndex;
                         return Container(
                           width: double.infinity,
                           margin: EdgeInsets.only(
@@ -917,8 +925,10 @@ class LeadDetailsScreen extends StatelessWidget {
                             color: colorWhite,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: colorMainTheme.withOpacity(0.3),
-                              width: 1.5,
+                              color: isUpcoming
+                                  ? colorRedCalendar
+                                  : colorMainTheme.withOpacity(0.3),
+                              width: isUpcoming ? 2 : 1.5,
                             ),
                             boxShadow: [
                               BoxShadow(

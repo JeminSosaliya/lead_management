@@ -1014,27 +1014,51 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-
-                    Container(
-                      alignment: Alignment.center,
-                      width: width * 0.25,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: width * 0.015,
-                        vertical: height * 0.002,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _getStatusColor(lead.callStatus),
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(12),
-                          topRight: Radius.circular(12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Container(
+                          alignment: Alignment.center,
+                          width: width * 0.25,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: width * 0.015,
+                            vertical: height * 0.002,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getStatusColor(lead.callStatus),
+                            borderRadius: const BorderRadius.only(
+                              topRight: Radius.circular(12),
+                            ),
+                          ),
+                          child: WantText(
+                            text: _formatStatus(lead.callStatus),
+                            fontSize: width * 0.030,
+                            fontWeight: FontWeight.w500,
+                            textColor: colorWhite,
+                          ),
                         ),
-                      ),
-                      child: WantText(
-                        text: _formatStatus(lead.callStatus),
-                        fontSize: width * 0.030,
-                        fontWeight: FontWeight.w500,
-                        textColor: colorWhite,
-                      ),
+                        SizedBox(height: height * 0.002),
+                        Container(
+                          alignment: Alignment.center,
+                          width: width * 0.25,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: width * 0.015,
+                            vertical: height * 0.002,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getStageColor(controller, lead),
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(12),
+                            ),
+                          ),
+                          child: WantText(
+                            text: _formatStage(controller, lead),
+                            fontSize: width * 0.030,
+                            fontWeight: FontWeight.w500,
+                            textColor: colorWhite,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -1086,8 +1110,6 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
-  // Returns true when the provided follow-up time is in the past.
-  // Accepts Firestore Timestamp, DateTime, String (including Firestore console format), or epoch milliseconds.
   bool _isFollowUpDelayed(dynamic followUpRaw) {
     try {
       final DateTime? followUp = _parseFollowUpDate(followUpRaw);
@@ -1104,19 +1126,15 @@ class HomeScreen extends StatelessWidget {
   DateTime? _parseFollowUpDate(dynamic value) {
     if (value == null) return null;
 
-    // Firestore Timestamp
     if (value is Timestamp) {
       return value.toDate();
     }
 
-    // DateTime provided directly
     if (value is DateTime) {
       return value;
     }
 
-    // Epoch milliseconds or seconds
     if (value is int) {
-      // Heuristics: treat as milliseconds if it's large enough
       if (value > 100000000000) {
         return DateTime.fromMillisecondsSinceEpoch(value, isUtc: true);
       } else {
@@ -1124,14 +1142,9 @@ class HomeScreen extends StatelessWidget {
       }
     }
 
-    // String parsing
     if (value is String) {
-      // Try standard ISO parsing first
       final DateTime? iso = DateTime.tryParse(value);
       if (iso != null) return iso;
-
-      // Try Firestore console human-readable format, e.g.
-      // "November 4, 2025 at 7:20:00 PM UTC+5:30"
       final RegExp rx = RegExp(
         r'^(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),\s+(\d{4})\s+at\s+(\d{1,2}):(\d{2}):(\d{2})\s+(AM|PM)\s+UTC([+-]\d{1,2})(?::(\d{2}))?$',
       );
@@ -1166,8 +1179,6 @@ class HomeScreen extends StatelessWidget {
           'December': 12,
         };
         final int month = monthMap[monthName] ?? 1;
-
-        // Build the wall-clock time as if it were UTC (temporary)
         final DateTime wallClockAsUtc = DateTime.utc(
           year,
           month,
@@ -1177,9 +1188,7 @@ class HomeScreen extends StatelessWidget {
           second,
         );
 
-        // Apply timezone offset: "UTC+05:30" means local = UTC + 5:30
-        // So, UTC instant = local - 5:30
-        final int sign = offsetHour >= 0 ? 1 : -1; // includes sign of hours
+        final int sign = offsetHour >= 0 ? 1 : -1;
         final int absHour = offsetHour.abs();
         final Duration offset = Duration(
           hours: absHour * sign,
@@ -1208,6 +1217,7 @@ class HomeScreen extends StatelessWidget {
 
   String _formatStatus(String status) {
     final Map<String, String> statusMap = {
+      'hotlead': 'Hot Lead',
       'numberdoesnotexist': 'Number Does Not Exist',
       'notContacted': 'Not Contacted',
       'notinterested': 'Not Interested',
@@ -1238,8 +1248,30 @@ class HomeScreen extends StatelessWidget {
         .join(' ');
   }
 
+  String _formatStage(HomeController controller, Lead lead) {
+    if (controller.hasFollowUpToday(lead)) return 'Today';
+
+    final stage = lead.stage.toLowerCase();
+    switch (stage) {
+      case 'all':
+        return 'All';
+      case 'notcontacted':
+        return 'Not Contacted';
+      case 'inprogress':
+        return 'In Progress';
+      case 'completed':
+        return 'Completed';
+      case 'cancelled':
+        return 'Cancelled';
+      default:
+        return stage.isEmpty ? 'Not Contacted' : stage.capitalizeFirst!;
+    }
+  }
+
   Color _getStatusColor(String status) {
     switch (status) {
+      case 'hotlead':
+        return colorHotLead;
       case 'interested':
         return colorGreenOne;
       case 'notinterested':
@@ -1254,6 +1286,25 @@ class HomeScreen extends StatelessWidget {
         return colorGrey;
       case 'willvisitoffice':
         return colorBlueAccent;
+      default:
+        return colorGrey;
+    }
+  }
+
+  Color _getStageColor(HomeController controller, Lead lead) {
+    if (controller.hasFollowUpToday(lead)) return colorBlueAccent;
+
+    switch (lead.stage.toLowerCase()) {
+      case 'all':
+        return colorCustomButton;
+      case 'notcontacted':
+        return colorAmber;
+      case 'inprogress':
+        return colorOrangeDeep;
+      case 'completed':
+        return colorGreenTwo;
+      case 'cancelled':
+        return colorRedCalendar;
       default:
         return colorGrey;
     }
