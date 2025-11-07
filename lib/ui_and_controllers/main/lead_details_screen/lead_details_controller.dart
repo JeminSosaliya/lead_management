@@ -479,7 +479,10 @@ class LeadDetailsController extends GetxController {
         backgroundColor: colorGreen,
         textColor: colorWhite,
       );
-      await _notifyLeadUpdated(updatedByName: currentUserName);
+      await _notifyLeadUpdated(
+        updatedByName: currentUserName,
+        notificationType: 'LEAD_EDIT',
+      );
 
       isEditMode = false;
       await fetchLead();
@@ -1084,7 +1087,10 @@ class LeadDetailsController extends GetxController {
           backgroundColor: colorGreen,
           textColor: colorWhite,
         );
-        await _notifyLeadUpdated(updatedByName: currentUserName); // NEW
+        await _notifyLeadUpdated(
+          updatedByName: currentUserName,
+          notificationType: 'LEAD_UPDATE',
+        );
         showUpdateForm = false;
         noteController.clear();
         followUpController.clear();
@@ -1143,13 +1149,8 @@ class LeadDetailsController extends GetxController {
 
   @override
   void onClose() {
-    // Only dispose if controllers are still attached
-    if (noteController.hasListeners) {
-      noteController.dispose();
-    }
-    if (followUpController.hasListeners) {
-      followUpController.dispose();
-    }
+    noteController.dispose();
+    followUpController.dispose();
     nameController.dispose();
     phoneController.dispose();
     emailController.dispose();
@@ -1327,7 +1328,10 @@ class LeadDetailsController extends GetxController {
       log('Error sending lead update notifications: $e');
     }
   }*/
-  Future<void> _notifyLeadUpdated({required String updatedByName}) async {
+  Future<void> _notifyLeadUpdated({
+    required String updatedByName,
+    required String notificationType,
+  }) async {
     try {
       if (lead == null) return;
 
@@ -1342,14 +1346,18 @@ class LeadDetailsController extends GetxController {
         final String? token = data['fcmToken'];
         if (token == null || token.isEmpty) continue;
 
-        final title = 'Lead updated';
-        final body = '$updatedByName updated lead: ${lead!.clientName}';
+        final bool isEdit = notificationType == 'LEAD_EDIT';
+        final title = isEdit ? 'Lead edited' : 'Lead updated';
+        final actionVerb = isEdit ? 'edited' : 'updated';
+        final body =
+            '$updatedByName $actionVerb lead: ${lead!.clientName}';
 
         // This already includes leadId in the payload, so tapping routes correctly
         await _sendPushNotification(
           deviceToken: token,
           title: title,
           body: body,
+          dataType: notificationType,
         );
       }
     } catch (e) {

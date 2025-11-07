@@ -416,6 +416,7 @@ class NotificationUtils {
         'title': title,
         'message': body,
         'payload': data,
+        'isSeen': false,
         'timestamp': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (e) {
