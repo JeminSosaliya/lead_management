@@ -47,6 +47,15 @@ class NotificationController extends GetxController {
     isLoading.value = false;
   }
 
+  Future<void> markAsSeen(String docId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('notificationList')
+          .doc(docId)
+          .update({'isSeen': true});
+    } catch (_) {}
+  }
+
   List<QueryDocumentSnapshot<Map<String, dynamic>>> _sortByTimestamp(
     List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
   ) {

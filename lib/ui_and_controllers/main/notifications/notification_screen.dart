@@ -77,14 +77,11 @@ class NotificationScreen extends StatelessWidget {
           onRefresh: controller.refreshNotifications,
           child: ListView.builder(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.symmetric(
-              horizontal: width * 0.041,
-              vertical: height * 0.02,
-            ),
             itemCount: controller.notifications.length,
             itemBuilder: (context, index) {
               final doc = controller.notifications[index];
               final data = doc.data();
+              final bool isSeen = data['isSeen'] == true;
               final String title = (data['title'] ?? 'Notification').toString();
               final String message = (data['message'] ?? '').toString();
               final String notificationType =
@@ -92,81 +89,92 @@ class NotificationScreen extends StatelessWidget {
               final String leadId = (data['leadId'] ?? '').toString();
               final DateTime timestamp = _parseTimestamp(data['timestamp']);
 
-              return Padding(
-                padding: EdgeInsets.only(bottom: height * 0.015),
-                child: GestureDetector(
-                  onTap: () {
-                    if (leadId.isNotEmpty) {
-                      Get.toNamed(
-                        AppRoutes.leadDetailsScreen,
-                        arguments: [leadId, null],
-                      );
-                    } else {
-                      Get.context?.showAppSnackBar(
-                        message: 'Lead details not available',
-                        backgroundColor: colorRedCalendar,
-                        textColor: colorWhite,
-                      );
+              final Color cardColor =
+                  isSeen ? colorWhite : colorMainTheme.withValues(alpha: .05);
+
+              return GestureDetector(
+                onTap: () async {
+                  if (leadId.isNotEmpty) {
+                    if (!isSeen) {
+                      await controller.markAsSeen(doc.id);
                     }
-                  },
-                  child: CustomCard(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              WantText(
-                                text: title,
-                                fontSize: width * 0.041,
-                                fontWeight: FontWeight.w600,
-                                textColor: colorBlack,
+                    Get.toNamed(
+                      AppRoutes.leadDetailsScreen,
+                      arguments: [leadId, null],
+                    );
+                  } else {
+                    Get.context?.showAppSnackBar(
+                      message: 'Lead details not available',
+                      backgroundColor: colorRedCalendar,
+                      textColor: colorWhite,
+                    );
+                  }
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                  horizontal: width * 0.041,
+                  vertical: height * 0.015,
+                ),
+                  margin: EdgeInsets.only(
+                    top: height * 0.019,
+                    left: width * 0.041,
+                    right: width * 0.041,
+                  ),
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                    // border: isDelay ? Border.all(color: Colors.red, width: 2) : null,
+                    boxShadow: [
+                      BoxShadow(color: isSeen ?colorBoxShadow : colorTransparent, blurRadius: 7, offset: Offset(4, 3)),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      WantText(
+                        text: title,
+                        fontSize: width * 0.041,
+                        fontWeight: FontWeight.w600,
+                        textColor: colorBlack,
+                      ),
+                      SizedBox(height: height * 0.006),
+                      WantText(
+                        text:
+                            message.isEmpty ? notificationType : message,
+                        fontSize: width * 0.035,
+                        textColor: colorDarkGreyText,
+                        textOverflow: TextOverflow.visible,
+                      ),
+                      SizedBox(height: height * 0.008),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          if (notificationType.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
                               ),
-                              SizedBox(height: height * 0.006),
-                              WantText(
-                                text: message.isEmpty
-                                    ? notificationType
-                                    : message,
-                                fontSize: width * 0.035,
-                                textColor: colorDarkGreyText,
-                                textOverflow: TextOverflow.visible,
+                              decoration: BoxDecoration(
+                                color: colorMainTheme.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              SizedBox(height: height * 0.008),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  if (notificationType.isNotEmpty)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: colorMainTheme.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: WantText(
-                                        text: notificationType,
-                                        fontSize: width * 0.031,
-                                        fontWeight: FontWeight.w500,
-                                        textColor: colorMainTheme,
-                                      ),
-                                    ),
-                                  WantText(
-                                    text: DateFormat('dd MMM yyyy, hh:mm a')
-                                        .format(timestamp),
-                                    fontSize: width * 0.031,
-                                    textColor: colorGreyText,
-                                  ),
-                                ],
+                              child: WantText(
+                                text: notificationType,
+                                fontSize: width * 0.031,
+                                fontWeight: FontWeight.w500,
+                                textColor: colorMainTheme,
                               ),
-                            ],
+                            ),
+                          WantText(
+                            text: DateFormat('dd MMM yyyy, hh:mm a')
+                                .format(timestamp),
+                            fontSize: width * 0.031,
+                            textColor: colorGreyText,
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               );
