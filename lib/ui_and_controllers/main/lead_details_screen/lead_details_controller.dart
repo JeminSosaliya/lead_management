@@ -112,7 +112,7 @@ class LeadDetailsController extends GetxController {
     return currentUserId == (lead!.addedBy) ||
         currentUserId == (lead!.assignedTo);
   }
-
+  bool get hasFollowUps => lead?.followUpLeads?.isNotEmpty ?? false;
   @override
   void onInit() {
     super.onInit();
@@ -313,58 +313,6 @@ class LeadDetailsController extends GetxController {
     }
   }
 
-  Future<void> pickInitialFollowUp() async {
-    DateTime now = DateTime.now();
-    DateTime? date = await showDatePicker(
-      context: Get.context!,
-      initialDate: now,
-      initialEntryMode: DatePickerEntryMode.calendarOnly,
-      firstDate: now,
-      lastDate: DateTime(2100),
-    );
-
-    if (date != null) {
-      bool isToday =
-          date.year == now.year &&
-          date.month == now.month &&
-          date.day == now.day;
-
-      TimeOfDay initialTime = isToday
-          ? TimeOfDay.fromDateTime(now.add(Duration(minutes: 1)))
-          : TimeOfDay(hour: 9, minute: 0);
-
-      TimeOfDay? time = await showTimePicker(
-        context: Get.context!,
-        initialTime: initialTime,
-      );
-
-      if (time != null) {
-        initialFollowUp = DateTime(
-          date.year,
-          date.month,
-          date.day,
-          time.hour,
-          time.minute,
-        );
-
-        if (initialFollowUp!.isBefore(now)) {
-          Get.context?.showAppSnackBar(
-            message: 'Please select a future date and time',
-            backgroundColor: colorRedCalendar,
-            textColor: colorWhite,
-          );
-          initialFollowUp = null;
-          initialFollowUpController.clear();
-          return;
-        }
-
-        initialFollowUpController.text = DateFormat(
-          'dd MMM yyyy, hh:mm a',
-        ).format(initialFollowUp!);
-        update();
-      }
-    }
-  }
 
   Future<void> updateLeadDetails() async {
     final calendarController = Get.find<GoogleCalendarController>();
@@ -647,9 +595,11 @@ class LeadDetailsController extends GetxController {
     update();
   }
 
-  Future<void> fetchLead() async {
-    isLoading = true;
-    update();
+  Future<void> fetchLead({bool showLoader = true}) async {
+    if (showLoader) {
+      isLoading = true;
+      update();
+    }
     try {
       final doc = await fireStore.collection('leads').doc(leadId).get();
       if (doc.exists) {
@@ -663,9 +613,12 @@ class LeadDetailsController extends GetxController {
       }
     } catch (e) {
       log("Error fetching lead: $e");
+    } finally {
+      if (showLoader) {
+        isLoading = false;
+      }
+      update();
     }
-    isLoading = false;
-    update();
   }
 
   // ===== Chat APIs =====
@@ -1018,7 +971,6 @@ class LeadDetailsController extends GetxController {
   }
 
   Future<void> updateLead() async {
-    /////
     if (lead == null ||
         lead!.stage == 'completed' ||
         lead!.stage == 'cancelled') {
@@ -1098,7 +1050,7 @@ class LeadDetailsController extends GetxController {
         selectedResponse = '';
         selectedStage = '';
         selectedStageDisplay = '';
-        await fetchLead(); // Fetch updated lead data
+        await fetchLead(showLoader: false);
         update(); // Update UI to reflect changes
 
         String role = ListConst.currentUserProfileData.type ?? '';
