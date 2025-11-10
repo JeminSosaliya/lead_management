@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart';
@@ -6,12 +7,14 @@ import 'package:http/http.dart' as http;
 import 'package:lead_management/core/utils/extension.dart';
 import '../../../core/constant/app_color.dart';
 import '../../../routes/route_manager.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GoogleCalendarController extends GetxController {
   bool isLoading = false;
   String errorMessage = '';
   GoogleSignInAccount? currentUser;
   CalendarApi? calendarApi;
+  int reminderMinutes = 15;
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: [
@@ -19,6 +22,38 @@ class GoogleCalendarController extends GetxController {
       'https://www.googleapis.com/auth/userinfo.email',
     ],
   );
+
+  @override
+  void onInit() {
+    super.onInit();
+    _loadReminderMinutes();
+  }
+
+  Future<void> _loadReminderMinutes() async {
+    try {
+      final query = await FirebaseFirestore.instance
+          .collection('reminder_time')
+          .limit(1)
+          .get();
+
+      if (query.docs.isNotEmpty) {
+        final data = query.docs.first.data();
+        final value = data['reminderTime'];
+
+        if (value is int) {
+          reminderMinutes = value;
+        } else if (value is num) {
+          reminderMinutes = value.toInt();
+        } else if (value is String) {
+          final parsed = int.tryParse(value);
+          if (parsed != null) reminderMinutes = parsed;
+        }
+      }
+      debugPrint('🔔 Loaded reminder minutes: $reminderMinutes');
+    } catch (e) {
+      log('⚠️ Failed to load reminder minutes: $e');
+    }
+  }
 
   Future<bool> autoLogin() async {
     try {
@@ -127,6 +162,12 @@ class GoogleCalendarController extends GetxController {
     required DateTime endTime,
     required List<String> employeeEmails,
   }) async {
+    log("----------------------------------------------------");
+    log("🗓 updateOrCreateEvent CALLED");
+    log("📌 title: $title");
+    log("📌 description: $description");
+    log("🕐 start: $startTime");
+    log("🕐 end: $endTime");
     if (calendarApi == null) {
       // Get.context?.showAppSnackBar(
       //   message: "⚠️ Not Logged In, Please login as Admin first",
@@ -150,10 +191,10 @@ class GoogleCalendarController extends GetxController {
         attendees: attendees,
         reminders: EventReminders(
           useDefault: false,
-          overrides: [EventReminder(method: 'popup', minutes: 5)],
+          overrides: [EventReminder(method: 'popup', minutes: reminderMinutes)],
         ),
       );
-
+log('🕐 end: $reminderMinutes');
       final inserted = await _tryInsertEvent(event);
       if (inserted != null) return inserted.id;
       return null;
@@ -283,6 +324,7 @@ class GoogleCalendarController extends GetxController {
       log("   → $email");
     }
 
+//=================================================================//
     Event event = Event(
       summary: title,
       description: description,
@@ -291,10 +333,12 @@ class GoogleCalendarController extends GetxController {
       attendees: newEmployeeEmails.map((e) => EventAttendee(email: e)).toList(),
       reminders: EventReminders(
         useDefault: false,
-        overrides: [EventReminder(method: 'popup', minutes: 15)],
+        overrides: [EventReminder(method: 'popup', minutes: reminderMinutes)],
       ),
     );
+    log("🕐 end: $reminderMinutes");
 
+//===================================================================//
     try {
       Event updatedEvent;
 
