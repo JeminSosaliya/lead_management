@@ -1039,6 +1039,7 @@ class LeadDetailsController extends GetxController {
           backgroundColor: colorGreen,
           textColor: colorWhite,
         );
+        Get.back();
         await _notifyLeadUpdated(
           updatedByName: currentUserName,
           notificationType: 'LEAD_UPDATE',
@@ -1051,7 +1052,7 @@ class LeadDetailsController extends GetxController {
         selectedStage = '';
         selectedStageDisplay = '';
         await fetchLead(showLoader: false);
-        update(); // Update UI to reflect changes
+        update();
 
         String role = ListConst.currentUserProfileData.type ?? '';
         if (role == 'employee' || role == 'admin') {
