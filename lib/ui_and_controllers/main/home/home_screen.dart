@@ -870,6 +870,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildLeadList(String stage, HomeController controller) {
+    final bool showStageBadge = stage == 'all';
     List<Lead> leads = controller.getFilteredLeads(stage);
 
     if (leads.isEmpty) {
@@ -905,6 +906,12 @@ class HomeScreen extends StatelessWidget {
       itemBuilder: (context, index) {
         Lead lead = leads[index];
         bool isUpdated = _isLeadUpdated(lead);
+        final BorderRadius statusBorderRadius = showStageBadge
+            ? const BorderRadius.only(topRight: Radius.circular(10))
+            : const BorderRadius.only(
+          topRight: Radius.circular(10),
+          bottomLeft: Radius.circular(12),
+        );
 
         return GestureDetector(
           onTap: () {
@@ -1017,6 +1024,7 @@ class HomeScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
+
                         Container(
                           alignment: Alignment.center,
                           width: width * 0.25,
@@ -1026,9 +1034,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: _getStatusColor(lead.callStatus),
-                            borderRadius: const BorderRadius.only(
-                              topRight: Radius.circular(12),
-                            ),
+                            borderRadius: statusBorderRadius,
                           ),
                           child: WantText(
                             text: _formatStatus(lead.callStatus),
@@ -1038,26 +1044,29 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: height * 0.002),
-                        Container(
-                          alignment: Alignment.center,
-                          width: width * 0.25,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: width * 0.015,
-                            vertical: height * 0.002,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _getStageColor(controller, lead),
-                            borderRadius: const BorderRadius.only(
-                              bottomLeft: Radius.circular(12),
+                        if (showStageBadge) ...[
+                          SizedBox(height: height * 0.002),
+                          Container(
+                            alignment: Alignment.center,
+                            width: width * 0.25,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: width * 0.015,
+                              vertical: height * 0.002,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _getStageColor(controller, lead),
+                              borderRadius: const BorderRadius.only(
+                                bottomLeft: Radius.circular(10),
+                              ),
+                            ),
+                            child: WantText(
+                              text: _formatStage(controller, lead),
+                              fontSize: width * 0.030,
+                              fontWeight: FontWeight.w500,
+                              textColor: colorWhite,
                             ),
                           ),
-                          child: WantText(
-                            text: _formatStage(controller, lead),
-                            fontSize: width * 0.030,
-                            fontWeight: FontWeight.w500,
-                            textColor: colorWhite,
-                          ),
-                        ),
+                        ],
                       ],
                     ),
                   ],

@@ -134,6 +134,8 @@ class LeadDetailsScreen extends StatelessWidget {
               return dt != null && !dt.isBefore(now);
             }) ??
                 -1;
+            final shouldShowUpdateForm =
+                controller.showUpdateForm || controller.hasFollowUps;
             bool isCompleted = lead.stage == 'completed';
             bool isCancelled = lead.stage == 'cancelled';
             bool isEditable = !isCompleted && !isCancelled;
@@ -539,14 +541,25 @@ class LeadDetailsScreen extends StatelessWidget {
                               ],
                             ),
                           ),
-                          AnimatedRotation(
-                            turns: controller.isDetailsExpanded ? 0.5 : 0,
-                            duration: Duration(milliseconds: 300),
-                            child: Icon(
-                              Icons.keyboard_arrow_down,
-                              color: colorMainTheme,
-                              size: 24,
-                            ),
+                          Row(
+                            children: [
+                              if (controller.hasFollowUps)
+                                IconButton(
+                                  onPressed: controller.callLead,
+                                  splashRadius: width * 0.05,
+                                  icon: const Icon(Icons.call),
+                                  color: colorMainTheme,
+                                ),
+                              AnimatedRotation(
+                                turns: controller.isDetailsExpanded ? 0.5 : 0,
+                                duration: const Duration(milliseconds: 300),
+                                child: const Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: colorMainTheme,
+                                  size: 24,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -975,7 +988,7 @@ class LeadDetailsScreen extends StatelessWidget {
                     ),
                   ChatSection(controller: controller),
                   SizedBox(height: height * 0.01),
-                  if (isEditable)
+                  if (isEditable && !shouldShowUpdateForm)
                     Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: width * 0.041,
@@ -1000,7 +1013,7 @@ class LeadDetailsScreen extends StatelessWidget {
                       ),
                     ),
 
-                  if (controller.showUpdateForm && isEditable) ...[
+                  if (shouldShowUpdateForm && isEditable) ...[
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: width * 0.041),
                       child: Column(
@@ -1175,6 +1188,7 @@ class LeadDetailsScreen extends StatelessWidget {
         text: text,
         fontSize: width * 0.031,
         fontWeight: FontWeight.w500,
+        textOverflow: TextOverflow.ellipsis,
         textColor: colorWhite,
       ),
     );
