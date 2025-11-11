@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:lead_management/core/constant/app_assets.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
+import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/model/lead_add_model.dart';
 import 'package:lead_management/ui_and_controllers/main/lead_details_screen/chat_section.dart';
 import 'package:lead_management/ui_and_controllers/main/lead_details_screen/lead_details_controller.dart';
@@ -88,6 +89,7 @@ class LeadDetailsScreen extends StatelessWidget {
         return true;
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: true,
         backgroundColor: colorWhite,
         appBar: CustomAppBar(
           showBackButton: true,
@@ -100,19 +102,56 @@ class LeadDetailsScreen extends StatelessWidget {
             }
           },
           title: "Lead Details",
+          // actions: [
+          //   GetBuilder<LeadDetailsController>(
+          //     tag: leadId,
+          //     builder: (controller) {
+          //       if (controller.lead == null ||
+          //           controller.lead!.stage == 'completed' ||
+          //           controller.lead!.stage == 'cancelled' ||
+          //           controller.isEditMode) {
+          //         return SizedBox.shrink();
+          //       }
+          //       return IconButton(
+          //         icon: Icon(Icons.edit, color: colorWhite),
+          //         onPressed: controller.toggleEditMode,
+          //       );
+          //     },
+          //   ),
+          // ],
           actions: [
             GetBuilder<LeadDetailsController>(
               tag: leadId,
               builder: (controller) {
-                if (controller.lead == null ||
-                    controller.lead!.stage == 'completed' ||
-                    controller.lead!.stage == 'cancelled' ||
-                    controller.isEditMode) {
-                  return SizedBox.shrink();
+                if (controller.lead == null) {
+                  return const SizedBox.shrink();
                 }
-                return IconButton(
-                  icon: Icon(Icons.edit, color: colorWhite),
-                  onPressed: controller.toggleEditMode,
+
+                final bool canEditLead =
+                    controller.lead!.stage != 'completed' &&
+                        controller.lead!.stage != 'cancelled' &&
+                        !controller.isEditMode;
+
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.chat_bubble_outline, color: colorWhite),
+                      onPressed: () {
+                        context.showAppBottomSheet(
+                          contentWidget: ChatSection(
+                            controller: controller,
+                            useSharedScrollController: false,
+                          ),
+                        );
+                      },
+                    ),
+                    if (canEditLead)
+                      IconButton(
+                        icon: Icon(Icons.edit, color: colorWhite),
+                        onPressed: controller.toggleEditMode,
+                      ),
+                  ],
                 );
               },
             ),
