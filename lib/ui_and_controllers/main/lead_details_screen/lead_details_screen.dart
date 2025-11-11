@@ -853,66 +853,7 @@ class LeadDetailsScreen extends StatelessWidget {
                     )
                         : SizedBox.shrink(),
                   ),
-                  if (lead.initialFollowUp != null)
-                    Container(
-                      width: double.infinity,
-                      margin: EdgeInsets.only(
-                        top: height * 0.016,
-                        left: width * 0.041,
-                        right: width * 0.041,
-                      ),
-                      padding: EdgeInsets.all(width * 0.03),
-                      decoration: BoxDecoration(
-                        color: colorWhite,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: colorMainTheme.withOpacity(0.3),
-                          width: 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: colorBoxShadow,
-                            blurRadius: 6,
-                            offset: Offset(4, 3),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (lead.initialFollowUp != null) ...[
-                            WantText(
-                              text: "Initial Follow-up",
-                              fontSize: width * 0.035,
-                              fontWeight: FontWeight.w500,
-                              textColor: colorBlack,
-                            ),
-                            WantText(
-                              text: formatTimestamp(lead.initialFollowUp),
-                              fontSize: width * 0.031,
-                              fontWeight: FontWeight.w500,
-                              textColor: colorGreenOne,
-                            ),
-                          ],
 
-                          if (hasValue(lead.description)) ...[
-                            SizedBox(height: height * 0.01),
-                            WantText(
-                              text: "Description/Notes",
-                              fontSize: width * 0.041,
-                              fontWeight: FontWeight.w500,
-                              textColor: colorBlack,
-                            ),
-                            WantText(
-                              text: lead.description!,
-                              fontSize: width * 0.035,
-                              fontWeight: FontWeight.w500,
-                              textColor: colorRed,
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
 
 
                   if (lead.followUpLeads?.isNotEmpty ?? false)
@@ -971,7 +912,7 @@ class LeadDetailsScreen extends StatelessWidget {
                               SizedBox(height: height * 0.01),
                               WantText(
                                 text: "Reason",
-                                fontSize: width * 0.041,
+                                fontSize: width * 0.037,
                                 fontWeight: FontWeight.w500,
                                 textColor: colorBlack,
                               ),
@@ -986,7 +927,66 @@ class LeadDetailsScreen extends StatelessWidget {
                         );
                       },
                     ),
-                  ChatSection(controller: controller),
+                  if (lead.initialFollowUp != null)
+                    Container(
+                      width: double.infinity,
+                      margin: EdgeInsets.only(
+                        top: height * 0.016,
+                        left: width * 0.041,
+                        right: width * 0.041,
+                      ),
+                      padding: EdgeInsets.all(width * 0.03),
+                      decoration: BoxDecoration(
+                        color: colorWhite,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: colorMainTheme.withOpacity(0.3),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colorBoxShadow,
+                            blurRadius: 6,
+                            offset: Offset(4, 3),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (lead.initialFollowUp != null) ...[
+                            WantText(
+                              text: "Initial Follow-up",
+                              fontSize: width * 0.035,
+                              fontWeight: FontWeight.w500,
+                              textColor: colorBlack,
+                            ),
+                            WantText(
+                              text: formatTimestamp(lead.initialFollowUp),
+                              fontSize: width * 0.031,
+                              fontWeight: FontWeight.w500,
+                              textColor: colorGreenOne,
+                            ),
+                          ],
+
+                          if (hasValue(lead.description)) ...[
+                            SizedBox(height: height * 0.01),
+                            WantText(
+                              text: "Description/Notes",
+                              fontSize: width * 0.037,
+                              fontWeight: FontWeight.w500,
+                              textColor: colorBlack,
+                            ),
+                            WantText(
+                              text: lead.description!,
+                              fontSize: width * 0.035,
+                              fontWeight: FontWeight.w500,
+                              textColor: colorRed,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                   SizedBox(height: height * 0.01),
                   if (isEditable && !shouldShowUpdateForm)
                     Padding(
@@ -1136,7 +1136,7 @@ class LeadDetailsScreen extends StatelessWidget {
                       ),
                     ),
                   ],
-
+                  ChatSection(controller: controller),
                   if (!isEditable)
                     Container(
                       margin: EdgeInsets.only(
