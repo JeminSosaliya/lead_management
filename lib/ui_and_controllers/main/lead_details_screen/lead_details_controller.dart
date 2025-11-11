@@ -631,7 +631,7 @@ class LeadDetailsController extends GetxController {
         .snapshots();
   }
 
-  Future<void> sendMessage() async {
+  Future<void> sendMessage({ScrollController? scrollController}) async {
     if (_isDisposed) return;
     final text = chatController.text.trim();
     if (text.isEmpty || !canChat) return;
@@ -653,10 +653,12 @@ class LeadDetailsController extends GetxController {
       // Notify both participants (addedBy and assignedTo), excluding sender
       await _notifyChatParticipants(text);
 
+      final ScrollController targetController =
+          scrollController ?? chatScrollController;
       await Future.delayed(const Duration(milliseconds: 50));
-      if (chatScrollController.hasClients) {
-        chatScrollController.animateTo(
-          chatScrollController.position.maxScrollExtent + 60,
+      if (targetController.hasClients) {
+        targetController.animateTo(
+          targetController.position.maxScrollExtent + 60,
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeOut,
         );

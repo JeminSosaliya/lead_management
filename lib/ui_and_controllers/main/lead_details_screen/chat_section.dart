@@ -8,15 +8,58 @@ import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_textformfield.dart';
 import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 
-class ChatSection extends StatelessWidget {
+class ChatSection extends StatefulWidget {
   final LeadDetailsController controller;
+  final bool useSharedScrollController;
 
-  const ChatSection({required this.controller});
+  const ChatSection({
+    required this.controller,
+    this.useSharedScrollController = true,
+    super.key,
+  });
+
+  @override
+  State<ChatSection> createState() => _ChatSectionState();
+}
+
+class _ChatSectionState extends State<ChatSection> {
+  late final ScrollController _scrollController;
+
+  LeadDetailsController get controller => widget.controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = widget.useSharedScrollController
+        ? controller.chatScrollController
+        : ScrollController();
+  }
+
+  @override
+  void dispose() {
+    if (!widget.useSharedScrollController) {
+      _scrollController.dispose();
+    }
+    super.dispose();
+  }
+
+  void _scrollToBottom() {
+    if (!_scrollController.hasClients) return;
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent + 60,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final bool canChat = controller.canChat;
-    return CustomCard(
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: width * 0.041,
+        vertical: height * 0.015,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -57,9 +100,9 @@ class ChatSection extends StatelessWidget {
                 final docs = qs.docs;
 
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (controller.chatScrollController.hasClients) {
-                    controller.chatScrollController.jumpTo(
-                      controller.chatScrollController.position.maxScrollExtent,
+                  if (_scrollController.hasClients) {
+                    _scrollController.jumpTo(
+                      _scrollController.position.maxScrollExtent,
                     );
                   }
                 });
@@ -92,14 +135,14 @@ class ChatSection extends StatelessWidget {
                 }
 
                 return ListView.builder(
-                  controller: controller.chatScrollController,
+                  controller: _scrollController,
                   padding: EdgeInsets.symmetric(
                     horizontal: width * 0.02,
                     vertical: height * 0.008,
                   ),
                   itemCount: docs.length,
                   itemBuilder: (context, index) {
-                    final data = docs[index].data() as Map<String, dynamic>;
+                    final data = docs[index].data();
                     final isMe = data['senderId'] == controller.currentUserId;
                     final message = (data['text'] ?? '').toString();
                     final sender = (data['senderName'] ?? '').toString();
@@ -118,8 +161,7 @@ class ChatSection extends StatelessWidget {
                       if (index == 0) {
                         showHeader = true;
                       } else {
-                        final prevData =
-                            docs[index - 1].data() as Map<String, dynamic>;
+                        final prevData = docs[index - 1].data();
                         final prevTs = prevData['createdAt'];
                         DateTime? prevDate;
                         if (prevTs is Timestamp) {
@@ -263,7 +305,12 @@ class ChatSection extends StatelessWidget {
               IconButton(
                 onPressed: (!canChat || controller.isSendingMessage)
                     ? null
-                    : controller.sendMessage,
+                    : () async {
+                        await controller.sendMessage(
+                          scrollController: _scrollController,
+                        );
+                        _scrollToBottom();
+                      },
                 icon: Icon(Icons.send, color: colorMainTheme),
               ),
             ],
@@ -273,3 +320,6 @@ class ChatSection extends StatelessWidget {
     );
   }
 }
+
+
+
