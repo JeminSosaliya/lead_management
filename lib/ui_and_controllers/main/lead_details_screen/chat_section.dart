@@ -63,13 +63,14 @@ class _ChatSectionState extends State<ChatSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          SizedBox(height: height * 0.008),
           WantText(
             text: 'Chat',
             fontSize: width * 0.041,
             fontWeight: FontWeight.w600,
             textColor: colorBlack,
           ),
-          SizedBox(height: height * 0.008),
+          SizedBox(height: height * 0.01),
           Container(
             height: height * 0.35,
             decoration: BoxDecoration(

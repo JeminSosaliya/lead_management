@@ -193,45 +193,39 @@ extension ContextExtension on BuildContext {
     // );
   }
 
-  // Future showAppBottomSheet({required Widget contentWidget}) {
-  //   return showModalBottomSheet(
-  //
-  //     context: this,
-  //     isScrollControlled: true,
-  //     useRootNavigator: true,
-  //     builder: (BuildContext context) {
-  //       return contentWidget;
-  //     },
-  //   );
-  // }
   Future showAppBottomSheet({required Widget contentWidget}) {
     return showModalBottomSheet(
       context: this,
       isScrollControlled: true,
       useRootNavigator: true,
-      backgroundColor: Colors.transparent, // for rounded corners
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.5, // 👈 starts at half screen height
-          minChildSize: 0.5,     // 👈 minimum drag limit
-          maxChildSize: 0.9,     // 👈 maximum drag limit
-          expand: false,
-          builder: (context, scrollController) {
-            return Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: SingleChildScrollView(
-                controller: scrollController, // 👈 link scrolling to draggable sheet
-                child: contentWidget,
-              ),
-            );
-          },
+        return Padding(
+          // 👇 this moves the whole bottom sheet up when keyboard opens
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          child: DraggableScrollableSheet(
+            initialChildSize: 0.55,
+            minChildSize: 0.55,
+            maxChildSize: 0.8,
+            expand: false,
+            builder: (context, scrollController) {
+              return Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  child: contentWidget,
+                ),
+              );
+            },
+          ),
         );
       },
     );
   }
+
 
 
 }
