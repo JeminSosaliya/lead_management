@@ -15,6 +15,7 @@ import 'package:lead_management/core/utils/user_status_service.dart';
 import 'package:lead_management/model/lead_add_model.dart';
 import 'package:lead_management/routes/route_manager.dart';
 import 'package:lead_management/ui_and_controllers/main/home/home_controller.dart';
+import 'package:lead_management/ui_and_controllers/main/notifications/notification_badge_controller.dart';
 import 'package:lead_management/ui_and_controllers/main/profile/profile_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
 import 'package:lead_management/ui_and_controllers/widgets/custom_card.dart';
@@ -98,6 +99,8 @@ class HomeScreen extends StatelessWidget {
     final PermissionController _permissionController = Get.put(
       PermissionController(),
     );
+    final NotificationBadgeController _notificationBadgeController =
+        Get.put(NotificationBadgeController(), permanent: true);
 
     return GetBuilder<HomeController>(
       builder: (controller) {
@@ -439,15 +442,42 @@ class HomeScreen extends StatelessWidget {
                                           controller,
                                         ),
                                   ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      Get.toNamed(AppRoutes.notifications);
-                                    },
-                                    child: Icon(
-                                      Icons.notifications_none,
-                                      color: colorWhite,
-                                    ),
-                                  ),
+                                  Obx(() {
+                                    final bool showBadge =
+                                        _notificationBadgeController
+                                            .hasUnseen.value;
+                                    return GestureDetector(
+                                      onTap: () {
+                                        Get.toNamed(AppRoutes.notifications);
+                                      },
+                                      child: Stack(
+                                        clipBehavior: Clip.none,
+                                        children: [
+                                          Icon(
+                                            Icons.notifications_none,
+                                            color: colorWhite,
+                                          ),
+                                          if (showBadge)
+                                            Positioned(
+                                              right: -2,
+                                              top: -2,
+                                              child: Container(
+                                                width: width * 0.02,
+                                                height: width * 0.02,
+                                                decoration: BoxDecoration(
+                                                  color: colorRedCalendar,
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(
+                                                    color: colorWhite,
+                                                    width: width * 0.005,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    );
+                                  }),
                                   SizedBox(width: width * 0.02,)
                                 ],
                               ),

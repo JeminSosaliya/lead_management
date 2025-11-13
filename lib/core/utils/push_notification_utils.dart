@@ -341,7 +341,8 @@ class NotificationUtils {
           // If the assignment notification carries a leadId, prefer opening details
           final dynamic assignLeadIdRaw =
               messageData['leadId'] ?? messageData['lead_id'];
-          if (assignLeadIdRaw != null && assignLeadIdRaw.toString().isNotEmpty) {
+          if (assignLeadIdRaw != null &&
+              assignLeadIdRaw.toString().isNotEmpty) {
             Get.offAllNamed(
               AppRoutes.leadDetailsScreen,
               arguments: [assignLeadIdRaw.toString(), null],
@@ -392,7 +393,9 @@ class NotificationUtils {
         return;
       }
 
-      final collection = FirebaseFirestore.instance.collection('notificationList');
+      final collection = FirebaseFirestore.instance.collection(
+        'notificationList',
+      );
       final docId = message.messageId ?? collection.doc().id;
       final docRef = collection.doc(docId);
 
@@ -406,8 +409,10 @@ class NotificationUtils {
       final data = message.data;
       final title = message.notification?.title ?? data['title'] ?? '';
       final body = message.notification?.body ?? data['body'] ?? '';
-      final leadId = data['leadId'] ?? data['lead_id'] ?? data['lead_id_str'] ?? '';
-      final notificationType = (data['type'] ?? data['event'] ?? 'GENERAL').toString();
+      final leadId =
+          data['leadId'] ?? data['lead_id'] ?? data['lead_id_str'] ?? '';
+      final notificationType = (data['type'] ?? data['event'] ?? 'GENERAL')
+          .toString();
 
       await docRef.set({
         'userId': userId,
@@ -418,6 +423,7 @@ class NotificationUtils {
         'payload': data,
         'isSeen': false,
         'timestamp': FieldValue.serverTimestamp(),
+        'is_seen_all': false,
       }, SetOptions(merge: true));
     } catch (e) {
       if (kDebugMode) {

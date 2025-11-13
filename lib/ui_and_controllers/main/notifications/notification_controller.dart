@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/utils/notification_cleanup_service.dart';
+
 class NotificationController extends GetxController {
   final notifications = <QueryDocumentSnapshot<Map<String, dynamic>>>[].obs;
   final isLoading = true.obs;
@@ -25,7 +27,7 @@ class NotificationController extends GetxController {
       isLoading.value = false;
       return;
     }
-
+    unawaited(NotificationCleanupService.instance.run());
     _notificationSubscription = FirebaseFirestore.instance
         .collection('notificationList')
         .where('userId', isEqualTo: _currentUserId)
@@ -33,6 +35,7 @@ class NotificationController extends GetxController {
         .listen((snapshot) {
       notifications.value = _sortByTimestamp(snapshot.docs);
       isLoading.value = false;
+      unawaited(_markAllAsSeenAll(snapshot.docs));
     });
   }
 
@@ -45,6 +48,7 @@ class NotificationController extends GetxController {
         .get();
     notifications.value = _sortByTimestamp(snapshot.docs);
     isLoading.value = false;
+    unawaited(_markAllAsSeenAll(snapshot.docs));
   }
 
   Future<void> markAsSeen(String docId) async {
@@ -52,8 +56,39 @@ class NotificationController extends GetxController {
       await FirebaseFirestore.instance
           .collection('notificationList')
           .doc(docId)
-          .update({'isSeen': true});
+          .update({'isSeen': true, 'is_seen_all': true});
     } catch (_) {}
+  }
+
+  Future<void> _markAllAsSeenAll(
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+  ) async {
+    if (_currentUserId == null || _currentUserId!.isEmpty) return;
+    if (docs.isEmpty) return;
+
+    final Iterable<QueryDocumentSnapshot<Map<String, dynamic>>> unseenDocs =
+        docs.where((doc) => doc.data()['is_seen_all'] != true);
+    if (unseenDocs.isEmpty) return;
+
+    WriteBatch batch = FirebaseFirestore.instance.batch();
+    int counter = 0;
+
+    for (final doc in unseenDocs) {
+      batch.update(doc.reference, {
+        'is_seen_all': true,
+      });
+      counter++;
+
+      if (counter == 450) {
+        await batch.commit();
+        batch = FirebaseFirestore.instance.batch();
+        counter = 0;
+      }
+    }
+
+    if (counter > 0) {
+      await batch.commit();
+    }
   }
 
   List<QueryDocumentSnapshot<Map<String, dynamic>>> _sortByTimestamp(
@@ -68,23 +103,8 @@ class NotificationController extends GetxController {
   }
 
   DateTime _extractTimestamp(Map<String, dynamic> data) {
-    final value = data['timestamp'];
-    if (value is Timestamp) {
-      return value.toDate();
-    }
-    if (value is DateTime) {
-      return value;
-    }
-    if (value is int) {
-      return DateTime.fromMillisecondsSinceEpoch(value);
-    }
-    if (value is String) {
-      final parsed = DateTime.tryParse(value);
-      if (parsed != null) {
-        return parsed;
-      }
-    }
-    return DateTime.fromMillisecondsSinceEpoch(0);
+    return NotificationCleanupService.parseTimestamp(data['timestamp']) ??
+        DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
   }
 
   @override
@@ -93,4 +113,3 @@ class NotificationController extends GetxController {
     super.onClose();
   }
 }
-
