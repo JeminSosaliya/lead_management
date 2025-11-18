@@ -310,6 +310,78 @@ class HomeController extends GetxController {
     }
     return hasFollowUpToday;
   }
+  bool isLeadExpired(Lead lead) {
+    try {
+      // Check if the lead has a follow-up date that has passed
+      if (lead.lastFollowUpDate != null) {
+        DateTime? followUpDate = _parseFollowUpDate(lead.lastFollowUpDate);
+        if (followUpDate != null) {
+          final DateTime nowUtc = DateTime.now().toUtc();
+          final DateTime followUpUtc = followUpDate.toUtc();
+          return followUpUtc.isBefore(nowUtc);
+        }
+      }
+
+      // Also check initial follow-up
+      if (lead.initialFollowUp != null) {
+        DateTime initial = lead.initialFollowUp!.toDate();
+        final DateTime nowUtc = DateTime.now().toUtc();
+        final DateTime followUpUtc = initial.toUtc();
+        if (followUpUtc.isBefore(nowUtc)) {
+          return true;
+        }
+      }
+
+      // Check follow-up leads
+      if (lead.followUpLeads?.isNotEmpty ?? false) {
+        for (var followUp in lead.followUpLeads!) {
+          if (followUp.nextFollowUp != null) {
+            DateTime next = followUp.nextFollowUp!.toDate();
+            final DateTime nowUtc = DateTime.now().toUtc();
+            final DateTime followUpUtc = next.toUtc();
+            if (followUpUtc.isBefore(nowUtc)) {
+              return true;
+            }
+          }
+        }
+      }
+
+      return false;
+    } catch (e) {
+      log('Error checking if lead is expired: $e');
+      return false;
+    }
+  }
+
+  DateTime? _parseFollowUpDate(dynamic value) {
+    if (value == null) return null;
+
+    if (value is Timestamp) {
+      return value.toDate();
+    }
+
+    if (value is DateTime) {
+      return value;
+    }
+
+    if (value is int) {
+      if (value > 100000000000) {
+        return DateTime.fromMillisecondsSinceEpoch(value, isUtc: true);
+      } else {
+        return DateTime.fromMillisecondsSinceEpoch(value * 1000, isUtc: true);
+      }
+    }
+
+    if (value is String) {
+      try {
+        return DateTime.parse(value);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    return null;
+  }
 
   void changeTab(String tab) {
     currentTab = tab;
@@ -343,6 +415,8 @@ class HomeController extends GetxController {
       filteredLeads = leads.where((lead) => hasFollowUpToday(lead)).toList();
     } else if (stage == 'all') {
       filteredLeads = leads;
+    } else if (stage == 'expired') {
+      filteredLeads = leads.where((lead) => isLeadExpired(lead)).toList();
     } else {
       filteredLeads = leads.where((lead) => lead.stage == stage).toList();
     }

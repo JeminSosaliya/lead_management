@@ -125,7 +125,7 @@ class HomeScreen extends StatelessWidget {
             );
           },
           child: DefaultTabController(
-            length: 6,
+            length: 7,
             initialIndex: 1,
             child: Scaffold(
               backgroundColor: colorWhite,
@@ -497,10 +497,12 @@ class HomeScreen extends StatelessWidget {
                   tabs: const [
                     Tab(text: 'All'),
                     Tab(text: 'Today'),
+                    Tab(text: 'Expired'),
                     Tab(text: 'Not Contacted'),
                     Tab(text: 'In Progress'),
                     Tab(text: 'Completed'),
                     Tab(text: 'Cancelled'),
+
                   ],
                 ),
               ),
@@ -551,10 +553,12 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         _buildLeadList('all', controller),
                         _buildLeadList('today', controller),
+                        _buildLeadList('expired', controller),
                         _buildLeadList('notContacted', controller),
                         _buildLeadList('inProgress', controller),
                         _buildLeadList('completed', controller),
                         _buildLeadList('cancelled', controller),
+
                       ],
                     ),
 
@@ -916,11 +920,13 @@ class HomeScreen extends StatelessWidget {
                 text:
                     controller.isSearching && controller.searchQuery.isNotEmpty
                     ? 'No leads found for "${controller.searchQuery}"'
-                    : controller.filtersApplied
-                    ? 'No leads for selected filters'
-                    : stage == 'today'
-                    ? 'No leads created today'
-                    : 'No $stage leads',
+                        : controller.filtersApplied
+                        ? 'No leads for selected filters'
+                        : stage == 'today'
+                        ? 'No leads created today'
+                        : stage == 'expired'
+                        ? 'No expired leads'
+                        : 'No $stage leads',
                 fontSize: width * 0.041,
                 fontWeight: FontWeight.w500,
                 textColor: colorGrey,
