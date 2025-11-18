@@ -32,6 +32,8 @@ class AddLeadController extends GetxController {
   bool showSourceError = false;
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
 
+  String get currentUserName =>
+      ListConst.currentUserProfileData.name?.toString() ?? '';
   List<String> technicianTypes = [];
 
   double? selectedLatitude;
@@ -422,7 +424,7 @@ class AddLeadController extends GetxController {
 
         if (deviceToken != null && deviceToken.isNotEmpty) {
           String title = "New Lead Assigned";
-          String body = "New lead assigned to you";
+          String body = "$currentUserName lead assigned to you: $leadClientName";
 
           bool notificationSent = await sendPushNotification(
             deviceToken: deviceToken,
