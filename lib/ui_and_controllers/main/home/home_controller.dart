@@ -74,23 +74,23 @@ class HomeController extends GetxController {
         .snapshots()
         .listen(
           (QuerySnapshot snapshot) {
-            employees = snapshot.docs.map((doc) {
-              final data = doc.data() as Map<String, dynamic>;
-              return {
-                'uid': doc.id,
-                'name': data['name'] ?? 'Unknown',
-                'isActive': data['isActive'] ?? true,
-                'type': data['type'] ?? 'employee',
-              };
-            }).toList();
-            log('Employees updated: ${employees.length} users found');
-            update();
-          },
-          onError: (error) {
-            log(' Error listening to employees: $error');
-          },
-          cancelOnError: false,
-        );
+        employees = snapshot.docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return {
+            'uid': doc.id,
+            'name': data['name'] ?? 'Unknown',
+            'isActive': data['isActive'] ?? true,
+            'type': data['type'] ?? 'employee',
+          };
+        }).toList();
+        log('Employees updated: ${employees.length} users found');
+        update();
+      },
+      onError: (error) {
+        log(' Error listening to employees: $error');
+      },
+      cancelOnError: false,
+    );
   }
 
   void setupTechnicianTypesListener() {
@@ -105,28 +105,28 @@ class HomeController extends GetxController {
           .snapshots()
           .listen(
             (DocumentSnapshot doc) {
-              if (doc.exists) {
-                List<dynamic> types = doc.get('technicianList') ?? [];
-                technicianTypes = types.map((e) => e.toString()).toList();
-                log('Technician types updated: $technicianTypes');
-                technicianListError = null;
-              } else {
-                log('Technician list document does not exist');
-                technicianTypes = [];
-                technicianListError = 'Technician list not found';
-              }
-              isTechnicianListLoading = false;
-              update();
-            },
-            onError: (error) {
-              log('Error listening to technician types: $error');
-              technicianTypes = [];
-              technicianListError = 'Failed to load technicians: $error';
-              isTechnicianListLoading = false;
-              update();
-            },
-            cancelOnError: false,
-          );
+          if (doc.exists) {
+            List<dynamic> types = doc.get('technicianList') ?? [];
+            technicianTypes = types.map((e) => e.toString()).toList();
+            log('Technician types updated: $technicianTypes');
+            technicianListError = null;
+          } else {
+            log('Technician list document does not exist');
+            technicianTypes = [];
+            technicianListError = 'Technician list not found';
+          }
+          isTechnicianListLoading = false;
+          update();
+        },
+        onError: (error) {
+          log('Error listening to technician types: $error');
+          technicianTypes = [];
+          technicianListError = 'Failed to load technicians: $error';
+          isTechnicianListLoading = false;
+          update();
+        },
+        cancelOnError: false,
+      );
     } catch (e) {
       update();
     }
@@ -172,16 +172,16 @@ class HomeController extends GetxController {
           .orderBy('updatedAt', descending: true)
           .snapshots()
           .listen((QuerySnapshot snapshot) {
-            leads = snapshot.docs
-                .map((doc) => Lead.fromMap(doc.data() as Map<String, dynamic>))
-                .toList();
+        leads = snapshot.docs
+            .map((doc) => Lead.fromMap(doc.data() as Map<String, dynamic>))
+            .toList();
 
-            leads.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+        leads.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
-            log('✅ Leads updated (Admin): ${leads.length} leads fetched');
-            isLoading = false;
-            update();
-          });
+        log('✅ Leads updated (Admin): ${leads.length} leads fetched');
+        isLoading = false;
+        update();
+      });
     } else {
       List<Lead> assignedLeads = [];
       List<Lead> createdLeads = [];
@@ -191,26 +191,26 @@ class HomeController extends GetxController {
           .where('assignedTo', isEqualTo: currentUserId)
           .snapshots()
           .listen((QuerySnapshot snapshot) {
-            assignedLeads = snapshot.docs
-                .map((doc) => Lead.fromMap(doc.data() as Map<String, dynamic>))
-                .toList();
+        assignedLeads = snapshot.docs
+            .map((doc) => Lead.fromMap(doc.data() as Map<String, dynamic>))
+            .toList();
 
-            log('✅ Assigned leads: ${assignedLeads.length}');
-            _mergeEmployeeLeads(assignedLeads, createdLeads);
-          });
+        log('✅ Assigned leads: ${assignedLeads.length}');
+        _mergeEmployeeLeads(assignedLeads, createdLeads);
+      });
 
       _createdLeadsSubscription = fireStore
           .collection('leads')
           .where('addedBy', isEqualTo: currentUserId)
           .snapshots()
           .listen((QuerySnapshot snapshot) {
-            createdLeads = snapshot.docs
-                .map((doc) => Lead.fromMap(doc.data() as Map<String, dynamic>))
-                .toList();
+        createdLeads = snapshot.docs
+            .map((doc) => Lead.fromMap(doc.data() as Map<String, dynamic>))
+            .toList();
 
-            log('✅ Created leads: ${createdLeads.length}');
-            _mergeEmployeeLeads(assignedLeads, createdLeads);
-          });
+        log('✅ Created leads: ${createdLeads.length}');
+        _mergeEmployeeLeads(assignedLeads, createdLeads);
+      });
     }
   }
 
@@ -312,7 +312,8 @@ class HomeController extends GetxController {
   }
   bool isLeadExpired(Lead lead) {
     try {
-      // Check if the lead has a follow-up date that has passed
+      // Match the exact logic used for red border: check if lastFollowUpDate is before now
+      // This ensures the Expired tab shows only leads that have a red border
       if (lead.lastFollowUpDate != null) {
         DateTime? followUpDate = _parseFollowUpDate(lead.lastFollowUpDate);
         if (followUpDate != null) {
@@ -321,31 +322,6 @@ class HomeController extends GetxController {
           return followUpUtc.isBefore(nowUtc);
         }
       }
-
-      // Also check initial follow-up
-      if (lead.initialFollowUp != null) {
-        DateTime initial = lead.initialFollowUp!.toDate();
-        final DateTime nowUtc = DateTime.now().toUtc();
-        final DateTime followUpUtc = initial.toUtc();
-        if (followUpUtc.isBefore(nowUtc)) {
-          return true;
-        }
-      }
-
-      // Check follow-up leads
-      if (lead.followUpLeads?.isNotEmpty ?? false) {
-        for (var followUp in lead.followUpLeads!) {
-          if (followUp.nextFollowUp != null) {
-            DateTime next = followUp.nextFollowUp!.toDate();
-            final DateTime nowUtc = DateTime.now().toUtc();
-            final DateTime followUpUtc = next.toUtc();
-            if (followUpUtc.isBefore(nowUtc)) {
-              return true;
-            }
-          }
-        }
-      }
-
       return false;
     } catch (e) {
       log('Error checking if lead is expired: $e');
@@ -452,10 +428,10 @@ class HomeController extends GetxController {
   }
 
   Future<bool> updateLeadStatus(
-    String leadId,
-    String stage,
-    String callStatus,
-  ) async {
+      String leadId,
+      String stage,
+      String callStatus,
+      ) async {
     try {
       await fireStore.collection('leads').doc(leadId).update({
         'stage': stage,

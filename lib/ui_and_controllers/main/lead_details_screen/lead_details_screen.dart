@@ -81,12 +81,8 @@ class LeadDetailsScreen extends StatelessWidget {
         // If there is no previous route (e.g., opened from notification with cleared stack), go to Home
         log('Get.previousRoute: ${Get.previousRoute}');
         log('Get.currentRoute: ${Get.previousRoute.isEmpty}');
-        Get.offAllNamed(AppRoutes.home);
-        if (Get.previousRoute.isEmpty || Get.previousRoute == '/') {
-          Get.offAllNamed(AppRoutes.home);
-          return false;
-        }
-        return true;
+        Get.back();
+        return false;
       },
       child: Scaffold(
         resizeToAvoidBottomInset: true,
@@ -96,10 +92,7 @@ class LeadDetailsScreen extends StatelessWidget {
           onBackPressed: () {
             log('Get.previousRoute: ${Get.previousRoute}');
             log('Get.currentRoute: ${Get.previousRoute.isEmpty}');
-            Get.offAllNamed(AppRoutes.home);
-            if (Get.previousRoute.isEmpty || Get.previousRoute == '/') {
-              Get.offAllNamed(AppRoutes.home);
-            }
+            Get.back();
           },
           title: "Lead Details",
           // actions: [
