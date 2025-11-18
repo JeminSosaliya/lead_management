@@ -108,7 +108,6 @@ class HomeScreen extends StatelessWidget {
           canPop: false,
           onPopInvoked: (bool didPop) async {
             if (didPop) return;
-
             context.showAppDialog(
               title: 'Are you sure you want to exit the app?',
               buttonOneTitle: 'No',
