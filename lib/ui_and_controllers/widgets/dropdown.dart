@@ -17,6 +17,7 @@ class SearchableCSCDropdown extends StatefulWidget {
   final FocusNode? focusNode;
   final TextInputAction textInputAction;
   final FocusNode? nextFocusNode;
+  final ValueChanged<String>? onFieldSubmitted;
 
 
   const SearchableCSCDropdown({
@@ -32,6 +33,7 @@ class SearchableCSCDropdown extends StatefulWidget {
     this.focusNode,
     this.textInputAction = TextInputAction.next,
     this.nextFocusNode,
+    this.onFieldSubmitted,
   }) : super(key: key);
 
   @override
@@ -87,7 +89,6 @@ class _SearchableCSCDropdownState extends State<SearchableCSCDropdown> {
 
   @override
   Widget build(BuildContext context) {
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -96,135 +97,114 @@ class _SearchableCSCDropdownState extends State<SearchableCSCDropdown> {
             text: widget.title!,
             fontSize: width * 0.045,
             fontWeight: FontWeight.w600,
+            textColor: Colors.black87,
           ),
-        if (widget.title != null)
-          SizedBox(height: height * 0.01),
+        if (widget.title != null) SizedBox(height: height * 0.01),
 
         SizedBox(
-          height: height * 0.062,
+          height: height * 0.068,
           child: TextFormField(
-            keyboardType: widget.keyboardType,
             controller: _controller,
             focusNode: _focusNode,
             textCapitalization: TextCapitalization.words,
             textInputAction: widget.textInputAction,
+            cursorColor: colorMainTheme,
+            style: GoogleFonts.roboto(
+              fontSize: width * 0.04,
+              color: Colors.black87,
+              fontWeight: FontWeight.w500,
+            ),
+            decoration: InputDecoration(
+              hintText: widget.hintText,
+              hintStyle: GoogleFonts.roboto(
+                color: Colors.black45,
+                fontSize: width * 0.036,
+              ),
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.96),
+              contentPadding: EdgeInsets.symmetric(horizontal: width * 0.04, vertical: height * 0.018),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(color: Colors.black26, width: 1),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(color: Colors.black26, width: 1),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(color: colorMainTheme, width: 1.2),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(color: colorRedError, width: 1),
+              ),
+              suffixIcon: GestureDetector(
+                onTap: _toggleDropdown,
+                child: Icon(
+                  _isDropdownOpen ? widget.iconData2 : widget.iconData1,
+                  color: _isDropdownOpen ? colorMainTheme : Colors.black54,
+                  size: width * 0.07,
+                ),
+              ),
+            ),
+            onChanged: _filterItems,
             onFieldSubmitted: (_) {
               if (widget.nextFocusNode != null) {
                 widget.nextFocusNode!.requestFocus();
               } else {
                 _focusNode.unfocus();
               }
+              widget.onFieldSubmitted?.call(_controller.text);
             },
-            style: GoogleFonts.roboto(
-              fontSize: width * 0.038,
-              color: colorBlack,
-              fontWeight: FontWeight.w400,
-            ),
-            decoration: InputDecoration(
-              hintText: widget.hintText,
-              hintStyle: GoogleFonts.roboto(
-                color: colorGreyText,
-                fontSize: width * 0.035,
-                fontWeight: FontWeight.w400,
-                height: 1.75,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(width * 0.0266),
-                ),
-                borderSide:
-                BorderSide(color: colorGreyTextFieldBorder),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(width * 0.0266),
-                ),
-                borderSide:
-                BorderSide(color: colorGreyTextFieldBorder),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(width * 0.0266),
-                ),
-                borderSide:
-                BorderSide(color: colorGreyTextFieldBorder),
-              ),
-              errorText: widget.showError ? '' : null,
-              errorStyle: const TextStyle(height: 0, fontSize: 0), // ye add karo
-
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(width * 0.0266)),
-                borderSide: BorderSide(color: colorRedError, width: 1),
-              ),
-              focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(width * 0.0266)),
-                borderSide: BorderSide(color: colorRedError, width: 1),
-              ),
-              suffixIcon: GestureDetector(
-                onTap: _toggleDropdown,
-                child: _isDropdownOpen == false
-                    ? Icon(
-                  widget.iconData1,
-                  color: colorGreyText,
-                  size: width * 0.065,
-                )
-                    : Icon(
-                  widget.iconData2,
-                  color: colorGreyTextFieldBorder,
-                  size: width * 0.065,
-                ),
-              ),
-            ),
-            onChanged: _filterItems,
             onTap: () {
               setState(() {
-                _filteredItems =
-                    widget.items; // Reset filtered list when tapped
+                _filteredItems = widget.items;
                 _isDropdownOpen = true;
               });
             },
           ),
         ),
 
+        // Dropdown List
         if (_isDropdownOpen && _filteredItems.isNotEmpty)
           Container(
-            height: _filteredItems.length >= 4
-                ? height * 0.25
-                : _filteredItems.length >= 3
-                ? height * 0.185
-                : _filteredItems.length >= 2
-                ? height * 0.125
-                : height * 0.065,
-            margin: EdgeInsets.only(top: height * 0.01),
+            margin: EdgeInsets.only(top: 6),
+            constraints: BoxConstraints(maxHeight: height * 0.3),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(width * 0.0266),
-              color: colorWhite,
-              border: Border.all(color: colorGreyText),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.black12),
+              boxShadow: [
+                BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4)),
+              ],
             ),
             child: ListView.builder(
               padding: EdgeInsets.zero,
               shrinkWrap: true,
               itemCount: _filteredItems.length,
               itemBuilder: (context, index) {
-                return Padding(
-                  padding: EdgeInsets.symmetric(vertical: 2),
-                  child: GestureDetector(
+                return Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
                     onTap: () {
                       setState(() {
                         _controller.text = _filteredItems[index];
-                        _isDropdownOpen = false; // Close dropdown on select
-                        _focusNode.unfocus(); // Close keyboard
+                        _isDropdownOpen = false;
+                        _focusNode.unfocus();
                       });
                       widget.onChanged(_filteredItems[index]);
                     },
                     child: Container(
-                      padding: EdgeInsets.symmetric(
-                          vertical: width * 0.028, horizontal: width * 0.035),
-                      child: WantText(
-                        text: _filteredItems[index],
-                        fontSize: width * 0.04,
-                        fontWeight: FontWeight.w400,
-                        textColor: colorBlack,
+                      padding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                      child: Text(
+                        _filteredItems[index],
+                        style: GoogleFonts.roboto(
+                          fontSize: width * 0.04,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ),
@@ -236,3 +216,163 @@ class _SearchableCSCDropdownState extends State<SearchableCSCDropdown> {
     );
   }
 }
+
+//  @override
+//   Widget build(BuildContext context) {
+//
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         if (widget.title != null)
+//           WantText(
+//             text: widget.title!,
+//             fontSize: width * 0.045,
+//             fontWeight: FontWeight.w600,
+//           ),
+//         if (widget.title != null)
+//           SizedBox(height: height * 0.01),
+//
+//         SizedBox(
+//           height: height * 0.062,
+//           child: TextFormField(
+//             keyboardType: widget.keyboardType,
+//             controller: _controller,
+//             focusNode: _focusNode,
+//             textCapitalization: TextCapitalization.words,
+//             textInputAction: widget.textInputAction,
+//             onFieldSubmitted: (_) {
+//               if (widget.nextFocusNode != null) {
+//                 widget.nextFocusNode!.requestFocus();
+//               } else {
+//                 _focusNode.unfocus();
+//               }
+//             },
+//             style: GoogleFonts.roboto(
+//               fontSize: width * 0.038,
+//               color: colorBlack,
+//               fontWeight: FontWeight.w400,
+//             ),
+//             decoration: InputDecoration(
+//               hintText: widget.hintText,
+//               hintStyle: GoogleFonts.roboto(
+//                 color: colorGreyText,
+//                 fontSize: width * 0.035,
+//                 fontWeight: FontWeight.w400,
+//                 height: 1.75,
+//               ),
+//               border: OutlineInputBorder(
+//                 borderRadius: BorderRadius.all(
+//                   Radius.circular(width * 0.0266),
+//                 ),
+//                 borderSide:
+//                 BorderSide(color: colorGreyTextFieldBorder),
+//               ),
+//               enabledBorder: OutlineInputBorder(
+//                 borderRadius: BorderRadius.all(
+//                   Radius.circular(width * 0.0266),
+//                 ),
+//                 borderSide:
+//                 BorderSide(color: colorGreyTextFieldBorder),
+//               ),
+//               focusedBorder: OutlineInputBorder(
+//                 borderRadius: BorderRadius.all(
+//                   Radius.circular(width * 0.0266),
+//                 ),
+//                 borderSide:
+//                 BorderSide(color: colorGreyTextFieldBorder),
+//               ),
+//               errorText: widget.showError ? '' : null,
+//               errorStyle: const TextStyle(height: 0, fontSize: 0), // ye add karo
+//
+//               errorBorder: OutlineInputBorder(
+//                 borderRadius: BorderRadius.all(Radius.circular(width * 0.0266)),
+//                 borderSide: BorderSide(color: colorRedError, width: 1),
+//               ),
+//               focusedErrorBorder: OutlineInputBorder(
+//                 borderRadius: BorderRadius.all(Radius.circular(width * 0.0266)),
+//                 borderSide: BorderSide(color: colorRedError, width: 1),
+//               ),
+//               suffixIcon: GestureDetector(
+//                 onTap: _toggleDropdown,
+//                 child: _isDropdownOpen == false
+//                     ? Icon(
+//                   widget.iconData1,
+//                   color: colorGreyText,
+//                   size: width * 0.065,
+//                 )
+//                     : Icon(
+//                   widget.iconData2,
+//                   color: colorGreyTextFieldBorder,
+//                   size: width * 0.065,
+//                 ),
+//               ),
+//             ),
+//             onChanged: _filterItems,
+//onFieldSubmitted: (_) {
+//               if (widget.nextFocusNode != null) {
+//                 widget.nextFocusNode!.requestFocus();
+//               } else {
+//                 _focusNode.unfocus();
+//               }
+//               widget.onFieldSubmitted?.call(_controller.text);
+//             },
+//             onTap: () {
+//               setState(() {
+//                 _filteredItems =
+//                     widget.items; // Reset filtered list when tapped
+//                 _isDropdownOpen = true;
+//               });
+//             },
+//           ),
+//         ),
+//
+//         if (_isDropdownOpen && _filteredItems.isNotEmpty)
+//           Container(
+//             height: _filteredItems.length >= 4
+//                 ? height * 0.25
+//                 : _filteredItems.length >= 3
+//                 ? height * 0.185
+//                 : _filteredItems.length >= 2
+//                 ? height * 0.125
+//                 : height * 0.065,
+//             margin: EdgeInsets.only(top: height * 0.01),
+//             decoration: BoxDecoration(
+//               borderRadius: BorderRadius.circular(width * 0.0266),
+//               color: colorWhite,
+//               border: Border.all(color: colorGreyText),
+//             ),
+//             child: ListView.builder(
+//               padding: EdgeInsets.zero,
+//               shrinkWrap: true,
+//               itemCount: _filteredItems.length,
+//               itemBuilder: (context, index) {
+//                 return Padding(
+//                   padding: EdgeInsets.symmetric(vertical: 2),
+//                   child: GestureDetector(
+//                     onTap: () {
+//                       setState(() {
+//                         _controller.text = _filteredItems[index];
+//                         _isDropdownOpen = false; // Close dropdown on select
+//                         _focusNode.unfocus(); // Close keyboard
+//                       });
+//                       widget.onChanged(_filteredItems[index]);
+//                     },
+//                     child: Container(
+//                       padding: EdgeInsets.symmetric(
+//                           vertical: width * 0.028, horizontal: width * 0.035),
+//                       child: WantText(
+//                         text: _filteredItems[index],
+//                         fontSize: width * 0.04,
+//                         fontWeight: FontWeight.w400,
+//                         textColor: colorBlack,
+//                       ),
+//                     ),
+//                   ),
+//                 );
+//               },
+//             ),
+//           ),
+//       ],
+//     );
+//   }
+// }

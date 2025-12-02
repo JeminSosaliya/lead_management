@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lead_management/core/constant/app_color.dart';
 import 'package:lead_management/core/constant/app_const.dart';
@@ -293,13 +294,57 @@ class _ChatSectionState extends State<ChatSection> {
           Row(
             children: [
               Expanded(
-                child: CustomTextFormField(
-                  hintText: canChat
-                      ? 'Type a message'
-                      : 'Chat not available for this user',
-                  controller: controller.chatController,
-                  enabled: canChat,
-                  extraSpace: false,
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: colorGreyTextFieldBorder),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: TextFormField(
+                    enabled: canChat,
+                    controller: controller.chatController,
+                    keyboardType: TextInputType.multiline,
+                    textInputAction: TextInputAction.newline,
+                    focusNode: controller.fnChat,
+                    minLines: 1,
+                    maxLines: null,
+                    style: GoogleFonts.roboto(
+                      fontSize: width * 0.035,
+                      color: colorBlack,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: height * 0.014,
+                        horizontal: width * 0.030,
+                      ),
+                      hintText: canChat
+                          ? 'Type a message'
+                          : 'Chat not available for this user',
+                      hintStyle: GoogleFonts.roboto(
+                        color: colorGreyText,
+                        fontSize: width * 0.035,
+                        fontWeight: FontWeight.w400,
+                        height: 1.75,
+                      ),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: colorMainTheme),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      disabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
                 ),
               ),
               SizedBox(width: width * 0.02),

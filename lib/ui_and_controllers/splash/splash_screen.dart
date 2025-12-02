@@ -14,7 +14,6 @@ import 'package:lead_management/routes/route_manager.dart';
 import 'package:lead_management/ui_and_controllers/main/profile/profile_controller.dart';
 
 import '../../core/constant/app_const.dart';
-import '../auth/goggle_login/google_calendar_controller.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -25,10 +24,6 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   final ProfileController _profileController = Get.put(ProfileController());
-  final GoogleCalendarController controller = Get.put(
-    GoogleCalendarController(),
-    permanent: true,
-  );
 
   final User? initialUser = FirebaseAuth.instance.currentUser;
 
@@ -50,23 +45,14 @@ class _SplashScreenState extends State<SplashScreen> {
       Get.offAllNamed(AppRoutes.login);
     } else {
       try {
-        bool autoLoginSuccess = await controller.autoLogin();
-        log("Auto-login success: $autoLoginSuccess");
-        if (!controller.isLoggedIn || !autoLoginSuccess) {
-          log("User not logged in → Going to Login");
-          Get.offAllNamed(AppRoutes.goggleLogin);
-          return;
-        }
-        log("Already signed in as Admin: ${controller.adminEmail}");
         await _initializeAppData();
-        // If app was launched from a notification (killed state), honor deep link
         if (NotificationUtils.hasPendingDeepLink()) {
           final processed = NotificationUtils.processPendingDeepLinkIfAny();
-          if (processed) return; // deep link handled, don't override
+          if (processed) return;
         }
         Get.offAllNamed(AppRoutes.home);
         Get.context?.showAppSnackBar(
-          message: "Welcome back, ${controller.adminEmail}",
+          message: "Welcome back, ${initialUser?.email}",
           backgroundColor: colorGreen,
           textColor: colorWhite,
         );

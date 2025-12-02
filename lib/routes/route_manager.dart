@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:lead_management/ui_and_controllers/auth/login/login_screen.dart';
-import 'package:lead_management/ui_and_controllers/main/add_laed/add_laed_screen.dart';
+import 'package:lead_management/ui_and_controllers/main/add_lead/add_lead_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/add_users/add_admin/add_admin_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/add_users/add_employee/add_employee_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/add_users/add_technician/add_technician_screen.dart';
@@ -14,7 +14,6 @@ import 'package:lead_management/ui_and_controllers/main/profile/profile_screen.d
 import 'package:lead_management/ui_and_controllers/splash/splash_screen.dart';
 import 'package:lead_management/ui_and_controllers/main/notifications/notification_screen.dart';
 
-import '../ui_and_controllers/auth/goggle_login/admin_login_page.dart';
 
 class AppRoutes {
   AppRoutes._();
@@ -32,7 +31,6 @@ class AppRoutes {
   static const String analytics = "/analytics";
   static const String analyticsListScreen = "/analyticsListScreen";
   static const String leadDetailsScreen = "/leadDetailsScreen";
-  static const String goggleLogin = "/adminLogin";
   static const String notifications = "/notifications";
 
 
@@ -40,7 +38,6 @@ class AppRoutes {
     GetPage(name: splash, page: () => SplashScreen()),
     GetPage(name: login, page: () => LoginScreen()),
     GetPage(name: home, page: () => HomeScreen()),
-    GetPage(name: goggleLogin, page: () => AdminLoginPage()),
 
     // GetPage(name: ownerHomeScreen, page: () => OwnerHomeScreen()),
     // GetPage(name: employeeHomeScreen, page: () => EmployeeHomeScreen()),

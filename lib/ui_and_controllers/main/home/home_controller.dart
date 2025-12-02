@@ -423,6 +423,9 @@ class HomeController extends GetxController {
       return lead.clientName.toLowerCase().contains(query) ||
           lead.clientPhone.contains(query) ||
           lead.assignedToName.toLowerCase().contains(query) ||
+          (lead.referralName?.toLowerCase().contains(query) ?? false) ||
+          (lead.companyName?.toLowerCase().contains(query) ?? false) ||
+          (lead.referralNumber?.contains(query) ?? false) ||
           lead.addedByName.toLowerCase().contains(query);
     }).toList();
   }

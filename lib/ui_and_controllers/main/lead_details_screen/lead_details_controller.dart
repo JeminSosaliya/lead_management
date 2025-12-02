@@ -8,15 +8,18 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:lead_management/core/constant/app_color.dart';
+import 'package:lead_management/core/constant/app_const.dart';
 import 'package:lead_management/core/constant/list_const.dart';
 import 'package:lead_management/core/utils/extension.dart';
 import 'package:lead_management/model/lead_add_model.dart';
 import 'package:lead_management/ui_and_controllers/main/home/home_controller.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_button.dart';
+import 'package:lead_management/ui_and_controllers/widgets/custom_textformfield.dart';
 import 'package:lead_management/ui_and_controllers/widgets/location_picker_screen.dart';
+import 'package:lead_management/ui_and_controllers/widgets/want_text.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/utils/push_notification_utils.dart';
-import '../../auth/goggle_login/google_calendar_controller.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -36,13 +39,9 @@ class LeadDetailsController extends GetxController {
   bool showEmployeeError = false;
   bool showSourceError = false;
   bool isDetailsExpanded = false;
-  final TextEditingController chatController = TextEditingController();
-  final ScrollController chatScrollController = ScrollController();
   bool isSendingMessage = false;
   final formKey = GlobalKey<FormState>();
   final editFormKey = GlobalKey<FormState>();
-  final noteController = TextEditingController();
-  final followUpController = TextEditingController();
   DateTime? nextFollowUpDateTime;
   String selectedResponse = '';
   String selectedStage = '';
@@ -73,6 +72,10 @@ class LeadDetailsController extends GetxController {
   double? selectedLongitude;
   String? locationAddress;
   DateTime? initialFollowUp;
+  final TextEditingController chatController = TextEditingController();
+  final ScrollController chatScrollController = ScrollController();
+  TextEditingController noteCallController = TextEditingController();
+  TextEditingController followUpController = TextEditingController();
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController emailController = TextEditingController();
@@ -96,6 +99,8 @@ class LeadDetailsController extends GetxController {
   final FocusNode fnESource = FocusNode();
   final FocusNode fnEReassign = FocusNode();
   final FocusNode fnETechnician = FocusNode();
+  final FocusNode fnNoteCall = FocusNode();
+  final FocusNode fnChat = FocusNode();
 
   LeadDetailsController({required this.leadId});
 
@@ -113,6 +118,8 @@ class LeadDetailsController extends GetxController {
         currentUserId == (lead!.assignedTo);
   }
   bool get hasFollowUps => lead?.followUpLeads?.isNotEmpty ?? false;
+  bool get _isDisposed => !Get.isRegistered<LeadDetailsController>(tag: leadId);
+
   @override
   void onInit() {
     super.onInit();
@@ -315,7 +322,6 @@ class LeadDetailsController extends GetxController {
 
 
   Future<void> updateLeadDetails() async {
-    final calendarController = Get.find<GoogleCalendarController>();
     _normalizeEditPhoneFields();
     final normalizedClientPhone = _normalizePhone(phoneController.text);
     final normalizedAltPhone = altPhoneController.text.trim().isNotEmpty
@@ -380,33 +386,6 @@ class LeadDetailsController extends GetxController {
         callStatus: lead!.callStatus,
         eventId: lead!.eventId,
       );
-
-      if (lead!.eventId != null) {
-        try {
-          final updatedEventId = await calendarController.updateOrCreateEvent(
-            eventId: lead!.eventId!,
-            title: "Lead: ${updatedLead.clientName}",
-            description: updatedLead.description ?? lead!.description ?? '',
-            startTime: initialFollowUp ?? DateTime.now(),
-            endTime:
-                initialFollowUp?.add(const Duration(minutes: 5)) ??
-                DateTime.now().add(const Duration(days: 1)),
-            oldEmployeeEmails: [employeeOldEmail],
-            newEmployeeEmails: [selectedEmployeeEmail],
-          );
-
-          if (updatedEventId != null) {
-            updatedLead.eventId = updatedEventId;
-            log(
-              '✅ Event ID updated: $updatedEventId oldEmployee $employeeOldEmail and newEmployee $selectedEmployeeEmail',
-            );
-          }
-        } catch (e) {
-          log(
-            "⚠️ Google Calendar update failed: $e, email: $selectedEmployeeEmail",
-          );
-        }
-      }
 
       await fireStore
           .collection('leads')
@@ -487,54 +466,47 @@ class LeadDetailsController extends GetxController {
         fcmToken = '';
       }
 
-      // Query for existing reminder by leadId
-      QuerySnapshot reminderQuery = await fireStore
-          .collection('reminder')
-          .where('leadId', isEqualTo: leadId)
-          .limit(1)
-          .get();
+      final now = DateTime.now();
+      final String formattedCreatedAt = now.toIso8601String();
+      final String formattedUpdatedAt = now.toIso8601String();
+      final String? formattedTime = followUpTime?.toIso8601String();
 
-      Map<String, dynamic> reminderData = {
-        'name': assignedToName,
-        'id': assignedToUserId,
+      // Determine content value
+      String reminderContent = '';
+      if (content != null && content.isNotEmpty) {
+        reminderContent = content;
+      } else if (description.isNotEmpty) {
+        reminderContent = description;
+      }
+
+      final Map<String, dynamic> reminderBody = {
+        'content': reminderContent,
+        'createdAt': formattedCreatedAt,
         'fcmToken': fcmToken,
-        'title': clientName,
-        'type': 'reminder',
+        'id': assignedToUserId,
         'isSent': false,
         'leadId': leadId,
-        'updatedAt': FieldValue.serverTimestamp(),
+        'name': assignedToName,
+        'time': formattedTime ?? formattedCreatedAt,
+        'title': clientName,
+        'type': 'reminder',
+        'updatedAt': formattedUpdatedAt,
       };
 
-      // Update time if provided
-      if (followUpTime != null) {
-        reminderData['time'] = Timestamp.fromDate(followUpTime);
-      }
+      final response = await http.post(
+        Uri.parse('https://api.rexinochemical.com/api/dealers/reminder'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(reminderBody),
+      );
 
-      // Update content (description or call note)
-      if (content != null && content.isNotEmpty) {
-        reminderData['content'] = content;
-      } else if (description.isNotEmpty) {
-        reminderData['content'] = description;
-      }
-
-      if (reminderQuery.docs.isNotEmpty) {
-        // Update existing reminder
-        await fireStore
-            .collection('reminder')
-            .doc(reminderQuery.docs.first.id)
-            .update(reminderData);
-        log('✅ Reminder updated for lead: $leadId');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        log('Reminder created via API for lead: $leadId');
+        log('API Response: ${response.body}');
       } else {
-        // Create new reminder if it doesn't exist
-        reminderData['createdAt'] = FieldValue.serverTimestamp();
-        if (followUpTime != null) {
-          reminderData['time'] = Timestamp.fromDate(followUpTime);
-        }
-        await fireStore.collection('reminder').add(reminderData);
-        log('✅ Reminder created for lead: $leadId');
+        log('API Error: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      log('❌ Error creating/updating reminder: $e');
+      log('Error creating/updating reminder: $e');
       // Don't throw - reminder failure shouldn't block lead update
     }
   }
@@ -804,17 +776,14 @@ class LeadDetailsController extends GetxController {
     try {
       // 🔹 Clean phone number (remove spaces, dashes, parentheses, etc.)
       String cleanPhone = phone.replaceAll(RegExp(r'[^\d+]'), '');
-
-      // 🔹 Remove country code if present
       if (cleanPhone.startsWith('+91') && cleanPhone.length == 13) {
         cleanPhone = cleanPhone.substring(3);
       } else if (cleanPhone.startsWith('91') && cleanPhone.length == 12) {
         cleanPhone = cleanPhone.substring(2);
       }
 
-      log('📞 Cleaned CALL NUMBER: $cleanPhone');
+      log('Cleaned CALL NUMBER: $cleanPhone');
 
-      // 🔹 Validate final number length
       if (cleanPhone.length != 10 ||
           !RegExp(r'^\d{10}$').hasMatch(cleanPhone)) {
         Get.context?.showAppSnackBar(
@@ -845,7 +814,7 @@ class LeadDetailsController extends GetxController {
         throw Exception('Cannot launch phone dialer');
       }
     } catch (e) {
-      log("❌ Error launching call: $e");
+      log("Error launching call: $e");
       Get.context?.showAppSnackBar(
         message: 'Could not launch call.',
         backgroundColor: colorRedCalendar,
@@ -999,7 +968,7 @@ class LeadDetailsController extends GetxController {
       List<FollowUpLead> updatedList = lead?.followUpLeads ?? [];
       updatedList.add(
         FollowUpLead(
-          callNote: noteController.text.trim(),
+          callNote: noteCallController.text.trim(),
           nextFollowUp: nextFollowUpDateTime != null
               ? Timestamp.fromDate(nextFollowUpDateTime!)
               : null,
@@ -1032,7 +1001,7 @@ class LeadDetailsController extends GetxController {
           clientName: lead!.clientName,
           description: lead!.description ?? '',
           followUpTime: nextFollowUpDateTime,
-          content: noteController.text.trim(),
+          content: noteCallController.text.trim(),
           // Call note as content
           isUpdate: true,
         );
@@ -1047,7 +1016,7 @@ class LeadDetailsController extends GetxController {
           notificationType: 'LEAD_UPDATE',
         );
         showUpdateForm = false;
-        noteController.clear();
+        noteCallController.clear();
         followUpController.clear();
         nextFollowUpDateTime = null;
         selectedResponse = '';
@@ -1072,7 +1041,7 @@ class LeadDetailsController extends GetxController {
       }
     } else {
       String? errorMessage;
-      if (noteController.text.trim().isEmpty) {
+      if (noteCallController.text.trim().isEmpty) {
         errorMessage = 'Please enter call note';
       } else if (showResponseError) {
         errorMessage = 'Please select a response';
@@ -1096,7 +1065,6 @@ class LeadDetailsController extends GetxController {
     );
   }
 
-  // Expand/Collapse method
   void toggleDetails() {
     isDetailsExpanded = !isDetailsExpanded;
     update();
@@ -1104,7 +1072,7 @@ class LeadDetailsController extends GetxController {
 
   @override
   void onClose() {
-    noteController.dispose();
+    noteCallController.dispose();
     followUpController.dispose();
     nameController.dispose();
     phoneController.dispose();
@@ -1117,7 +1085,6 @@ class LeadDetailsController extends GetxController {
     initialFollowUpController.dispose();
     altPhoneController.dispose();
     chatController.dispose();
-    // Only dispose scroll controller if it's attached
     if (chatScrollController.hasClients) {
       chatScrollController.dispose();
     }
@@ -1134,6 +1101,8 @@ class LeadDetailsController extends GetxController {
     fnESource.dispose();
     fnEReassign.dispose();
     fnETechnician.dispose();
+    fnNoteCall.dispose();
+    fnChat.dispose();
     super.onClose();
   }
 
@@ -1154,8 +1123,8 @@ class LeadDetailsController extends GetxController {
     required String deviceToken,
     required String title,
     required String body,
-    String dataType = 'LEAD_MESSAGE', // default keeps chat behavior
-    Map<String, String>? extraData, // optional extra key/values
+    String dataType = 'LEAD_MESSAGE',
+    Map<String, String>? extraData,
   }) async {
     if (deviceToken.isEmpty) return false;
     final credentials = await _getAccessToken();
@@ -1307,7 +1276,6 @@ class LeadDetailsController extends GetxController {
         final body =
             '$updatedByName $actionVerb lead: ${lead!.clientName}';
 
-        // This already includes leadId in the payload, so tapping routes correctly
         await _sendPushNotification(
           deviceToken: token,
           title: title,
@@ -1320,6 +1288,214 @@ class LeadDetailsController extends GetxController {
     }
   }
 
-  // Add this helper method to check if controller is disposed
-  bool get _isDisposed => !Get.isRegistered<LeadDetailsController>(tag: leadId);
-}
+
+  Future<void> editFollowUp(int index) async {
+    if (lead == null || lead!.followUpLeads == null || index >= lead!.followUpLeads!.length) return;
+
+    final followUp = lead!.followUpLeads![index];
+    final TextEditingController noteController = TextEditingController(text: followUp.callNote ?? '');
+    DateTime? selectedDateTime = followUp.nextFollowUp?.toDate();
+    final RxBool isDateSelected = (selectedDateTime != null).obs;
+
+    final bool? result = await Get.dialog<bool>(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: colorWhite,
+        elevation: 12,
+        contentPadding: EdgeInsets.zero,
+        content: Container(
+          width: width * 0.9,
+          constraints: BoxConstraints(minHeight: height * 0.4),
+          padding: EdgeInsets.all(width * 0.05),
+          child: Obx(() => Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+
+              WantText(
+                text: 'Edit Follow-up',
+                fontSize: width * 0.052,
+                fontWeight: FontWeight.w600,
+                textColor: colorBlack,
+              ),
+              SizedBox(height: height * 0.03),
+
+              WantText(
+                text: 'Call Note / Reason',
+                fontSize: width * 0.038,
+                fontWeight: FontWeight.w500,
+                textColor: colorBlack,
+              ),
+              SizedBox(height: 8),
+              CustomTextFormField(
+                controller: noteController,
+                hintText: 'Enter call note or reason',
+                maxLines: 3,
+                textCapitalization: TextCapitalization.sentences,
+                keyboardType: TextInputType.multiline,
+                textInputAction: TextInputAction.newline,
+              ),
+              SizedBox(height: height * 0.025),
+
+              WantText(
+                text: 'Next Follow-up Date & Time',
+                fontSize: width * 0.038,
+                fontWeight: FontWeight.w500,
+                textColor: colorBlack,
+              ),
+              SizedBox(height: 8),
+              GestureDetector(
+                onTap: () async {
+                  // Close keyboard before opening picker
+                  FocusScope.of(Get.context!).unfocus();
+
+                  DateTime now = DateTime.now();
+                  DateTime initialDate = selectedDateTime ?? now.add(const Duration(days: 1));
+
+                  final DateTime? pickedDate = await showDatePicker(
+                    context: Get.context!,
+                    initialDate: initialDate,
+                    firstDate: now.subtract(const Duration(days: 365)),
+                    lastDate: DateTime(2100),
+                  );
+
+                  if (pickedDate != null) {
+                    final TimeOfDay? pickedTime = await showTimePicker(
+                      context: Get.context!,
+                      initialTime: TimeOfDay.fromDateTime(initialDate),
+                    );
+
+                    if (pickedTime != null) {
+                      selectedDateTime = DateTime(
+                        pickedDate.year,
+                        pickedDate.month,
+                        pickedDate.day,
+                        pickedTime.hour,
+                        pickedTime.minute,
+                      );
+
+                      isDateSelected.value = true;
+
+                      // Prevent TextField from auto-focusing after return
+                      FocusScope.of(Get.context!).unfocus();
+                    }
+                  }
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 16, horizontal: 14),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: colorGreyTextFieldBorder),
+                    borderRadius: BorderRadius.circular(10),
+                    color: colorWhite,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today_rounded, color: colorMainTheme, size: width * 0.055),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          selectedDateTime != null
+                              ? DateFormat('dd MMM yyyy, hh:mm a').format(selectedDateTime!)
+                              : 'Tap to select date & time',
+                          style: TextStyle(
+                            fontSize: width * 0.038,
+                            color: selectedDateTime != null ? colorBlack : colorGreyText,
+                            fontWeight: selectedDateTime != null ? FontWeight.w500 : FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                      if (isDateSelected.value)
+                        GestureDetector(
+                          onTap: () {
+                            selectedDateTime = null;
+                            isDateSelected.value = false;
+                          },
+                          child: Icon(Icons.clear, color: colorRedError, size: width * 0.055),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: height * 0.04),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomButton(
+                      Width: width,
+                      onTap: () => Get.back(result: false),
+                      label: 'Cancel',
+                      backgroundColor: colorWhite,
+                      textColor: colorBlack,
+                    ),
+                  ),
+                  SizedBox(width: width * 0.03),
+                  Expanded(
+                    child: CustomButton(
+                      Width: width,
+                      onTap: () {
+                        if (noteController.text.trim().isEmpty && selectedDateTime == null) {
+                          Get.snackbar('Required', 'Please add a note or select a date', backgroundColor: colorRedCalendar);
+                          return;
+                        }
+                        Get.back(result: true);
+                      },
+                      label: 'Save',
+                      backgroundColor: colorMainTheme,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          )),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+
+    if (result == true) {
+      lead!.followUpLeads![index]
+        ..callNote = noteController.text.trim().isNotEmpty ? noteController.text.trim() : null
+        ..nextFollowUp = selectedDateTime != null ? Timestamp.fromDate(selectedDateTime!) : null;
+
+      await fireStore.collection('leads').doc(leadId).update({
+        'followUpLeads': lead!.followUpLeads!.map((e) => e.toMap()).toList(),
+        'updatedAt': Timestamp.now(),
+      });
+
+      await fetchLead(showLoader: false);
+      Get.snackbar('Success', 'Follow-up updated successfully', backgroundColor: colorGreen);
+    }
+
+    noteController.dispose();
+  }
+
+  Future<void> deleteFollowUp(int index) async {
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        backgroundColor: colorWhite,
+
+        title: Text('Delete Follow-up'),
+        content: Text('Are you sure you want to delete this follow-up?'),
+        actions: [
+          TextButton(onPressed: () => Get.back(result: false), child: Text('No')),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            child: Text('Yes', style: TextStyle(color: colorRedCalendar)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      lead!.followUpLeads!.removeAt(index);
+
+      await fireStore.collection('leads').doc(leadId).update({
+        'followUpLeads': lead!.followUpLeads!.map((e) => e.toMap()).toList(),
+        'updatedAt': Timestamp.now(),
+      });
+
+      await fetchLead(showLoader: false);
+      Get.snackbar('Deleted', 'Follow-up removed', backgroundColor: colorRedCalendar);
+    }
+  }}

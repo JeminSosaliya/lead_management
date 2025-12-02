@@ -13,7 +13,6 @@ import 'package:lead_management/model/lead_add_model.dart';
 import 'package:lead_management/ui_and_controllers/main/home/home_controller.dart';
 import 'package:lead_management/ui_and_controllers/widgets/location_picker_screen.dart';
 import '../../../core/utils/push_notification_utils.dart';
-import '../../auth/goggle_login/google_calendar_controller.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -41,7 +40,6 @@ class AddLeadController extends GetxController {
   String? locationAddress;
 
   TextEditingController addressController = TextEditingController();
-  final calendarController = Get.put(GoogleCalendarController());
 
   @override
   void onInit() {
@@ -370,38 +368,39 @@ class AddLeadController extends GetxController {
         fcmToken = '';
       }
 
-      QuerySnapshot reminderQuery = await fireStore
-          .collection('reminder')
-          .where('leadId', isEqualTo: leadId)
-          .limit(1)
-          .get();
+      final now = DateTime.now();
+      final String formattedCreatedAt = now.toIso8601String();
+      final String formattedUpdatedAt = now.toIso8601String();
+      final String formattedTime = followUpTime.toIso8601String();
 
-      Map<String, dynamic> reminderData = {
-        'name': assignedToName,
-        'id': assignedToUserId,
+      final Map<String, dynamic> reminderBody = {
+        'content': description,
+        'createdAt': formattedCreatedAt,
         'fcmToken': fcmToken,
-        'time': Timestamp.fromDate(followUpTime),
-        'content': description ?? '',
-        'title': clientName,
-        'type': 'reminder',
+        'id': assignedToUserId,
         'isSent': false,
         'leadId': leadId,
-        'updatedAt': FieldValue.serverTimestamp(),
+        'name': assignedToName,
+        'time': formattedTime,
+        'title': clientName,
+        'type': 'reminder',
+        'updatedAt': formattedUpdatedAt,
       };
 
-      if (reminderQuery.docs.isNotEmpty) {
-        await fireStore
-            .collection('reminder')
-            .doc(reminderQuery.docs.first.id)
-            .update(reminderData);
-        log('✅ Reminder updated for lead: $leadId');
+      final response = await http.post(
+        Uri.parse('https://api.rexinochemical.com/api/dealers/reminder'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(reminderBody),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        log('Reminder created via API for lead: $leadId');
+        log('API Response: ${response.body}');
       } else {
-        reminderData['createdAt'] = FieldValue.serverTimestamp();
-        await fireStore.collection('reminder').add(reminderData);
-        log('✅ Reminder created for lead: $leadId');
+        log('API Error: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      log('❌ Error creating/updating reminder: $e');
+      log('Error creating/updating reminder: $e');
     }
   }
 
@@ -497,75 +496,6 @@ class AddLeadController extends GetxController {
       return;
     }
 
-    String? googleEventId;
-
-    try {
-      final calendarController = Get.find<GoogleCalendarController>();
-
-      if (calendarController.isLoggedIn) {
-        Get.dialog(
-          Center(
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: colorWhite,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 15),
-                  Text(
-                    'Adding to Google Calendar...',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          barrierDismissible: false,
-        );
-
-        googleEventId = await calendarController.addEvent(
-          title: nameController.text.trim(),
-          description: descriptionController.text.trim(),
-          startTime:
-              nextFollowUp ?? DateTime.now().add(const Duration(minutes: 5)),
-          endTime:
-              nextFollowUp?.add(Duration(minutes: 5)) ??
-              DateTime.now().add(const Duration(days: 1)),
-          employeeEmails: [selectedEmployeeEmail ?? ''],
-        );
-
-        Get.back();
-
-        if (googleEventId == null) {
-          Get.context?.showAppSnackBar(
-            message: 'Event could not be added to Google Calendar',
-            backgroundColor: colorRedCalendar,
-            textColor: colorWhite,
-          );
-          return;
-        }
-
-        log(
-          '✅ Google Calendar event added successfully. Event ID: $googleEventId',
-        );
-      } else {
-        log('⚠️ Skipping Google Calendar (Not logged in)');
-      }
-    } catch (e) {
-      log('💥 Failed to add Google Calendar event: $e');
-      // Get.context?.showAppSnackBar(
-      //   message: 'Event could not be added to Google Calendar',
-      //   backgroundColor: colorRedCalendar,
-      //   textColor: colorWhite,
-      // );
-      return;
-    }
-
-    // Step 3️⃣ — Add lead to Firebase now
     Get.dialog(
       Center(
         child: Container(
@@ -619,7 +549,6 @@ class AddLeadController extends GetxController {
           ? null
           : altPhoneController.text.trim(),
       nextFollowUp: nextFollowUp,
-      goggleEventId: googleEventId,
     );
 
     Get.back();
@@ -633,11 +562,6 @@ class AddLeadController extends GetxController {
         textColor: colorWhite,
       );
 
-      log(
-        '🎯 Lead added successfully to Firebase with event ID: $googleEventId and mail is $selectedEmployeeEmail',
-      );
-
-      // reload leads
       String role = ListConst.currentUserProfileData.type ?? '';
       if (role == 'employee' || role == 'admin') {
         try {

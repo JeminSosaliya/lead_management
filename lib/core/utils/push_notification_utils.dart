@@ -275,6 +275,7 @@ class NotificationUtils {
   }
 
   bool handlePushTap(Map<String, dynamic>? payLoad) {
+  print("handlePushTap called with payload: $payLoad");
     if (payLoad != null) {
       log("---------> 1${payLoad.toString()}", name: "myapp call");
       print("---------> 2${payLoad.toString()}");
@@ -298,7 +299,8 @@ class NotificationUtils {
         // 1) Primary: open Lead Details if we have a leadId (used by chat)
         if (leadIdRaw != null && leadIdRaw.toString().isNotEmpty) {
           final String leadId = leadIdRaw.toString();
-          Get.offAllNamed(
+          // Use push navigation so that back button works naturally
+          Get.toNamed(
             AppRoutes.leadDetailsScreen,
             arguments: [leadId, null],
           );
@@ -313,7 +315,7 @@ class NotificationUtils {
                       messageData['lead_id_str'])
                   ?.toString();
           if (leadId != null && leadId.isNotEmpty) {
-            Get.offAllNamed(
+            Get.toNamed(
               AppRoutes.leadDetailsScreen,
               arguments: [leadId, null],
             );
@@ -338,22 +340,20 @@ class NotificationUtils {
             messageData.containsKey('assigned_to');
 
         if (looksLikeAssignment) {
-          // If the assignment notification carries a leadId, prefer opening details
           final dynamic assignLeadIdRaw =
               messageData['leadId'] ?? messageData['lead_id'];
           if (assignLeadIdRaw != null &&
               assignLeadIdRaw.toString().isNotEmpty) {
-            Get.offAllNamed(
+            Get.toNamed(
               AppRoutes.leadDetailsScreen,
               arguments: [assignLeadIdRaw.toString(), null],
             );
             return true;
           }
-          Get.offAllNamed(AppRoutes.home);
+          Get.toNamed(AppRoutes.home);
           return true;
         }
 
-        // 4) Fallback: no actionable deep-link → report not handled
         return false;
       } catch (e) {
         if (kDebugMode) {

@@ -15,7 +15,6 @@ import 'package:lead_management/core/utils/firebase_options.dart';
 import 'package:lead_management/core/utils/notification_cleanup_service.dart';
 import 'package:lead_management/core/utils/push_notification_utils.dart';
 import 'package:lead_management/routes/route_manager.dart';
-import 'package:lead_management/ui_and_controllers/auth/goggle_login/google_calendar_controller.dart';
 
 import 'core/utils/shred_pref.dart';
 
@@ -41,14 +40,9 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   NotificationUtils().init();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  Get.put(GoogleCalendarController(), permanent: true);
   Get.put(PermissionController(), permanent: true);
   await dotenv.load(fileName: '.env');
-  // Attempt silent login for admin
-  final calendarController = Get.find<GoogleCalendarController>();
-  await calendarController.autoLogin();
   unawaited(NotificationCleanupService.instance.run());
-  // addIsSeenAllFieldToAllNotifications();
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('hi')],
