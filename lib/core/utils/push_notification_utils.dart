@@ -299,8 +299,7 @@ class NotificationUtils {
         // 1) Primary: open Lead Details if we have a leadId (used by chat)
         if (leadIdRaw != null && leadIdRaw.toString().isNotEmpty) {
           final String leadId = leadIdRaw.toString();
-          // Use push navigation so that back button works naturally
-          Get.toNamed(
+          Get.offAllNamed(
             AppRoutes.leadDetailsScreen,
             arguments: [leadId, null],
           );
@@ -315,7 +314,7 @@ class NotificationUtils {
                       messageData['lead_id_str'])
                   ?.toString();
           if (leadId != null && leadId.isNotEmpty) {
-            Get.toNamed(
+            Get.offAllNamed(
               AppRoutes.leadDetailsScreen,
               arguments: [leadId, null],
             );
@@ -344,13 +343,13 @@ class NotificationUtils {
               messageData['leadId'] ?? messageData['lead_id'];
           if (assignLeadIdRaw != null &&
               assignLeadIdRaw.toString().isNotEmpty) {
-            Get.toNamed(
+            Get.offAllNamed(
               AppRoutes.leadDetailsScreen,
               arguments: [assignLeadIdRaw.toString(), null],
             );
             return true;
           }
-          Get.toNamed(AppRoutes.home);
+          Get.offAllNamed(AppRoutes.home);
           return true;
         }
 
