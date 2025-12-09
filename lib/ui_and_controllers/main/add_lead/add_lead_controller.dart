@@ -48,7 +48,7 @@ class AddLeadController extends GetxController {
   }
 
   final formKey = GlobalKey<FormState>();
-
+  TextEditingController locationController = TextEditingController();
   TextEditingController nameController = TextEditingController();
   TextEditingController clientPhoneController = TextEditingController();
   TextEditingController altPhoneController = TextEditingController();
@@ -124,7 +124,6 @@ class AddLeadController extends GetxController {
   }
 
   Future<void> pickLocation() async {
-    // Check location permissions
     LocationPermission permission = await Geolocator.checkPermission();
 
     if (permission == LocationPermission.denied) {
@@ -169,8 +168,10 @@ class AddLeadController extends GetxController {
     if (result != null && result is Map<String, dynamic>) {
       selectedLatitude = result['latitude'];
       selectedLongitude = result['longitude'];
-      locationAddress =
-          'Lat: ${selectedLatitude!.toStringAsFixed(6)}, Lng: ${selectedLongitude!.toStringAsFixed(6)}';
+      locationAddress = 'Lat: ${selectedLatitude!.toStringAsFixed(6)}, Lng: ${selectedLongitude!.toStringAsFixed(6)}';
+
+      locationController.text = locationAddress!;
+      setLocationError(false);
       update();
     }
   }
@@ -596,7 +597,10 @@ class AddLeadController extends GetxController {
     selectedEmployeeName = null;
     nextFollowUp = null;
     showEmployeeError = false;
-    showSourceError = false;
+    showSourceError = false;locationController.clear();
+    selectedLatitude = null;
+    selectedLongitude = null;
+    locationAddress = null;
     update();
   }
 
@@ -673,7 +677,13 @@ class AddLeadController extends GetxController {
 
     return response.statusCode == 200;
   }
+// AddLeadController.dart mein ye variables add karo
+  bool showLocationError = false;
 
+  void setLocationError(bool value) {
+    showLocationError = value;
+    update();
+  }
   @override
   void onClose() {
     nameController.dispose();

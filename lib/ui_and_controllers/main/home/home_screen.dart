@@ -930,13 +930,6 @@ class HomeScreen extends StatelessWidget {
             );
           },
           child: CustomCard(
-            // isDelay: _isFollowUpDelayed(
-            //   lead.lastFollowUpDate ??
-            //       ((lead.followUpLeads != null &&
-            //               lead.followUpLeads!.isNotEmpty)
-            //           ? lead.followUpLeads!.last.nextFollowUp
-            //           : null),
-            // ),
             isDelay: _isFollowUpDelayed(lead.lastFollowUpDate),
             horizontalPadding: 0,
             verticalPadding: 0,
@@ -948,9 +941,10 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: width * 0.035,
-                          vertical: height * 0.014,
+                        padding: EdgeInsets.only(
+                          left: width * 0.035,
+                          right: width * 0.035,
+                          top: height * 0.014,
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -983,46 +977,7 @@ class HomeScreen extends StatelessWidget {
                                     fontWeight: FontWeight.w400,
                                     textColor: colorDarkGreyText,
                                   ),
-                                  SizedBox(height: height * 0.003),
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: IntrinsicWidth(
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Flexible(
-                                            child: WantText(
-                                              text: lead.addedByName,
-                                              fontSize: width * 0.035,
-                                              fontWeight: FontWeight.w500,
-                                              textColor: colorDarkGreyText,
-                                              textOverflow:
-                                                  TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                            ),
-                                          ),
-                                          WantText(
-                                            text: ' --> ',
-                                            fontSize: width * 0.035,
-                                            fontWeight: FontWeight.w500,
-                                            textColor: colorDarkGreyText,
-                                          ),
-                                          Flexible(
-                                            child: WantText(
-                                              text: lead.assignedToName,
-                                              fontSize: width * 0.035,
-                                              fontWeight: FontWeight.w500,
-                                              textColor: colorDarkGreyText,
-                                              textOverflow:
-                                                  TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
+
                                 ],
                               ),
                             ),
@@ -1080,10 +1035,49 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
+                SizedBox(height: height * 0.003),
+                Padding(
+                  padding:  EdgeInsets.symmetric(horizontal:width*0.195),
+                  child: Row(
+                    crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: WantText(
+                          text: lead.addedByName,
+                          fontSize: width * 0.035,
+                          fontWeight: FontWeight.w500,
+                          textColor: colorDarkGreyText,
+                          textOverflow:
+                          TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                      WantText(
+                        text: ' --> ',
+                        fontSize: width * 0.035,
+                        fontWeight: FontWeight.w500,
+                        textColor: colorDarkGreyText,
+                      ),
+                      Expanded(
+                        child: WantText(
+                          text: lead.assignedToName,
+                          fontSize: width * 0.035,
+                          fontWeight: FontWeight.w500,
+                          textColor: colorDarkGreyText,
+                          textOverflow:
+                          TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 Padding(
                   padding: EdgeInsets.only(
                     left: width * 0.041,
                     bottom: height * 0.014,
+                    top: height * 0.010,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

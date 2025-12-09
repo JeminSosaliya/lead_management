@@ -153,8 +153,9 @@ class LeadDetailsController extends GetxController {
             'name': data['name'] ?? '',
             'type': 'employee',
             'email': data['email'] ?? '',
+            'isShow': data['isShow'],
           };
-        }),
+        }).where((e) => e['isShow'] != false),
         ...adminsSnap.docs.map((doc) {
           final data = doc.data() as Map<String, dynamic>;
           return {
@@ -162,8 +163,9 @@ class LeadDetailsController extends GetxController {
             'name': data['name'] ?? '',
             'type': 'admin',
             'email': data['email'] ?? '',
+            'isShow': data['isShow'],
           };
-        }),
+        }).where((a) => a['isShow'] != false),
       ];
 
       if (currentUserRole == 'employee') {

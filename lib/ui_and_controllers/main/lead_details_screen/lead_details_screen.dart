@@ -383,10 +383,7 @@ class LeadDetailsScreen extends StatelessWidget {
                           ),
                           SizedBox(height: height * 0.023),
 
-                          Row(
-                            children: [
-                              Expanded(
-                                child: CustomTextFormField(
+                          CustomTextFormField(
                                   labelText: "Referral Name",
                                   hintText: 'Referral Name',
                                   controller: controller.referralNameController,
@@ -401,14 +398,17 @@ class LeadDetailsScreen extends StatelessWidget {
                                     controller.fnERefNumber.requestFocus();
                                   },
                                 ),
-                              ),
-                              SizedBox(width: width * 0.02),
+                          SizedBox(height: height * 0.023),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
                               Expanded(
                                 child: CustomTextFormField(
                                   labelText: "Referral Number",
                                   hintText: 'Referral number',
                                   controller:
-                                      controller.referralNumberController,
+                                  controller.referralNumberController,
                                   prefixIcon: Icon(
                                     Icons.call,
                                     color: colorGrey,
@@ -421,12 +421,54 @@ class LeadDetailsScreen extends StatelessWidget {
                                   textInputAction: TextInputAction.next,
                                   focusNode: controller.fnERefNumber,
                                   onFieldSubmitted: (_) {
-                                    controller.fnESource.requestFocus();
+                                    controller.fnEReassign.requestFocus();
                                   },
+                                ),
+                              ),
+                              SizedBox(width: width*0.02),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SearchableCSCDropdown(
+                                      title: 'Reassign To',
+                                      items: controller.employees
+                                          .map((e) => e['name'] as String)
+                                          .toList(),
+                                      hintText:
+                                      controller.selectedEmployeeName ??
+                                          'Select User',
+                                      iconData1: Icons.arrow_drop_down,
+                                      iconData2: Icons.arrow_drop_up,
+                                      onChanged: (value) {
+                                        controller.setSelectedEmployee(value);
+                                      },
+                                      showError: controller.showEmployeeError,
+                                      focusNode: controller.fnEReassign,
+                                      textInputAction: TextInputAction.next,
+                                      nextFocusNode: controller.fnESource,
+                                    ),
+                                    if (controller.showEmployeeError)
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          top: 4,
+                                          left: 4,
+                                        ),
+                                        child: Text(
+                                          'Please select a user',
+                                          style: TextStyle(
+                                            color: colorRedError,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
+
+
                           SizedBox(height: height * 0.023),
 
                           Row(
@@ -485,50 +527,13 @@ class LeadDetailsScreen extends StatelessWidget {
                                   },
                                   focusNode: controller.fnETechnician,
                                   textInputAction: TextInputAction.next,
-                                  nextFocusNode: controller.fnEReassign,
+                                  nextFocusNode: null,
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: height * 0.023),
 
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SearchableCSCDropdown(
-                                title: 'Reassign To',
-                                items: controller.employees
-                                    .map((e) => e['name'] as String)
-                                    .toList(),
-                                hintText:
-                                    controller.selectedEmployeeName ??
-                                    'Select User',
-                                iconData1: Icons.arrow_drop_down,
-                                iconData2: Icons.arrow_drop_up,
-                                onChanged: (value) {
-                                  controller.setSelectedEmployee(value);
-                                },
-                                showError: controller.showEmployeeError,
-                                focusNode: controller.fnEReassign,
-                                textInputAction: TextInputAction.next,
-                                nextFocusNode: null,
-                              ),
-                              if (controller.showEmployeeError)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    top: 4,
-                                    left: 4,
-                                  ),
-                                  child: Text(
-                                    'Please select a user',
-                                    style: TextStyle(
-                                      color: colorRedError,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
+
                           SizedBox(height: height * 0.023),
 
                           WantText(
@@ -1035,46 +1040,49 @@ class LeadDetailsScreen extends StatelessWidget {
                                 ],
                               ),
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      WantText(
-                                        text: "Next Follow-up",
-                                        fontSize: width * 0.035,
-                                        fontWeight: FontWeight.w500,
-                                        textColor: colorBlack,
-                                      ),
-                                      WantText(
-                                        text: formatTimestamp(
-                                          followUpLead.nextFollowUp,
+                                  // Expanded added here
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        WantText(
+                                          text: "Next Follow-up",
+                                          fontSize: width * 0.035,
+                                          fontWeight: FontWeight.w500,
+                                          textColor: colorBlack,
                                         ),
-                                        fontSize: width * 0.031,
-                                        fontWeight: FontWeight.w500,
-                                        textColor: colorGreenOne,
-                                      ),
-                                      SizedBox(height: height * 0.01),
-                                      WantText(
-                                        text: "Reason",
-                                        fontSize: width * 0.037,
-                                        fontWeight: FontWeight.w500,
-                                        textColor: colorBlack,
-                                      ),
-                                      WantText(
-                                        text: followUpLead.callNote ?? "---",
-                                        fontSize: width * 0.035,
-                                        fontWeight: FontWeight.w500,
-                                        textColor: colorRed,
-                                      ),
-                                    ],
+                                        WantText(
+                                          text: formatTimestamp(followUpLead.nextFollowUp),
+                                          fontSize: width * 0.031,
+                                          fontWeight: FontWeight.w500,
+                                          textColor: colorGreenOne,
+                                        ),
+                                        SizedBox(height: height * 0.01),
+                                        WantText(
+                                          text: "Reason",
+                                          fontSize: width * 0.037,
+                                          fontWeight: FontWeight.w500,
+                                          textColor: colorBlack,
+                                        ),
+                                        // Wrap text to prevent overflow
+                                        Text(
+                                          followUpLead.callNote ?? "---",
+                                          style: TextStyle(
+                                            fontSize: width * 0.035,
+                                            fontWeight: FontWeight.w500,
+                                            color: colorRed,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
+
                                   PopupMenuButton<String>(
                                     elevation: 8,
-                                    color: Colors.white,
+                                    color: colorWhite,
                                     padding: EdgeInsets.zero,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(14),
@@ -1082,9 +1090,8 @@ class LeadDetailsScreen extends StatelessWidget {
                                     icon: Icon(
                                       Icons.more_vert,
                                       size: width * 0.065,
-                                      color: Colors.black87,
+                                      color: colorBlack,
                                     ),
-
                                     onSelected: (value) {
                                       if (value == 'edit') {
                                         controller.editFollowUp(index);
@@ -1092,7 +1099,6 @@ class LeadDetailsScreen extends StatelessWidget {
                                         controller.deleteFollowUp(index);
                                       }
                                     },
-
                                     itemBuilder: (context) => [
                                       PopupMenuItem(
                                         padding: EdgeInsets.zero,
@@ -1101,11 +1107,7 @@ class LeadDetailsScreen extends StatelessWidget {
                                         child: Row(
                                           children: [
                                             SizedBox(width: 10),
-                                            Icon(
-                                              Icons.edit,
-                                              color: Colors.blue,
-                                              size: 20,
-                                            ),
+                                            Icon(Icons.edit, color: colorMainTheme, size: 20),
                                             SizedBox(width: 12),
                                             Text(
                                               "Edit",
@@ -1117,9 +1119,7 @@ class LeadDetailsScreen extends StatelessWidget {
                                           ],
                                         ),
                                       ),
-
                                       PopupMenuDivider(height: 1),
-
                                       PopupMenuItem(
                                         padding: EdgeInsets.zero,
                                         value: "delete",
@@ -1127,11 +1127,7 @@ class LeadDetailsScreen extends StatelessWidget {
                                         child: Row(
                                           children: [
                                             SizedBox(width: 10),
-                                            Icon(
-                                              Icons.delete,
-                                              color: Colors.red,
-                                              size: 20,
-                                            ),
+                                            Icon(Icons.delete, color: Colors.red, size: 20),
                                             SizedBox(width: 12),
                                             Text(
                                               "Delete",
@@ -1477,9 +1473,4 @@ class LeadDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _bubble(double size, Color color) => Container(
-    width: size,
-    height: size,
-    decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-  );
 }

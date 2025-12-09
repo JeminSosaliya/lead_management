@@ -193,7 +193,10 @@ class AddLeadScreen extends StatelessWidget {
                                 hintText: 'Company Name',
                                 textCapitalization: TextCapitalization.words,
                                 controller: controller.companyController,
-                                prefixIcon: Icon(Icons.business, color: colorGrey),
+                                prefixIcon: Icon(
+                                  Icons.business,
+                                  color: colorGrey,
+                                ),
                                 textInputAction: TextInputAction.next,
                                 focusNode: controller.fnCompany,
                                 onFieldSubmitted: (_) {
@@ -208,13 +211,12 @@ class AddLeadScreen extends StatelessWidget {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-
                             Expanded(
                               child: SearchableCSCDropdown(
                                 title: 'Category (Optional)',
                                 items: controller.technicianTypes,
                                 hintText:
-                                controller.selectedTechnician ??
+                                    controller.selectedTechnician ??
                                     'Select Category',
                                 iconData1: Icons.arrow_drop_down,
                                 iconData2: Icons.arrow_drop_up,
@@ -235,7 +237,8 @@ class AddLeadScreen extends StatelessWidget {
                                     title: 'Source',
                                     items: controller.sources,
                                     hintText:
-                                    controller.selectedSource ?? 'Select Source',
+                                        controller.selectedSource ??
+                                        'Select Source',
                                     iconData1: Icons.arrow_drop_down,
                                     iconData2: Icons.arrow_drop_up,
                                     onChanged: (value) {
@@ -249,7 +252,10 @@ class AddLeadScreen extends StatelessWidget {
                                   if (controller.selectedSource == null &&
                                       controller.showSourceError)
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 4, left: 4),
+                                      padding: const EdgeInsets.only(
+                                        top: 4,
+                                        left: 4,
+                                      ),
                                       child: Text(
                                         'Please select a source',
                                         style: TextStyle(
@@ -279,6 +285,33 @@ class AddLeadScreen extends StatelessWidget {
                         SizedBox(height: height * 0.023),
 
                         CustomTextFormField(
+                          labelText: "Location",
+                          hintText: 'Tap to select location from map',
+                          controller: controller.locationController,
+                          readOnly: true,
+                          prefixIcon: Icon(
+                            Icons.location_pin,
+                            color: colorGrey,
+                          ),
+                          suffixIcon: Icon(
+                            Icons.arrow_forward_ios,
+                            color: colorGreyText,
+                            size: 16,
+                          ),
+                          onTap: () async {
+                            FocusScope.of(context).unfocus();
+                            await controller.pickLocation();
+                          },
+                          validator: (value) {
+                            if (controller.showLocationError) {
+                              return 'Please select a location';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: height * 0.023),
+
+                        CustomTextFormField(
                           labelText: "Description/Notes",
                           hintText: 'Enter description/Notes',
                           controller: controller.descriptionController,
@@ -296,150 +329,92 @@ class AddLeadScreen extends StatelessWidget {
                         ),
                         SizedBox(height: height * 0.023),
 
-                        GetBuilder<MemberController>(
-                          builder: (memController) {
-                            final assignableUsers = [
-                              ...memController.employees.where(
-                                    (e) =>
-                                e["isActive"] == true &&
-                                    e["name"].toString() != "Main Admin",
-                              ),
-                              ...memController.admins.where(
-                                    (a) =>
-                                a["isActive"] == true &&
-                                    a["name"].toString() != "Main Admin",
-                              ),
-                            ];
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SearchableCSCDropdown(
-                                  title: 'Assign To',
-                                  items: assignableUsers
-                                      .map((user) => user["name"].toString())
-                                      .toList(),
-                                  hintText:
-                                  controller.selectedEmployeeName ??
-                                      'Select User',
-                                  iconData1: Icons.arrow_drop_down,
-                                  iconData2: Icons.arrow_drop_up,
-                                  onChanged: (value) {
-                                    final selectedUser = assignableUsers
-                                        .firstWhere(
-                                          (user) =>
-                                      user["name"].toString() == value,
-                                      orElse: () => {
-                                        "uid": "",
-                                        "name": "",
-                                        "type": "",
-                                      },
-                                    );
-                                    if (selectedUser["uid"] != "") {
-                                      controller.setSelectedEmployee(
-                                        selectedUser["uid"],
-                                        employeeName: value,
-                                        userType: selectedUser["type"],
-                                        email: selectedUser["email"],
-                                      );
-                                    }
-                                  },
-                                  showError: controller.showEmployeeError,
-                                  focusNode: controller.fnAssignTo,
-                                  textInputAction: TextInputAction.next,
-                                  nextFocusNode: null,
-                                ),
-                                if (controller.selectedEmployee == null &&
-                                    controller.showEmployeeError)
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                      top: 4,
-                                      left: 4,
-                                    ),
-                                    child: Text(
-                                      isOwner
-                                          ? 'Please select a user to assign'
-                                          : 'Please select a user (optional)',
-                                      style: TextStyle(
-                                        color: colorRedError,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                SizedBox(height: height * 0.023),
-                              ],
-                            );
-                          },
-                        ),
-
-                        // Location - Full width
-                        WantText(
-                          text: 'Location (Optional)',
-                          fontSize: width * 0.041,
-                          fontWeight: FontWeight.w500,
-                          textColor: colorBlack,
-                        ),
-                        SizedBox(height: height * 0.016),
-                        GestureDetector(
-                          onTap: () {
-                            controller.pickLocation();
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              vertical: width * 0.035,
-                              horizontal: height * 0.01,
-                            ),
-                            decoration: BoxDecoration(
-                              color: colorTransparent,
-                              border: Border.all(
-                                color: colorGreyTextFieldBorder,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.location_pin, color: colorGrey),
-                                SizedBox(width: width * 0.03),
-                                Expanded(
-                                  child: Text(
-                                    controller.locationAddress ??
-                                        'Tap to select location from map',
-                                    style: TextStyle(
-                                      color: controller.locationAddress == null
-                                          ? colorGreyText
-                                          : colorBlack,
-                                      fontSize: width * 0.035,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.arrow_forward_ios,
-                                  color: colorGreyText,
-                                  size: 16,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: height * 0.023),
-
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
-                              child: CustomTextFormField(
-                                labelText: "Referral Name",
-                                hintText: 'Referral Name',
-                                controller: controller.referralNameController,
-                                textCapitalization: TextCapitalization.words,
-                                prefixIcon: Icon(Icons.person, color: colorGrey),
-                                textInputAction: TextInputAction.next,
-                                focusNode: controller.fnRefName,
-                                onFieldSubmitted: (_) {
-                                  controller.fnRefNumber.requestFocus();
+                              child: GetBuilder<MemberController>(
+                                builder: (memController) {
+                                  final assignableUsers = [
+                                    ...memController.employees.where(
+                                      (e) =>
+                                          e["isActive"] == true &&
+                                          e["isShow"] != false,
+                                    ),
+                                    ...memController.admins.where(
+                                      (a) =>
+                                          a["isActive"] == true &&
+                                          a["isShow"] != false,
+                                    ),
+                                  ];
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      SearchableCSCDropdown(
+                                        title: 'Assign To',
+                                        items: assignableUsers
+                                            .map(
+                                              (user) => user["name"].toString(),
+                                            )
+                                            .toList(),
+                                        hintText:
+                                            controller.selectedEmployeeName ??
+                                            'Select User',
+                                        iconData1: Icons.arrow_drop_down,
+                                        iconData2: Icons.arrow_drop_up,
+                                        onChanged: (value) {
+                                          final selectedUser = assignableUsers
+                                              .firstWhere(
+                                                (user) =>
+                                                    user["name"].toString() ==
+                                                    value,
+                                                orElse: () => {
+                                                  "uid": "",
+                                                  "name": "",
+                                                  "type": "",
+                                                },
+                                              );
+                                          if (selectedUser["uid"] != "") {
+                                            controller.setSelectedEmployee(
+                                              selectedUser["uid"],
+                                              employeeName: value,
+                                              userType: selectedUser["type"],
+                                              email: selectedUser["email"],
+                                            );
+                                          }
+                                        },
+                                        showError: controller.showEmployeeError,
+                                        focusNode: controller.fnAssignTo,
+                                        textInputAction: TextInputAction.next,
+                                        nextFocusNode: controller.fnRefNumber,
+                                      ),
+                                      if (controller.selectedEmployee == null &&
+                                          controller.showEmployeeError)
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 4,
+                                            left: 4,
+                                          ),
+                                          child: Text(
+                                            isOwner
+                                                ? 'Please select a user to assign'
+                                                : 'Please select a user (optional)',
+                                            style: TextStyle(
+                                              color: colorRedError,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                      SizedBox(height: height * 0.023),
+                                    ],
+                                  );
                                 },
                               ),
                             ),
                             SizedBox(width: width * 0.02),
+
                             Expanded(
                               child: CustomTextFormField(
                                 labelText: "Referral Number",
@@ -447,7 +422,7 @@ class AddLeadScreen extends StatelessWidget {
                                 controller: controller.referralNumberController,
                                 prefixIcon: Icon(Icons.call, color: colorGrey),
                                 keyboardType: TextInputType.phone,
-                                textInputAction: TextInputAction.done,
+                                textInputAction: TextInputAction.next,
                                 focusNode: controller.fnRefNumber,
                                 onFieldSubmitted: (_) {
                                   FocusScope.of(context).unfocus();
@@ -460,9 +435,22 @@ class AddLeadScreen extends StatelessWidget {
                             ),
                           ],
                         ),
+
+                        CustomTextFormField(
+                          labelText: "Referral Name",
+                          hintText: 'Referral Name',
+                          controller: controller.referralNameController,
+                          textCapitalization: TextCapitalization.words,
+                          prefixIcon: Icon(Icons.person, color: colorGrey),
+                          textInputAction: TextInputAction.done,
+                          focusNode: controller.fnRefName,
+                          onFieldSubmitted: (_) {
+                            FocusScope.of(context).unfocus();
+                          },
+                        ),
+
                         SizedBox(height: height * 0.023),
 
-                        // Follow-up Date - Full width
                         CustomTextFormField(
                           labelText: "Initial Follow-up Date & Time",
                           hintText: 'Initial Follow-up Date & Time',
@@ -479,7 +467,7 @@ class AddLeadScreen extends StatelessWidget {
                               context: context,
                               initialDate: now,
                               initialEntryMode:
-                              DatePickerEntryMode.calendarOnly,
+                                  DatePickerEntryMode.calendarOnly,
                               firstDate: now,
                               lastDate: DateTime(2100),
                             );
@@ -487,13 +475,13 @@ class AddLeadScreen extends StatelessWidget {
                             if (date != null) {
                               bool isToday =
                                   date.year == now.year &&
-                                      date.month == now.month &&
-                                      date.day == now.day;
+                                  date.month == now.month &&
+                                  date.day == now.day;
 
                               TimeOfDay initialTime = isToday
                                   ? TimeOfDay.fromDateTime(
-                                now.add(Duration(minutes: 1)),
-                              )
+                                      now.add(Duration(minutes: 1)),
+                                    )
                                   : TimeOfDay(hour: 9, minute: 0);
 
                               TimeOfDay? time = await showTimePicker(
@@ -513,7 +501,7 @@ class AddLeadScreen extends StatelessWidget {
                                 if (dateTime.isBefore(now)) {
                                   Get.context?.showAppSnackBar(
                                     message:
-                                    'Please select a future date and time',
+                                        'Please select a future date and time',
                                     backgroundColor: colorRedCalendar,
                                     textColor: colorWhite,
                                   );
@@ -543,13 +531,13 @@ class AddLeadScreen extends StatelessWidget {
                           onTap: controller.isSubmitting
                               ? null
                               : () {
-                            FocusScope.of(context).unfocus();
-                            controller.submitForm();
-                          },
+                                  FocusScope.of(context).unfocus();
+                                  controller.submitForm();
+                                },
                           label: controller.isSubmitting
                               ? (isOwner
-                              ? 'Adding Lead...'
-                              : 'Adding My Lead...')
+                                    ? 'Adding Lead...'
+                                    : 'Adding My Lead...')
                               : (isOwner ? 'Add Lead' : 'Add My Lead'),
                           backgroundColor: controller.isSubmitting
                               ? colorGreyText
@@ -568,5 +556,4 @@ class AddLeadScreen extends StatelessWidget {
       },
     );
   }
-
 }

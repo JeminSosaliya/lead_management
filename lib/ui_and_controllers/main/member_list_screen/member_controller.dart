@@ -23,10 +23,11 @@ class MemberController extends GetxController {
 
   List<Map<String, dynamic>> get currentList {
     if (_selectedType.value == 'employee') {
-      return _employees;
+      // Filter out users where isShow is false
+      return _employees.where((employee) => employee['isShow'] != false).toList();
     } else {
-      // Filter out "Main Admin" from admin list
-      return _admins.where((admin) => admin['name']?.toString() != 'Main Admin').toList();
+      // Filter out users where isShow is false
+      return _admins.where((admin) => admin['isShow'] != false).toList();
     }
   }
 
@@ -66,6 +67,7 @@ class MemberController extends GetxController {
 
       _employees.value = snapshot.docs
           .map((doc) => {'id': doc.id, ...doc.data()})
+          .where((employee) => employee['isShow'] != false) // Filter out users where isShow is false
           .toList();
     } catch (e) {
       print('Error loading employees: $e');
@@ -85,7 +87,7 @@ class MemberController extends GetxController {
 
       _admins.value = snapshot.docs
           .map((doc) => {'id': doc.id, ...doc.data()})
-          .where((admin) => admin['name']?.toString() != 'Main Admin') // Add this filter
+          .where((admin) => admin['isShow'] != false) // Filter out users where isShow is false
           .toList();
     } catch (e) {
       print('Error loading admins: $e');
