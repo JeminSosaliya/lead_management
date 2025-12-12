@@ -45,6 +45,7 @@ class _SearchableCSCDropdownState extends State<SearchableCSCDropdown> {
   late FocusNode _focusNode;
   List<String> _filteredItems = [];
   bool _isDropdownOpen = false;
+  String? _lastValidValue;
 
   @override
   void initState() {
@@ -60,11 +61,41 @@ class _SearchableCSCDropdownState extends State<SearchableCSCDropdown> {
           _isDropdownOpen = true;
         });
       } else {
+        _validateAndReset();
         setState(() {
           _isDropdownOpen = false;
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    if (widget.focusNode == null) {
+      _focusNode.dispose();
+    }
+    super.dispose();
+  }
+
+  void _validateAndReset() {
+    final currentText = _controller.text.trim();
+    if (currentText.isEmpty) {
+      _lastValidValue = null;
+      widget.onChanged('');
+      return;
+    }
+
+    final isValid = widget.items.any(
+      (item) => item.toLowerCase() == currentText.toLowerCase()
+    );
+    
+    if (!isValid) {
+      _controller.text = _lastValidValue ?? '';
+      widget.onChanged(_lastValidValue ?? '');
+    } else {
+      _lastValidValue = currentText;
+    }
   }
 
   void _filterItems(String query) {
@@ -78,7 +109,19 @@ class _SearchableCSCDropdownState extends State<SearchableCSCDropdown> {
       }
     });
 
-    widget.onChanged(query);
+    final trimmedQuery = query.trim();
+    if (trimmedQuery.isEmpty) {
+      _lastValidValue = null;
+      widget.onChanged('');
+    } else {
+      final exactMatch = widget.items.any(
+        (item) => item.toLowerCase() == trimmedQuery.toLowerCase()
+      );
+      if (exactMatch) {
+        _lastValidValue = trimmedQuery;
+        widget.onChanged(trimmedQuery);
+      }
+    }
   }
 
   void _toggleDropdown() {
@@ -150,6 +193,8 @@ class _SearchableCSCDropdownState extends State<SearchableCSCDropdown> {
             ),
             onChanged: _filterItems,
             onFieldSubmitted: (_) {
+              // Validate before submitting
+              _validateAndReset();
               if (widget.nextFocusNode != null) {
                 widget.nextFocusNode!.requestFocus();
               } else {
@@ -167,212 +212,104 @@ class _SearchableCSCDropdownState extends State<SearchableCSCDropdown> {
         ),
 
         // Dropdown List
-        if (_isDropdownOpen && _filteredItems.isNotEmpty)
+        if (_isDropdownOpen)
           Container(
             margin: EdgeInsets.only(top: 6),
             constraints: BoxConstraints(maxHeight: height * 0.3),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colorWhite,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: Colors.black12),
               boxShadow: [
                 BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4)),
               ],
             ),
-            child: ListView.builder(
-              padding: EdgeInsets.zero,
-              shrinkWrap: true,
-              itemCount: _filteredItems.length,
-              itemBuilder: (context, index) {
-                return Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () {
-                      setState(() {
-                        _controller.text = _filteredItems[index];
-                        _isDropdownOpen = false;
-                        _focusNode.unfocus();
-                      });
-                      widget.onChanged(_filteredItems[index]);
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                      child: Text(
-                        _filteredItems[index],
-                        style: GoogleFonts.roboto(
-                          fontSize: width * 0.04,
-                          color: Colors.black87,
-                          fontWeight: FontWeight.w500,
+            child: _filteredItems.isNotEmpty
+                ? ListView.builder(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    itemCount: _filteredItems.length,
+                    itemBuilder: (context, index) {
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            final selectedValue = _filteredItems[index];
+                            setState(() {
+                              _controller.text = selectedValue;
+                              _lastValidValue = selectedValue;
+                              _isDropdownOpen = false;
+                              _focusNode.unfocus();
+                            });
+                            widget.onChanged(selectedValue);
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                            child: Text(
+                              _filteredItems[index],
+                              style: GoogleFonts.roboto(
+                                fontSize: width * 0.04,
+                                color: Colors.black87,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
                         ),
+                      );
+                    },
+                  )
+                : _controller.text.trim().isNotEmpty
+                    ? Container(
+                        padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                        child: Center(
+                          child: Text(
+                            'No result found',
+                            style: GoogleFonts.roboto(
+                              fontSize: width * 0.038,
+                              color: Colors.black54,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        itemCount: widget.items.length,
+                        itemBuilder: (context, index) {
+                          return Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () {
+                                final selectedValue = widget.items[index];
+                                setState(() {
+                                  _controller.text = selectedValue;
+                                  _lastValidValue = selectedValue;
+                                  _isDropdownOpen = false;
+                                  _focusNode.unfocus();
+                                });
+                                widget.onChanged(selectedValue);
+                              },
+                              child: Container(
+                                padding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                                child: Text(
+                                  widget.items[index],
+                                  style: GoogleFonts.roboto(
+                                    fontSize: width * 0.04,
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    ),
-                  ),
-                );
-              },
-            ),
           ),
       ],
     );
   }
 }
 
-//  @override
-//   Widget build(BuildContext context) {
-//
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         if (widget.title != null)
-//           WantText(
-//             text: widget.title!,
-//             fontSize: width * 0.045,
-//             fontWeight: FontWeight.w600,
-//           ),
-//         if (widget.title != null)
-//           SizedBox(height: height * 0.01),
-//
-//         SizedBox(
-//           height: height * 0.062,
-//           child: TextFormField(
-//             keyboardType: widget.keyboardType,
-//             controller: _controller,
-//             focusNode: _focusNode,
-//             textCapitalization: TextCapitalization.words,
-//             textInputAction: widget.textInputAction,
-//             onFieldSubmitted: (_) {
-//               if (widget.nextFocusNode != null) {
-//                 widget.nextFocusNode!.requestFocus();
-//               } else {
-//                 _focusNode.unfocus();
-//               }
-//             },
-//             style: GoogleFonts.roboto(
-//               fontSize: width * 0.038,
-//               color: colorBlack,
-//               fontWeight: FontWeight.w400,
-//             ),
-//             decoration: InputDecoration(
-//               hintText: widget.hintText,
-//               hintStyle: GoogleFonts.roboto(
-//                 color: colorGreyText,
-//                 fontSize: width * 0.035,
-//                 fontWeight: FontWeight.w400,
-//                 height: 1.75,
-//               ),
-//               border: OutlineInputBorder(
-//                 borderRadius: BorderRadius.all(
-//                   Radius.circular(width * 0.0266),
-//                 ),
-//                 borderSide:
-//                 BorderSide(color: colorGreyTextFieldBorder),
-//               ),
-//               enabledBorder: OutlineInputBorder(
-//                 borderRadius: BorderRadius.all(
-//                   Radius.circular(width * 0.0266),
-//                 ),
-//                 borderSide:
-//                 BorderSide(color: colorGreyTextFieldBorder),
-//               ),
-//               focusedBorder: OutlineInputBorder(
-//                 borderRadius: BorderRadius.all(
-//                   Radius.circular(width * 0.0266),
-//                 ),
-//                 borderSide:
-//                 BorderSide(color: colorGreyTextFieldBorder),
-//               ),
-//               errorText: widget.showError ? '' : null,
-//               errorStyle: const TextStyle(height: 0, fontSize: 0), // ye add karo
-//
-//               errorBorder: OutlineInputBorder(
-//                 borderRadius: BorderRadius.all(Radius.circular(width * 0.0266)),
-//                 borderSide: BorderSide(color: colorRedError, width: 1),
-//               ),
-//               focusedErrorBorder: OutlineInputBorder(
-//                 borderRadius: BorderRadius.all(Radius.circular(width * 0.0266)),
-//                 borderSide: BorderSide(color: colorRedError, width: 1),
-//               ),
-//               suffixIcon: GestureDetector(
-//                 onTap: _toggleDropdown,
-//                 child: _isDropdownOpen == false
-//                     ? Icon(
-//                   widget.iconData1,
-//                   color: colorGreyText,
-//                   size: width * 0.065,
-//                 )
-//                     : Icon(
-//                   widget.iconData2,
-//                   color: colorGreyTextFieldBorder,
-//                   size: width * 0.065,
-//                 ),
-//               ),
-//             ),
-//             onChanged: _filterItems,
-//onFieldSubmitted: (_) {
-//               if (widget.nextFocusNode != null) {
-//                 widget.nextFocusNode!.requestFocus();
-//               } else {
-//                 _focusNode.unfocus();
-//               }
-//               widget.onFieldSubmitted?.call(_controller.text);
-//             },
-//             onTap: () {
-//               setState(() {
-//                 _filteredItems =
-//                     widget.items; // Reset filtered list when tapped
-//                 _isDropdownOpen = true;
-//               });
-//             },
-//           ),
-//         ),
-//
-//         if (_isDropdownOpen && _filteredItems.isNotEmpty)
-//           Container(
-//             height: _filteredItems.length >= 4
-//                 ? height * 0.25
-//                 : _filteredItems.length >= 3
-//                 ? height * 0.185
-//                 : _filteredItems.length >= 2
-//                 ? height * 0.125
-//                 : height * 0.065,
-//             margin: EdgeInsets.only(top: height * 0.01),
-//             decoration: BoxDecoration(
-//               borderRadius: BorderRadius.circular(width * 0.0266),
-//               color: colorWhite,
-//               border: Border.all(color: colorGreyText),
-//             ),
-//             child: ListView.builder(
-//               padding: EdgeInsets.zero,
-//               shrinkWrap: true,
-//               itemCount: _filteredItems.length,
-//               itemBuilder: (context, index) {
-//                 return Padding(
-//                   padding: EdgeInsets.symmetric(vertical: 2),
-//                   child: GestureDetector(
-//                     onTap: () {
-//                       setState(() {
-//                         _controller.text = _filteredItems[index];
-//                         _isDropdownOpen = false; // Close dropdown on select
-//                         _focusNode.unfocus(); // Close keyboard
-//                       });
-//                       widget.onChanged(_filteredItems[index]);
-//                     },
-//                     child: Container(
-//                       padding: EdgeInsets.symmetric(
-//                           vertical: width * 0.028, horizontal: width * 0.035),
-//                       child: WantText(
-//                         text: _filteredItems[index],
-//                         fontSize: width * 0.04,
-//                         fontWeight: FontWeight.w400,
-//                         textColor: colorBlack,
-//                       ),
-//                     ),
-//                   ),
-//                 );
-//               },
-//             ),
-//           ),
-//       ],
-//     );
-//   }
-// }

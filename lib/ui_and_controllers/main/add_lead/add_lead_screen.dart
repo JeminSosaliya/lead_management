@@ -328,11 +328,43 @@ class AddLeadScreen extends StatelessWidget {
                           },
                         ),
                         SizedBox(height: height * 0.023),
+                        CustomTextFormField(
+                          labelText: "Referral Name",
+                          hintText: 'Referral Name',
+                          controller: controller.referralNameController,
+                          textCapitalization: TextCapitalization.words,
+                          prefixIcon: Icon(Icons.person, color: colorGrey),
+                          textInputAction: TextInputAction.next,
+                          focusNode: controller.fnRefName,
+                          onFieldSubmitted: (_) {
+                            controller.fnRefNumber.requestFocus();
+                          },
+                        ),
+                        SizedBox(height: height * 0.023),
 
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Expanded(
+                              child: CustomTextFormField(
+                                labelText: "Referral Number",
+                                hintText: 'Referral number',
+                                controller: controller.referralNumberController,
+                                prefixIcon: Icon(Icons.call, color: colorGrey),
+                                keyboardType: TextInputType.phone,
+                                textInputAction: TextInputAction.next,
+                                focusNode: controller.fnRefNumber,
+                                onFieldSubmitted: (_) {
+                                  controller.fnAssignTo.requestFocus();
+                                },
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(15),
+                                ],
+                              ),
+                            ),
+                            SizedBox(width: width * 0.02),
                             Expanded(
                               child: GetBuilder<MemberController>(
                                 builder: (memController) {
@@ -387,8 +419,8 @@ class AddLeadScreen extends StatelessWidget {
                                         },
                                         showError: controller.showEmployeeError,
                                         focusNode: controller.fnAssignTo,
-                                        textInputAction: TextInputAction.next,
-                                        nextFocusNode: controller.fnRefNumber,
+                                        textInputAction: TextInputAction.done,
+                                        nextFocusNode: null,
                                       ),
                                       if (controller.selectedEmployee == null &&
                                           controller.showEmployeeError)
@@ -413,43 +445,8 @@ class AddLeadScreen extends StatelessWidget {
                                 },
                               ),
                             ),
-                            SizedBox(width: width * 0.02),
-
-                            Expanded(
-                              child: CustomTextFormField(
-                                labelText: "Referral Number",
-                                hintText: 'Referral number',
-                                controller: controller.referralNumberController,
-                                prefixIcon: Icon(Icons.call, color: colorGrey),
-                                keyboardType: TextInputType.phone,
-                                textInputAction: TextInputAction.next,
-                                focusNode: controller.fnRefNumber,
-                                onFieldSubmitted: (_) {
-                                  FocusScope.of(context).unfocus();
-                                },
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                  LengthLimitingTextInputFormatter(15),
-                                ],
-                              ),
-                            ),
                           ],
                         ),
-
-                        CustomTextFormField(
-                          labelText: "Referral Name",
-                          hintText: 'Referral Name',
-                          controller: controller.referralNameController,
-                          textCapitalization: TextCapitalization.words,
-                          prefixIcon: Icon(Icons.person, color: colorGrey),
-                          textInputAction: TextInputAction.done,
-                          focusNode: controller.fnRefName,
-                          onFieldSubmitted: (_) {
-                            FocusScope.of(context).unfocus();
-                          },
-                        ),
-
-                        SizedBox(height: height * 0.023),
 
                         CustomTextFormField(
                           labelText: "Initial Follow-up Date & Time",

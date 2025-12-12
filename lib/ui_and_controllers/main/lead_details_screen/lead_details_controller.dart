@@ -62,7 +62,7 @@ class LeadDetailsController extends GetxController {
   final List<String> stageOptions = ['In Progress', 'Completed', 'Cancelled'];
   List<Map<String, dynamic>> employees = [];
   List<String> technicianTypes = [];
-  List<String> sources = ['Website', 'Phone', 'Referral', 'Walk-in', 'Other'];
+  List<String> sources = ['Website', 'Phone','Direct', 'Referral', 'Walk-in', 'Other'];
   String? selectedEmployee;
   String? selectedEmployeeName;
   String? selectedEmployeeType;

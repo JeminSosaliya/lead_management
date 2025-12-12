@@ -75,6 +75,7 @@ class AddLeadController extends GetxController {
   final List<String> sources = [
     'Website',
     'Phone',
+    'Direct',
     'Referral',
     'Walk-in',
     'Other',
